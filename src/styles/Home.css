@@ -1,5 +1,5 @@
 .home {
-  font-family: 'Arial', sans-serif;
+  font-family: 'Droid Sans', sans-serif;
   margin-top: 100px;
 }
 
@@ -9,15 +9,16 @@
   align-items: center;
   margin: 100px 0;
   padding: 0 50px;
+  position: relative; 
 }
 
 .text-block {
   background-color: #D32F2F;
   color: white;
   padding: 70px;
-  width: 60%; 
-  border: none; 
-  position: relative; 
+  width: 300px;
+  height: 300px; 
+  position: relative;
 }
 
 .text-block.large {
@@ -27,12 +28,12 @@
 }
 
 .text-block h1 {
-  font-size: 36px;
+  font-size: 30px;
   margin-bottom: 20px;
 }
 
 .text-block p {
-  font-size: 18px;
+  font-size: 20px;
 }
 
 .image-in-text {
@@ -45,4 +46,65 @@
 .image-in-text img {
   width: 250px;
   height: auto;
+}
+
+
+.image-block {
+  position: relative; 
+  width: 50%;
+  height: 450px; 
+}
+
+
+.image-block img:nth-child(1) {
+  position: absolute;
+  top: 50px; 
+  left: 50px; 
+  width: 300px;
+  height: 150px;
+  object-fit: cover;
+  border: 5px solid white;
+  border-radius: 10px;
+}
+
+
+.image-block img:nth-child(2) {
+  position: absolute;
+  top: 100px;
+  left: 300px;
+  width: 200px;
+  height: 150px;
+  object-fit: cover;
+  border: 5px solid white;
+  border-radius: 10px;
+}
+
+
+.image-block img:nth-child(3) {
+  position: absolute;
+  top: 50px;
+  left: 550px;
+  width: 200px;
+  height: 150px;
+  object-fit: cover;
+  border: 5px solid white;
+  border-radius: 10px;
+}
+
+.reverse {
+  flex-direction: row-reverse;
+}
+
+@media (max-width: 768px) {
+  .block {
+    flex-direction: column;
+  }
+  .image-block img {
+    position: static;
+    margin: 10px 0;
+  }
+  .image-in-text {
+    position: static;
+    margin-top: 20px;
+  }
 }

@@ -1,6 +1,7 @@
 import React from 'react';
 import '../styles/Home.css';
 import img_1 from '../assets/img_1.jpg'; 
+import img_2 from '../assets/img_2.jpg';
 
 const Home = () => {
   return (
@@ -12,6 +13,17 @@ const Home = () => {
           <div className="image-in-text">
             <img src={img_1} alt="Narxoz Welcome" />
           </div>
+        </div>
+      </section>
+      <section className="block">
+        <div className="text-block">
+          <h1>The Narxoz Dorm Mate</h1>
+          <p>Placeholder text for the second block.</p>
+        </div>
+        <div className="image-block horizontal">
+          <img src={img_1} alt="Narxoz 1" />
+          <img src={img_2} alt="Narxoz 2" />
+          <img src={img_1} alt="Narxoz 3" />
         </div>
       </section>
     </div>
