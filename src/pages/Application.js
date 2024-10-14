@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import '../styles/Application.css';
 import image_11 from '../assets/image_11.svg';
 import Ellipse1 from '../assets/Ellipse1.svg';
@@ -17,7 +18,7 @@ const ApplicationPage = () => {
           <option>400 000</option>
           <option>800 000</option>
         </select>
-        <button className="submit-btn">Перейти к тесту</button>
+        <button className="submit-btn"><Link to="/testpage">Перейти к тесту</Link></button>
       </div>
       <div className="visual-section">
         <img src={Ellipse1} alt="Ellipse 1" className="ellipse ellipse1" />

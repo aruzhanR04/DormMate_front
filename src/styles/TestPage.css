@@ -1,0 +1,93 @@
+.test-page {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+    font-family: Arial, sans-serif;
+  }
+  
+  .progress-indicator {
+    font-size: 18px;
+    margin-bottom: 20px;
+  }
+  
+  h2 {
+    font-size: 24px;
+    margin-bottom: 20px;
+  }
+  
+  p {
+    font-size: 18px;
+    margin-bottom: 20px;
+    text-align: center;
+  }
+  
+  .options {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    width: 100%;
+    max-width: 400px;
+  }
+  
+  .options label {
+    font-size: 18px;
+    background: #f8f8f8;
+    border-radius: 10px;
+    padding: 10px;
+    display: flex;
+    align-items: center;
+  }
+  
+  input[type="radio"] {
+    margin-right: 10px;
+  }
+  
+  .navigation-buttons {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+  }
+  
+  .back-btn, .next-btn {
+    background-color: #D32F2F;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 16px;
+  }
+  
+  .back-btn:disabled {
+    background-color: #ccc;
+  }
+  
+  .next-btn {
+    background-color: #D32F2F;
+  }
+  
+  @media (max-width: 600px) {
+    .test-page {
+      padding: 10px;
+    }
+  
+    h2 {
+      font-size: 20px;
+    }
+  
+    p {
+      font-size: 16px;
+    }
+  
+    .options label {
+      font-size: 16px;
+      padding: 8px;
+    }
+  
+    .back-btn, .next-btn {
+      font-size: 14px;
+      padding: 8px 15px;
+    }
+  }
+  
