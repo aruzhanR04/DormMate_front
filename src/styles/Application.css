@@ -1,64 +1,125 @@
 .application-page {
-    display: flex;
-    justify-content: space-between;
-    padding: 50px 100px;
+  display: flex;
+  justify-content: space-between;
+  padding: 50px 100px;
+}
+
+.form-section {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  width: 450px;
+  margin-left: -20px;
+}
+
+select, input {
+  padding: 12px;
+  border: 2px solid #ccc;
+  border-radius: 10px;
+  font-size: 16px;
+}
+
+.submit-btn, .test-btn {
+  background-color: #D32F2F;
+  color: white;
+  padding: 12px 24px;
+  border: none;
+  border-radius: 30px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.submit-btn:hover, .test-btn:hover {
+  background-color: #C62828;
+}
+
+.test-btn {
+  margin-top: 10px;
+}
+
+.visual-section {
+  position: relative;
+  flex: 1;
+}
+
+.ellipse {
+  position: absolute;
+  transition: all 0.3s ease-in-out;
+}
+
+.ellipse1 {
+  top: 0;
+  left: 30%;
+  width: 70%;
+}
+
+.ellipse2 {
+  top: 0;
+  left: 50%;
+  width: 70%;
+}
+
+.ellipse3 {
+  top: 0;
+  left: 70%;
+  width: 70%;
+}
+
+.img_11 {
+  position: absolute;
+  top: 150px;
+  left: 45%;
+  width: 600px;
+  z-index: 10; 
+  transition: all 0.3s ease-in-out; 
+}
+
+@media (max-width: 1024px) {
+  .application-page {
+    padding: 30px 50px;
   }
-  
+
   .form-section {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-    width: 300px; 
-    margin-right: 60px;
+    width: 100%;
+    margin: 0;
   }
-  
-  select {
-    padding: 10px;
-    border: 2px solid #ccc;
-    border-radius: 10px;
-  }
-  
-  .submit-btn {
-    background-color: red;
-    color: white;
-    padding: 10px 20px;
-    border: none;
-    border-radius: 30px;
-    font-weight: bold;
-  }
-  
-  .visual-section {
-    position: relative;
-    flex: 1; 
-  }
-  
-  .ellipse {
-    position: absolute;
-  }
-  
-  .ellipse1 {
-    top: 0;
-    left: 30%;
-    width: 70%;
-  }
-  
-  .ellipse2 {
-    top: 0;
-    left: 50%;
-    width: 70%;
-  }
-  
-  .ellipse3 {
-    top: 0;
-    left: 70%;;
-    width: 70%;
-  }
-  
+
   .img_11 {
-    position: absolute;
-    top: 90px;
-    left: 60%;
-    width: 500px;
-    z-index: 10; 
+    width: 300px;
   }
-  
+}
+
+@media (max-width: 768px) {
+  .application-page {
+    flex-direction: column;
+    padding: 20px;
+  }
+
+  .form-section {
+    width: 100%;
+    margin: 0;
+  }
+
+  .img_11 {
+    width: 100%;
+  }
+
+  .ellipse {
+    width: 100%; 
+  }
+
+  .visual-section {
+    display: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .application-page {
+    padding: 10px;
+  }
+
+  .submit-btn, .test-btn {
+    padding: 10px 20px;
+  }
+}  

@@ -10,15 +10,16 @@ const ApplicationPage = () => {
   return (
     <div className="application-page">
       <div className="form-section">
-        <input type="text" placeholder="name" />
-        <input type="text" placeholder="surname" />
-        <input type="text" placeholder="course" />
+        <input type="text" placeholder="Имя" />
+        <input type="text" placeholder="Фамилия" />
+        <input type="text" placeholder="Курс" />
         <select>
           <option>Ценовой диапазон</option>
           <option>400 000</option>
           <option>800 000</option>
         </select>
-        <button className="submit-btn"><Link to="/testpage">Перейти к тесту</Link></button>
+        <button className="submit-btn">Отправить заявку</button>
+        <button className="test-btn"><Link to="/testpage">Перейти к тесту</Link></button>
       </div>
       <div className="visual-section">
         <img src={Ellipse1} alt="Ellipse 1" className="ellipse ellipse1" />

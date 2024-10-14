@@ -1,11 +1,12 @@
 .home {
   font-family: 'Droid Sans', sans-serif;
   margin-top: 100px;
+  text-align: center;
 }
 
 .block {
   display: flex;
-  justify-content: center; 
+  justify-content: center;
   align-items: center;
   margin: 100px 0;
   padding: 0 50px;
@@ -27,8 +28,12 @@
   padding-right: 100px;
 }
 
+.text-block.align-left {
+  margin-left: 0px;
+}
+
 .text-block h1 {
-  font-size: 30px;
+  font-size: 35px;
   margin-bottom: 20px;
 }
 
@@ -48,18 +53,16 @@
   height: auto;
 }
 
-
 .image-block {
   position: relative; 
-  width: 50%;
+  width: 43%; 
   height: 450px; 
 }
 
-
 .image-block img:nth-child(1) {
   position: absolute;
-  top: 50px; 
-  left: 50px; 
+  top: 0px; 
+  left: 0px; 
   width: 300px;
   height: 150px;
   object-fit: cover;
@@ -67,22 +70,20 @@
   border-radius: 10px;
 }
 
-
 .image-block img:nth-child(2) {
   position: absolute;
   top: 100px;
-  left: 300px;
-  width: 200px;
-  height: 150px;
+  left: 320px;
+  width: 400px;
+  height: 200px;
   object-fit: cover;
   border: 5px solid white;
   border-radius: 10px;
 }
 
-
 .image-block img:nth-child(3) {
   position: absolute;
-  top: 50px;
+  top: 0px;
   left: 550px;
   width: 200px;
   height: 150px;
@@ -91,20 +92,33 @@
   border-radius: 10px;
 }
 
-.reverse {
-  flex-direction: row-reverse;
-}
 
 @media (max-width: 768px) {
   .block {
     flex-direction: column;
+    padding: 0 20px;
   }
+  
+  .text-block, .text-block.large {
+    width: 100%;
+    margin-bottom: 20px;
+  }
+
+  .image-block {
+    width: 100%;
+    margin: 0;
+  }
+
   .image-block img {
     position: static;
-    margin: 10px 0;
+    width: 100%;
+    margin-bottom: 10px;
+    height: auto;
   }
+
   .image-in-text {
     position: static;
     margin-top: 20px;
+    width: 100%;
   }
 }
