@@ -9,7 +9,7 @@
   flex-direction: column;
   gap: 20px;
   width: 450px;
-  margin-left: -20px;
+  margin-left: 40px;
 }
 
 select, input {

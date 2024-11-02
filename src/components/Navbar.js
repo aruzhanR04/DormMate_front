@@ -1,17 +1,26 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import '../styles/Navbar.css';
+import logo from '../assets/logo.png';
 
 const Navbar = ({ username }) => {
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+  const toggleMenu = () => {
+    setIsMenuOpen(!isMenuOpen);
+  };
+
   return (
     <nav className="navbar">
       <div className="logo">
-        <img src="../assets/logo.png" alt="Logo" />
+        <img src={logo} alt="Logo" />
       </div>
-      <ul className="nav-list">
+      <button className="menu-button" onClick={toggleMenu}>
+        ☰
+      </button>
+      <ul className={`nav-list ${isMenuOpen ? 'open' : ''}`}>
         <li className="nav-item"><Link to="/">Home</Link></li>
         <li className="nav-item"><Link to="/login">Login</Link></li>
-        {/* <li className="nav-item"><Link to="/profile">Profile</Link></li> */}
         <li className="nav-item"><Link to="/application">Подать заявку</Link></li>
       </ul>
       {/* {username && (
