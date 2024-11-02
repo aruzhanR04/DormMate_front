@@ -4,10 +4,10 @@ import '../styles/Navbar.css';
 import logo from '../assets/logo.png';
 
 const Navbar = ({ username }) => {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
 
   const toggleMenu = () => {
-    setIsMenuOpen(!isMenuOpen);
+    setMenuOpen(!menuOpen);
   };
 
   return (
@@ -15,20 +15,14 @@ const Navbar = ({ username }) => {
       <div className="logo">
         <img src={logo} alt="Logo" />
       </div>
-      <button className="menu-button" onClick={toggleMenu}>
+      <button className="menu-toggle" onClick={toggleMenu}>
         ☰
       </button>
-      <ul className={`nav-list ${isMenuOpen ? 'open' : ''}`}>
+      <ul className={`nav-list ${menuOpen ? 'open' : ''}`}>
         <li className="nav-item"><Link to="/">Home</Link></li>
         <li className="nav-item"><Link to="/login">Login</Link></li>
         <li className="nav-item"><Link to="/application">Подать заявку</Link></li>
       </ul>
-      {/* {username && (
-        <div className="user-profile">
-          <img src="../assets/user-icon.png" alt="User Icon" className="user-icon" />
-          <span className="username">{username}</span>
-        </div>
-      )} */}
     </nav>
   );
 };
