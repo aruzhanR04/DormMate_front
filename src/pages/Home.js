@@ -28,7 +28,7 @@ const Home = () => {
         </div>
       </section>
 
-      {/* <section className="block third-block">
+      <section className="block third-block">
         <div className="text-block align-left">
           <h1>Lorem ipsum</h1>
           <p>Lorem ipsum odor amet, consectetur adipiscing elit.</p>
@@ -38,7 +38,7 @@ const Home = () => {
           <img src={img_2} alt="Narxoz 5" />
           <img src={img_1} alt="Narxoz 6" />
         </div>
-      </section> */}
+      </section>
     </div>
   );
 };
