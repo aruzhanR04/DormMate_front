@@ -1,14 +1,46 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import api from '../api';
 import '../styles/Login.css';
 
 const Login = () => {
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
+  const [s, setS] = useState('');
   const [password, setPassword] = useState('');
+  const [error, setError] = useState(null);
+  const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  useEffect(() => {
+    const token = localStorage.getItem('access');
+    if (token) {
+      navigate('/profile');
+    }
+  }, [navigate]);
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Form Submitted:", { name, email, password });
+
+    try {
+      const response = await api.post('custom_token/', { s, password });
+
+      if (response.status === 200) {
+        const { access, refresh } = response.data;
+        localStorage.setItem('access', access);
+        localStorage.setItem('refresh', refresh);
+
+        // Получаем тип пользователя
+        const userTypeResponse = await api.get('usertype/');
+        const { user_type } = userTypeResponse.data;
+        
+        // Сохраняем тип пользователя
+        localStorage.setItem('isAdmin', user_type === 'admin');
+        
+        // Редирект на профиль или админ панель
+        navigate(user_type === 'admin' ? '/admin' : '/profile');
+      }
+    } catch (err) {
+      const errorData = err.response?.data || {};
+      setError(errorData.detail || 'Ошибка авторизации');
+    }
   };
 
   return (
@@ -16,14 +48,24 @@ const Login = () => {
       <div className="login-left">
         <h1>NARXOZ UNIVERSITY</h1>
         <p>Dorm Mate</p>
-        <button className="login-btn" onClick={handleSubmit}>Sign in</button>
       </div>
       <div className="login-right">
         <form onSubmit={handleSubmit}>
           <h2 className="login-header">Login</h2>
-          <input type="text" placeholder="Name" value={name} onChange={(e) => setName(e.target.value)} />
-          <input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} />
-          <input type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} />
+          {error && <p style={{ color: 'red' }}>{error}</p>}
+          <input
+            type="text"
+            placeholder="User ID (s)"
+            value={s}
+            onChange={(e) => setS(e.target.value)}
+          />
+          <input
+            type="password"
+            placeholder="Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
+          <button type="submit" className="login-btn">Login</button>
         </form>
       </div>
     </div>

@@ -1,0 +1,21 @@
+/* ChatIcon.css */
+.chat-icon-container {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background-color: #007AFF;
+    border-radius: 50%;
+    padding: 12px;
+    cursor: pointer;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    transition: transform 0.3s ease;
+}
+
+.chat-icon-container:hover {
+    transform: scale(1.1);
+}
+
+.chat-icon {
+    color: #fff;
+    font-size: 24px;
+}
