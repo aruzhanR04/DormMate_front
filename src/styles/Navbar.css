@@ -31,7 +31,7 @@
 }
 
 .nav-item a:hover {
-  background-color: #f0f0f0;
+  background-color: #f0f0f0; 
 }
 
 .menu-toggle {
@@ -41,6 +41,11 @@
   border: none;
   cursor: pointer;
   color: red;
+
+}
+
+.menu-toggle:hover {
+  background-color: #f0f0f0;
 }
 
 @media (max-width: 768px) {

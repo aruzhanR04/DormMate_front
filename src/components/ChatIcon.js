@@ -1,6 +1,5 @@
-// components/ChatIcon.js
 import React from 'react';
-import { FiMessageCircle } from 'react-icons/fi'; // Используем библиотеку иконок, если установлена
+import { FiMessageCircle } from 'react-icons/fi';
 import '../styles/ChatIcon.css';
 
 const ChatIcon = ({ isChatOpen, toggleChat }) => (
