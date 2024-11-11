@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import '../styles/styles.css';
 
 const DormList = () => {
     const [dorms, setDorms] = useState([]);
@@ -11,7 +12,7 @@ const DormList = () => {
     }, []);
 
     return (
-        <div>
+        <div className="style">
             <h2>Dormitory List</h2>
             <ul>
                 {dorms.map(dorm => (

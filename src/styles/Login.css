@@ -1,6 +1,7 @@
 .login-container {
   display: flex;
   height: 100vh;
+  font-family: 'Droid Sans', sans-serif;
 }
 
 .login-left {
@@ -15,21 +16,21 @@
 }
 
 .login-left h1 {
-  font-size: 28px;
+  font-size: 36px;
   margin-bottom: 5px;
   text-align: center;
 }
 
 .login-left p {
-  font-size: 20px;
+  font-size: 26px;
   text-align: center;
 }
 
 .login-btn {
   background-color: transparent;
-  color: white;
+  color: #BF1F1F;
   padding: 12px 24px;
-  border: 2px solid white;
+  border: 2px solid #BF1F1F;
   border-radius: 25px;
   cursor: pointer;
   transition: background-color 0.3s ease, color 0.3s ease;
@@ -59,7 +60,7 @@ form {
 }
 
 .login-header {
-  font-size: 24px;
+  font-size: 28px;
   color: #BF1F1F;
   margin-bottom: 20px;
 }

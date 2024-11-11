@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import '../styles/styles.css';
 
 const StudentList = () => {
     const [students, setStudents] = useState([]);
@@ -11,7 +12,7 @@ const StudentList = () => {
     }, []);
 
     return (
-        <div>
+        <div className="style">
             <h2>Student List</h2>
             <ul>
                 {students.map(student => (

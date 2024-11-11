@@ -11,6 +11,7 @@
     max-height: 400px;
     overflow: hidden;
     z-index: 1000;
+    font-family: 'Droid Sans', sans-serif;
 }
 
 .chat-box {
@@ -59,15 +60,15 @@ button {
     padding: 10px 20px;
     font-size: 16px;
     color: #fff;
-    background-color: #007AFF;
+    background-color: #3083DC;
     border: none;
-    border-radius: 8px;
+    border-radius: 20px;
     cursor: pointer;
     transition: background-color 0.3s;
 }
 
 button:hover {
-    background-color: #005bb5;
+    background-color: #216EC0;
 }
 
 button:disabled {

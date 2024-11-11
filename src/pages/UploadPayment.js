@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
+import '../styles/styles.css';
 
 const UploadPayment = ({ studentId }) => {
     const [screenshot, setScreenshot] = useState(null);
@@ -21,7 +22,7 @@ const UploadPayment = ({ studentId }) => {
     };
 
     return (
-        <div>
+        <div className="style">
             <h2>Upload Payment Screenshot</h2>
             <form onSubmit={handleSubmit}>
                 <input type="file" onChange={handleFileChange} />

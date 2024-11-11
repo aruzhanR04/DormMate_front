@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import api from '../api';
+import '../styles/styles.css';
 
 const ApplicationStatus = () => {
     const [status, setStatus] = useState('');
@@ -48,7 +49,7 @@ const ApplicationStatus = () => {
     };
 
     return (
-        <div>
+        <div className='style'>
             <h2>Статус Заявки</h2>
             
             {error && <p style={{ color: 'red' }}>{error}</p>}

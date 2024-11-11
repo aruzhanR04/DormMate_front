@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import api from '../api';
+import '../styles/styles.css';
 
 const TestSubmission = () => {
     const [testAnswers, setTestAnswers] = useState('');
@@ -28,7 +29,7 @@ const TestSubmission = () => {
     };
 
     return (
-        <div>
+        <div className="style">
             <h2>Submit Test Answers</h2>
             <form onSubmit={handleSubmit}>
                 <textarea 
