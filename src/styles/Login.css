@@ -4,7 +4,7 @@
 }
 
 .login-left {
-  background-color: #D32F2F;
+  background-color: #BF1F1F;
   color: white;
   width: 50%;
   display: flex;
@@ -38,7 +38,7 @@
 
 .login-btn:hover {
   background-color: white;
-  color: #D32F2F;
+  color: #BF1F1F;
 }
 
 .login-right {
@@ -60,7 +60,7 @@ form {
 
 .login-header {
   font-size: 24px;
-  color: #D32F2F;
+  color: #BF1F1F;
   margin-bottom: 20px;
 }
 
@@ -96,7 +96,7 @@ form input {
     content: 'Sign in';
     display: block;
     text-align: center;
-    background-color: #D32F2F;
+    background-color: #BF1F1F;
     color: white;
     padding: 12px 24px;
     margin-top: 20px;

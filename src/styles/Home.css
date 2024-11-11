@@ -14,18 +14,21 @@
 }
 
 .text-block {
-  background-color: #D32F2F;
+  background-color: #BF1F1F;
   color: white;
   padding: 70px;
   width: 300px;
   height: 300px; 
   position: relative;
+  border-radius: 10px;
+  z-index: 1;
 }
 
 .text-block.large {
   width: 60%; 
   height: 300px; 
   padding-right: 100px;
+  border-radius: 10px;
 }
 
 .text-block.align-left {
@@ -61,44 +64,90 @@
   position: relative; 
   width: 43%; 
   height: 450px; 
+  z-index: 2;
 }
 
-.image-block img:nth-child(1) {
+.second-block .image-block img:nth-child(1) {
   position: absolute;
-  top: -20px; 
-  left: -40px; 
-  width: 300px;
-  height: 150px;
+  top: -10px; 
+  left: -80px; 
+  width: 280px;
+  height: 140px;
   object-fit: cover;
   border: 5px solid white;
   border-radius: 10px;
+  z-index: 4;
 }
 
-.image-block img:nth-child(2) {
+.second-block .image-block img:nth-child(2) {
   position: absolute;
-  top: 100px;
-  left: 120px;
+  top: 90px;
+  left: -10px;
+  width: 542px;
+  height: 282px;
+  object-fit: cover;
+  border: 5px solid white;
+  border-radius: 10px;
+  z-index: 3;
+}
+
+.second-block .image-block img:nth-child(3) {
+  position: absolute;
+  top:15px;
+  left: 440px;
+  width: 320px;
+  height: 160px;
+  object-fit: cover;
+  border: 5px solid white;
+  border-radius: 10px;
+  z-index: 2;
+}
+
+
+.third-block {
+  position: relative;
+}
+
+
+.third-block .image-block img:nth-child(1) {
+  position: absolute;
+  top: 100px; 
+  left: 100px; 
+  width: 350px;
+  height: 180px;
+  object-fit: cover;
+  border: 5px solid white;
+  border-radius: 10px;
+  z-index: 2;
+}
+
+.third-block .image-block img:nth-child(2) {
+  position: absolute;
+  top: -40px;
+  left: 370px;
   width: 400px;
   height: 200px;
   object-fit: cover;
   border: 5px solid white;
   border-radius: 10px;
+  z-index: 3;
 }
 
-.image-block img:nth-child(3) {
+.third-block .image-block img:nth-child(3) {
   position: absolute;
-  top: 0px;
+  top: 200px;
   left: 350px;
-  width: 200px;
-  height: 150px;
+  width: 310px;
+  height: 160px;
   object-fit: cover;
   border: 5px solid white;
   border-radius: 10px;
+  z-index: 1;
 }
 
-.third-block .image-block {
+/* .third-block .image-block {
   order: 1;
-}
+} */
 
 .third-block .text-block {
   order: 2;
@@ -115,6 +164,7 @@
     width: 100%;
     padding: 30px;
     margin-bottom: 20px;
+    border-radius: 10px;
   }
 
   .text-block.large {

@@ -3,7 +3,7 @@
     flex-direction: column;
     align-items: center;
     padding: 20px;
-    font-family: Arial, sans-serif;
+    font-family: 'Droid Sans', sans-serif;
   }
   
   .progress-indicator {
@@ -50,7 +50,7 @@
   }
   
   .back-btn, .next-btn {
-    background-color: #D32F2F;
+    background-color: #BF1F1F;
     color: white;
     border: none;
     padding: 10px 20px;
@@ -64,7 +64,7 @@
   }
   
   .next-btn {
-    background-color: #D32F2F;
+    background-color: #BF1F1F;
   }
   
   @media (max-width: 600px) {

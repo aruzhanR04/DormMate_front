@@ -20,7 +20,7 @@ select, input {
 }
 
 .submit-btn, .test-btn {
-  background-color: #D32F2F;
+  background-color: #BF1F1F;
   color: white;
   padding: 12px 24px;
   border: none;
@@ -31,7 +31,7 @@ select, input {
 }
 
 .submit-btn:hover, .test-btn:hover {
-  background-color: #C62828;
+  background-color: #BF1F1F;
 }
 
 .test-btn {
