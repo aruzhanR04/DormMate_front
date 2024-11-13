@@ -27,14 +27,11 @@ const Login = () => {
         localStorage.setItem('access', access);
         localStorage.setItem('refresh', refresh);
 
-        // Получаем тип пользователя
         const userTypeResponse = await api.get('usertype/');
         const { user_type } = userTypeResponse.data;
         
-        // Сохраняем тип пользователя
         localStorage.setItem('isAdmin', user_type === 'admin');
         
-        // Редирект на профиль или админ панель
         navigate(user_type === 'admin' ? '/admin' : '/profile');
       }
     } catch (err) {

@@ -12,7 +12,11 @@ const UserDashboard = () => {
     const [paymentScreenshot, setPaymentScreenshot] = useState(null);
     const [uploadMessage, setUploadMessage] = useState('');
 
-    // Fetch profile information
+    const [oldPassword, setOldPassword] = useState('');
+    const [newPassword, setNewPassword] = useState('');
+    const [confirmPassword, setConfirmPassword] = useState('');
+    const [passwordMessage, setPasswordMessage] = useState('');
+
     useEffect(() => {
         const fetchProfile = async () => {
             try {
@@ -27,7 +31,6 @@ const UserDashboard = () => {
         fetchProfile();
     }, []);
 
-    // Fetch application status
     useEffect(() => {
         const fetchApplicationStatus = async () => {
             try {
@@ -65,6 +68,35 @@ const UserDashboard = () => {
         }
     };
 
+    const handleChangePassword = async () => {
+        setPasswordMessage(''); // Clear any previous messages
+    
+        if (!oldPassword || !newPassword || !confirmPassword) {
+            setPasswordMessage('Пожалуйста, заполните все поля.');
+            return;
+        }
+    
+        if (newPassword !== confirmPassword) {
+            setPasswordMessage('Новый пароль и подтверждение пароля не совпадают.');
+            return;
+        }
+    
+        try {
+            const response = await api.post('/change_password/', {
+                old_password: oldPassword,
+                new_password: newPassword,
+                confirm_password: confirmPassword,
+            });
+            setPasswordMessage(response.data.message || 'Пароль успешно изменен.');
+        } catch (err) {
+            console.error("Full error response:", err.response); // Log full error details
+            setPasswordMessage(
+                err.response?.data?.error || 'Ошибка при изменении пароля. Пожалуйста, попробуйте снова.'
+            );
+        }
+    };
+    
+
     return (
         <div className="dashboard-container">
             <div className="profile-section">
@@ -96,12 +128,6 @@ const UserDashboard = () => {
                                 <span className="label">Телефон:</span>
                                 <span className="value">{profile.phone}</span>
                             </div>
-                            {/* <div className="profile-field">
-                                <span className="label">Аватар:</span>
-                                <span className="value">
-                                    {profile.avatar ? <img src={profile.avatar} alt="Аватар" className="avatar-image" /> : 'Нет изображения'}
-                                </span>
-                            </div> */}
                         </div>
                     )
                 )}
@@ -111,7 +137,7 @@ const UserDashboard = () => {
                 <h2>Статус Заявки</h2>
                 {statusError && <p className="error">{statusError}</p>}
                 {status && <p className="status">{status}</p>}
-                
+
                 {status === 'Заявка одобрена, внесите оплату и прикрепите скрин.' && (
                     <div className="upload-section">
                         <h3>Загрузите скриншот оплаты</h3>
@@ -120,6 +146,33 @@ const UserDashboard = () => {
                         {uploadMessage && <p className="upload-message">{uploadMessage}</p>}
                     </div>
                 )}
+            </div>
+
+            <div className="change-password-section">
+                <h2>Изменить Пароль</h2>
+                <input
+                    type="password"
+                    placeholder="Старый пароль"
+                    value={oldPassword}
+                    onChange={(e) => setOldPassword(e.target.value)}
+                    className="password-input"
+                />
+                <input
+                    type="password"
+                    placeholder="Новый пароль"
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    className="password-input"
+                />
+                <input
+                    type="password"
+                    placeholder="Подтвердите новый пароль"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    className="password-input"
+                />
+                <button onClick={handleChangePassword} className="change-password-button">Изменить Пароль</button>
+                {passwordMessage && <p className="password-message">{passwordMessage}</p>}
             </div>
         </div>
     );

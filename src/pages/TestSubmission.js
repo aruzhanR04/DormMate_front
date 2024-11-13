@@ -10,7 +10,6 @@ const TestSubmission = () => {
     const handleSubmit = (event) => {
         event.preventDefault();
 
-        // Преобразуем ввод из текстовой области в массив строк, разделённых запятыми
         const answersArray = testAnswers.split(',').map(answer => answer.trim());
 
         api.post('test/', { test_answers: answersArray })

@@ -7,7 +7,7 @@ const WebAssistant = () => {
     const [userInput, setUserInput] = useState('');
     const [error, setError] = useState(null);
     const [isChatEnded, setIsChatEnded] = useState(false);
-    const [frequentQuestions, setFrequentQuestions] = useState([]); // Часто задаваемые вопросы
+    const [frequentQuestions, setFrequentQuestions] = useState([]); 
     
     const fetchFrequentQuestions = async () => {
         try {
@@ -35,27 +35,22 @@ const WebAssistant = () => {
     const handleSendMessage = async () => {
         if (!userInput.trim()) return;
 
-        // Добавляем сообщение пользователя в чат
         setMessages(prevMessages => [...prevMessages, { type: 'user', text: userInput }]);
 
         let assistantReply = '';
 
-        // Реакция на приветственные фразы
         if (/привет|здравствуйте|добрый день/i.test(userInput)) {
             assistantReply = 'Здравствуйте! Чем могу помочь? Вот несколько часто задаваемых вопросов:';
         } 
-        // Реакция на прощальные фразы
         else if (/пока|до свидания/i.test(userInput)) {
             assistantReply = 'До свидания! Рад был помочь.';
             setIsChatEnded(true);
         } 
-        // Реакция на «Спасибо»
         else if (/спасибо/i.test(userInput)) {
             assistantReply = 'Пожалуйста! Был ли ответ полезен?';
             setIsChatEnded(true);
         } else {
             try {
-                // Выполняем запрос для поиска ответа по тексту вопроса
                 const response = await axios.get(`http://127.0.0.1:8000/api/v1/web_assistant/questions/?search=${encodeURIComponent(userInput)}`);
                 
                 if (response.data.length > 0) {
@@ -70,10 +65,8 @@ const WebAssistant = () => {
             }
         }
 
-        // Добавляем ответ помощника в чат
         setMessages(prevMessages => [...prevMessages, { type: 'assistant', text: assistantReply }]);
 
-        // Если чат завершен или вопрос не найден, предлагаем завершить или перезапустить
         if (isChatEnded || assistantReply.includes('Пожалуйста, обратитесь к нашему менеджеру')) {
             setTimeout(() => {
                 setMessages(prevMessages => [
@@ -84,17 +77,14 @@ const WebAssistant = () => {
             }, 1000);
         }
 
-        // Очищаем поле ввода
         setUserInput('');
     };
 
-    // Функция для отправки частого вопроса
     const handleFrequentQuestionClick = async (question) => {
         setUserInput(question);
         await handleSendMessage();
     };
 
-    // Функция для перезапуска чата
     const restartChat = () => {
         setMessages([{ type: 'assistant', text: 'Здравствуйте! Чем могу помочь?' }]);
         setIsChatEnded(false);
@@ -111,7 +101,7 @@ const WebAssistant = () => {
                         {message.text}
                     </div>
                 ))}
-                {/* Показ частых вопросов после приветствия */}
+                
                 {messages.length === 1 && frequentQuestions.length > 0 && (
                     <div className="frequent-questions">
                         <h4>Часто задаваемые вопросы:</h4>
@@ -129,7 +119,6 @@ const WebAssistant = () => {
             </div>
             {error && <p style={{ color: 'red' }}>{error}</p>}
             
-            {/* Если чат завершен, показываем кнопки для перезапуска или завершения */}
             {isChatEnded ? (
                 <div className="chat-end-options">
                     <button onClick={restartChat}>Продолжить чат</button>

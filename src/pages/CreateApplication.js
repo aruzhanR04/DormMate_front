@@ -17,7 +17,7 @@ const ApplicationPage = () => {
   const [dormitories, setDormitories] = useState([]);
   const [selectedDormPrice, setSelectedDormPrice] = useState('');
   const [errorMessage, setErrorMessage] = useState(null);
-  const navigate = useNavigate(); // Навигация для редиректа после успешного создания заявки
+  const navigate = useNavigate(); 
 
   useEffect(() => {
     const fetchStudentData = async () => {
@@ -37,7 +37,7 @@ const ApplicationPage = () => {
 
     const fetchDormitories = async () => {
       try {
-        const response = await api.get('http://127.0.0.1:8000/api/v1/dormlist'); // Полный URL для списка общежитий
+        const response = await api.get('http://127.0.0.1:8000/api/v1/dormlist'); 
         console.log("Общежития:", response.data);
         setDormitories(response.data);
       } catch (error) {
@@ -71,7 +71,7 @@ const ApplicationPage = () => {
 
       if (response.status === 201) {
         alert(`Заявка успешно создана! ID заявки: ${response.data.application_id}`);
-        navigate('/testpage'); // Переход на страницу теста после успешного создания заявки
+        navigate('/testpage'); 
       } else {
         setErrorMessage(`Ошибка: ${response.data.message || 'Не удалось создать заявку'}`);
       }

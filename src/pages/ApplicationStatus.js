@@ -15,7 +15,7 @@ const ApplicationStatus = () => {
                 setStatus(response.data.status || 'Неизвестный статус');
             } catch (err) {
                 console.error('Error fetching application status:', err);
-                setError('Ошибка при получении статуса заявки. Пожалуйста, попробуйте снова.');
+                setError('Вы не подавали заявку на студенческий дом');
             }
         };
 

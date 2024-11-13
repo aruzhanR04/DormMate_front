@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom'; // Используем для перенаправления
+import { useNavigate } from 'react-router-dom'; 
 import '../styles/TestPage.css';
 import api from '../api';
 
@@ -9,10 +9,9 @@ const TestPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [testResult, setTestResult] = useState(null);
-  const [thankYouMessage, setThankYouMessage] = useState(false); // Для отображения сообщения благодарности
-  const navigate = useNavigate(); // Для перенаправления
+  const [thankYouMessage, setThankYouMessage] = useState(false); 
+  const navigate = useNavigate(); 
 
-  // Функция для получения списка вопросов с сервера
   const fetchQuestions = async () => {
     setLoading(true);
     try {
@@ -25,7 +24,7 @@ const TestPage = () => {
           q.answer_variant_b,
           q.answer_variant_c,
           q.answer_variant_d,
-        ].filter(Boolean)  // Удаляем пустые варианты ответов
+        ].filter(Boolean)  
       }));
       setQuestions(formattedQuestions);
     } catch (err) {
@@ -35,12 +34,10 @@ const TestPage = () => {
     }
   };
 
-  // Загружаем вопросы при монтировании компонента
   useEffect(() => {
     fetchQuestions();
   }, []);
 
-  // Функция для перехода к следующему вопросу или отправки результатов
   const handleNext = () => {
     if (currentQuestionIndex < questions.length - 1) {
       setCurrentQuestionIndex(currentQuestionIndex + 1);
@@ -49,13 +46,10 @@ const TestPage = () => {
     }
   };
 
-  // Функция для отправки ответов на сервер
   const submitTest = async () => {
-    // Собираем ответы в виде массива строк
     const testAnswers = questions.map(q => q.selectedAnswer || "");
-    console.log("Test answers:", testAnswers); // Проверка формата данных
+    console.log("Test answers:", testAnswers); 
 
-    // Проверка, чтобы все вопросы были отвечены
     if (testAnswers.includes("")) {
       alert("Пожалуйста, ответьте на все вопросы.");
       return;
@@ -65,10 +59,8 @@ const TestPage = () => {
       const response = await api.post('test/', { test_answers: testAnswers });
       setTestResult(response.data.result_letter);
 
-      // Отображаем сообщение благодарности
       setThankYouMessage(true);
 
-      // Через 3 секунды перенаправляем пользователя на страницу статуса заявки
       setTimeout(() => {
         navigate('/application-status');
       }, 3000);
@@ -82,7 +74,6 @@ const TestPage = () => {
     }
   };
 
-  // Рендеринг
   if (loading) return <div>Загрузка вопросов...</div>;
   if (error) return <div style={{ color: 'red' }}>Ошибка: {error}</div>;
   if (thankYouMessage) return <div>Спасибо! Вы будете перенаправлены на страницу статуса заявки...</div>;
