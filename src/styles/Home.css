@@ -1,7 +1,23 @@
+/* цвета:  #C32939 #BF2A45 #D43741 #222222 */
+
 .home {
-  font-family: 'Droid Sans', sans-serif;
+  font-family: "figtree", sans-serif;
   margin-top: 100px;
   text-align: center;
+}
+
+.first-block {
+  position: relative;
+  height: 600 px;
+  /* overflow: hidden; */
+}
+
+.first-block img {
+  width: 1156 px;
+  height: 581 px;
+  object-fit: cover; 
+  border-radius: 30px;
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
 }
 
 .block {
@@ -14,7 +30,7 @@
 }
 
 .text-block {
-  background-color: #BF1F1F;
+  background-color: #C32939;
   color: white;
   padding: 70px;
   width: 300px;

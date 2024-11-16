@@ -17,6 +17,7 @@ import AdminRoute from './components/AdminRoute';
 import AdminPanel from './components/AdminPanel';
 import Logout from './components/Logout';
 import ChatIcon from './components/ChatIcon';
+import DormDetails from './pages/DormDetails';
 import api from './api';
 
 function App() {
@@ -100,6 +101,14 @@ function App() {
                         element={
                             <PrivateRoute isAuthenticated={isAuthenticated}>
                                 <DormList />
+                            </PrivateRoute>
+                        }
+                    />
+                    <Route
+                        path="/dormitories/:id"
+                        element={
+                            <PrivateRoute isAuthenticated={isAuthenticated}>
+                                <DormDetails />
                             </PrivateRoute>
                         }
                     />

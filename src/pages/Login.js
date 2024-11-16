@@ -42,10 +42,10 @@ const Login = () => {
 
   return (
     <div className="login-container">
-      <div className="login-left">
+      {/* <div className="login-left">
         <h1>NARXOZ UNIVERSITY</h1>
         <p>Dorm Mate</p>
-      </div>
+      </div> */}
       <div className="login-right">
         <form onSubmit={handleSubmit}>
           <h2 className="login-header">Login</h2>
@@ -62,7 +62,7 @@ const Login = () => {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
           />
-          <button type="submit" className="login-btn">Login</button>
+          <button type="submit" className="login-btn">Войти</button>
         </form>
       </div>
     </div>

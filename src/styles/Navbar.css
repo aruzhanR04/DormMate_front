@@ -1,5 +1,5 @@
 .navbar {
-  font-family: 'Droid Sans', sans-serif;
+  font-family: "figtree", sans-serif;
   background-color: white;
   padding: 10px 20px;
   display: flex;
@@ -22,7 +22,7 @@
 }
 
 .nav-item a {
-  color: red;
+  color: #BF2A45;
   text-decoration: none;
   font-weight: bold;
   padding: 10px 15px;
@@ -40,7 +40,7 @@
   background: none;
   border: none;
   cursor: pointer;
-  color: red;
+  color: #BF2A45;
 
 }
 
