@@ -23,8 +23,8 @@ const UploadPayment = ({ studentId }) => {
 
     return (
         <div className="style">
-            <h2>Upload Payment Screenshot</h2>
             <form onSubmit={handleSubmit}>
+                <h2>Upload Payment Screenshot</h2>
                 <input type="file" onChange={handleFileChange} />
                 <button type="submit">Upload</button>
             </form>
