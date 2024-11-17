@@ -93,6 +93,7 @@ const WebAssistant = () => {
     };
 
     return (
+        <div className="web-assistant">
         <div className="chat-container">
             <h2>Веб-помощник</h2>
             <div className="chat-box">
@@ -136,6 +137,7 @@ const WebAssistant = () => {
                     <button onClick={handleSendMessage}>Отправить</button>
                 </div>
             )}
+        </div>
         </div>
     );
 };

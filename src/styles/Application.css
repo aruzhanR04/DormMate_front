@@ -51,7 +51,7 @@ select:focus, input:focus {
   font-weight: bold;
   cursor: pointer;
   transition: background-color 0.3s ease, transform 0.2s ease;
-  width: calc(100% - 20px); /* Оставляем отступы внутри формы */
+  width: calc(100% - 20px);
   margin: 0 auto;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }

@@ -1,10 +1,10 @@
-.chat-icon-container {
+.chat-icon-container { 
     position: fixed;
     bottom: 20px;
     right: 20px;
     width: 50px;
     height: 50px;
-    background-color: #BF2A45 !important;
+    background-color: #BF2A45;
     border-radius: 50%;
     display: flex;
     align-items: center;
@@ -13,6 +13,7 @@
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
     z-index: 1001;
     transition: transform 0.3s ease;
+    animation: blink-animation 1.5s infinite ease-in-out;
 }
 
 .chat-icon-container:hover {
@@ -20,22 +21,24 @@
 }
 
 .chat-icon {
-    color: #ffffff !important;
+    color: #ffffff;
     font-size: 24px;
 }
 
-@media (max-width: 768px) {
-    .chat-container {
-        bottom: 70px;
-        right: 10px;
-        left: 10px;
-        max-width: calc(100% - 20px);
-        padding: 15px;
-        border-radius: 12px 12px 0 0;
-        max-height: 60vh;
-        overflow-y: auto;
-    }
 
+@keyframes blink-animation {
+    0%, 100% {
+        transform: scale(1);
+        box-shadow: 0 0 10px rgba(191, 42, 69, 0.5);
+    }
+    50% {
+        transform: scale(1.1);
+        box-shadow: 0 0 20px rgba(191, 42, 69, 0.7);
+    }
+}
+
+
+@media (max-width: 768px) {
     .chat-icon-container {
         width: 40px;
         height: 40px;
@@ -45,16 +48,6 @@
 }
 
 @media (max-width: 480px) {
-    .chat-container {
-        bottom: 60px;
-        padding: 10px;
-        left: 5px;
-        right: 5px;
-        max-width: calc(100% - 10px);
-        max-height: 50vh;
-        border-radius: 0;
-    }
-
     .chat-icon-container {
         width: 35px;
         height: 35px;
