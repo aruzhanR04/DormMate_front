@@ -1,38 +1,64 @@
 .application-page {
+  font-family: 'Figtree', sans-serif;
   display: flex;
   justify-content: space-between;
+  height: 100vh;
+  align-items: flex-start;
   padding: 50px 100px;
-  font-family: 'Droid Sans', sans-serif;
+  background: linear-gradient(360deg, #BF1F1F, 10%, #EFEFEF);
+  min-height: 100vh;
+  box-sizing: border-box;
+  overflow-y: auto;
+  position: relative;
 }
 
 .form-section {
   display: flex;
   flex-direction: column;
   gap: 20px;
-  width: 450px;
-  margin-left: 40px;
+  flex: 1;
+  max-width: 450px;
+  margin-top: 90px;
+  margin-left: 50px;
+  margin-right: 50px;
+  padding: 30px;
+  background: #fff;
+  border-radius: 20px;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
 }
 
 select, input {
-  padding: 12px;
-  border: 2px solid #ccc;
-  border-radius: 10px;
+  padding: 15px;
+  border: 2px solid #ddd;
+  border-radius: 12px;
+  width: 95%;
   font-size: 16px;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+select:focus, input:focus {
+  border-color: #BF1F1F;
+  box-shadow: 0 0 8px rgba(191, 31, 31, 0.3);
+  outline: none;
 }
 
 .submit-btn, .test-btn {
-  background-color: #BF1F1F;
-  color: white;
-  padding: 12px 24px;
+  background: #C32939;
+  color: #fff;
+  padding: 14px 30px;
   border: none;
   border-radius: 30px;
   font-weight: bold;
   cursor: pointer;
-  transition: background-color 0.3s ease;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+  width: calc(100% - 20px); /* Оставляем отступы внутри формы */
+  margin: 0 auto;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
 .submit-btn:hover, .test-btn:hover {
-  background-color: #BF1F1F;
+  background: #8C1E2E;
+  transform: scale(1.05);
 }
 
 .test-btn {
@@ -42,77 +68,68 @@ select, input {
 .visual-section {
   position: relative;
   flex: 1;
-}
-
-.ellipse {
-  position: absolute;
-  transition: all 0.3s ease-in-out;
-}
-
-.ellipse1 {
-  top: 0;
-  left: 30%;
-  width: 70%;
-}
-
-.ellipse2 {
-  top: 0;
-  left: 50%;
-  width: 70%;
-}
-
-.ellipse3 {
-  top: 0;
-  left: 70%;
-  width: 70%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .img_11 {
-  position: absolute;
-  top: 150px;
-  left: 45%;
-  width: 600px;
-  z-index: 10; 
-  transition: all 0.3s ease-in-out; 
+  max-width: 80%;
+  height: auto;
+  position: relative;
+  top: 55px;
+  left: 0;
+  margin: auto;
+  z-index: 10;
+  transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
+  opacity: 1;
 }
+
 
 @media (max-width: 1024px) {
   .application-page {
-    padding: 30px 50px;
+    flex-wrap: wrap;
+    padding: 30px 20px;
   }
 
   .form-section {
-    width: 100%;
-    margin: 0;
-  }
-
-  .img_11 {
-    width: 300px;
-  }
-}
-
-@media (max-width: 768px) {
-  .application-page {
-    flex-direction: column;
-    padding: 20px;
-  }
-
-  .form-section {
-    width: 100%;
-    margin: 0;
-  }
-
-  .img_11 {
-    width: 100%;
-  }
-
-  .ellipse {
     width: 100%; 
+    margin: 10px auto;
   }
+
 
   .visual-section {
     display: none;
   }
+
+  /* .visual-section {
+    flex: none;
+    width: 100%;
+    margin: 10px auto;
+  }
+
+  .img_11 {
+    max-width: 80%;
+  } */
+}
+
+@media (max-width: 768px) {
+  .application-page {
+    padding: 20px;
+  }
+
+  .form-section {
+    padding: 20px;
+    width: 100%;
+  }
+
+  /* .visual-section {
+    margin: 20px auto;
+  }
+
+  .img_11 {
+    max-width: 70%;
+  } */
 }
 
 @media (max-width: 480px) {
@@ -120,7 +137,25 @@ select, input {
     padding: 10px;
   }
 
-  .submit-btn, .test-btn {
-    padding: 10px 20px;
+  .form-section {
+    padding: 15px;
+    margin: 10px 0;
   }
-}  
+
+  /* .visual-section {
+    margin: 10px auto;
+  }
+
+  .img_11 {
+    max-width: 100%;
+  } */
+
+  select, input {
+    font-size: 14px;
+    padding: 12px;
+  }
+
+  .submit-btn, .test-btn {
+    padding: 12px;
+  }
+}

@@ -29,8 +29,8 @@ const TestSubmission = () => {
 
     return (
         <div className="style">
-            <h2>Submit Test Answers</h2>
             <form onSubmit={handleSubmit}>
+                <h2>Submit Test Answers</h2>
                 <textarea 
                     value={testAnswers} 
                     onChange={(e) => setTestAnswers(e.target.value)} 

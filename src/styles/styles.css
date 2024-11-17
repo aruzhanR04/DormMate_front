@@ -3,15 +3,19 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 30vh;
+    height: 100vh;
     text-align: center;
     flex-direction: column;
+    background: linear-gradient(135deg, #EFEFEF, #BF1F1F);
+    padding: 20px;
+    box-sizing: border-box;
 }
 
 .style h2 {
-    font-size: 24px;
+    font-size: 28px;
     color: #333;
     margin-bottom: 20px;
+    font-weight: bold;
 }
 
 .style form {
@@ -19,79 +23,111 @@
     flex-direction: column;
     align-items: center;
     width: 100%;
-    max-width: 400px;
+    max-width: 450px;
+    background: #fff;
+    padding: 30px;
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    box-sizing: border-box;
 }
 
 .style input[type="file"], 
 .style input, 
 .style textarea {
     margin-bottom: 20px;
-    padding: 10px;
-    border: 2px solid #3083DC;
+    padding: 12px 15px;
+    border: 2px solid #BF1F1F;
     border-radius: 15px;
     font-size: 16px;
-    color: #555;
+    color: #333;
     width: 100%;
-    max-width: 300px;
-    transition: border-color 0.3s, box-shadow 0.3s;
-    text-align: center;
-    background-color: #D6EEFF;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    max-width: 100%;
+    background: #fce4e4;
+    transition: border-color 0.3s, box-shadow 0.3s, background-color 0.3s;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
-.style input[type="file"]:hover, 
-.style input:hover, 
-.style textarea:hover {
-    border-color: #3083DC;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+.style input[type="file"] {
+    padding: 8px;
+    text-align: center;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.style input[type="file"]:hover {
+    border-color: #BF1F1F;
+    background-color: #ffe6e6;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.style input[type="file"]::-webkit-file-upload-button {
+    background: #BF1F1F;
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    padding: 8px 16px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+}
+
+.style input[type="file"]::-webkit-file-upload-button:hover {
+    background: #A11D2E;
 }
 
 .style textarea {
     resize: vertical;
-    height: 100px;
+    height: 120px;
 }
+
 .style button {
-    padding: 10px 20px;
-    font-size: 16px;
+    padding: 12px 25px;
+    font-size: 18px;
     color: #fff;
-    background-color: #3083DC;
+    background: #BF1F1F;
     border: none;
-    border-radius: 20px;
+    border-radius: 25px;
     cursor: pointer;
-    transition: background-color 0.3s;
+    transition: background 0.3s, transform 0.2s;
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
 }
 
 .style button:hover {
-    background-color: #216EC0;
+    background: #A11D2E;
+    transform: translateY(-2px);
 }
 
 .style p {
     font-size: 16px;
-    color: #333;
+    color: #2C3E50;
+    margin-top: 10px;
 }
 
 .style p.error {
-    color: red;
+    color: #E74C3C;
 }
 
 @media (max-width: 600px) {
     .style h2 {
-        font-size: 20px;
+        font-size: 22px;
         margin-bottom: 15px;
     }
 
     .style input[type="file"], .style input, .style textarea {
-        padding: 6px;
+        padding: 10px;
         font-size: 14px;
-        max-width: 100%;
     }
 
     .style button {
-        padding: 8px 16px;
-        font-size: 14px;
+        padding: 10px 20px;
+        font-size: 16px;
     }
 
     .style p {
         font-size: 14px;
+    }
+
+    .style form {
+        padding: 20px;
     }
 }
