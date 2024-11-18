@@ -3,9 +3,6 @@ import { Link, useNavigate } from 'react-router-dom';
 import api from '../api';
 import '../styles/Application.css';
 import img_11 from '../assets/img_11.svg';
-import Ellipse1 from '../assets/Ellipse1.svg';
-import Ellipse2 from '../assets/Ellipse2.svg';
-import Ellipse3 from '../assets/Ellipse3.svg';
 
 
 const ApplicationPage = () => {
@@ -181,10 +178,17 @@ const ApplicationPage = () => {
             </label>
           </div>
         )}
+<<<<<<< HEAD
 
         <button className="submit-btn" onClick={handleApplicationAndRedirect}>
           Отправить заявку и перейти к тесту
         </button>
+=======
+        <button className="submit-btn" onClick={handleApplicationAndRedirect}>Отправить заявку и перейти к тесту</button>
+      </div>
+      <div className="visual-section">
+        <img src={img_11} alt="img_11" className="img_11" />
+>>>>>>> bd96b7725059b9860751e11a93627f6255b59115
       </div>
     </div>
   );

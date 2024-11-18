@@ -1,201 +1,172 @@
-.chat-container {
+.web-assistant .chat-container {
     position: fixed;
     bottom: 80px;
     right: 20px;
-    max-width: 350px;
+    max-width: 400px;
     width: 100%;
     padding: 20px;
-    background-color: #f9f9f9;
+    background-color: #FFFFFF;
     border-radius: 15px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    max-height: 400px;
-    overflow: hidden;
-    z-index: 1000;
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+    max-height: 450px;
+    overflow-y: auto;
+    z-index: 1002;
     font-family: 'Droid Sans', sans-serif;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    border: 2px solid #BF2A45;
+    box-sizing: border-box;
 }
 
-.chat-box {
-    max-height: 300px;
+.web-assistant .chat-box {
+    flex: 1;
+    max-height: calc(100% - 80px);
     overflow-y: auto;
     padding: 10px;
     display: flex;
     flex-direction: column;
     gap: 10px;
-    margin-bottom: 20px;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    background: #F5F5F5;
 }
 
-.chat-message {
+.web-assistant .chat-message {
     padding: 12px 16px;
     border-radius: 20px;
     max-width: 75%;
     word-wrap: break-word;
+    font-size: 15px;
+    line-height: 1.4;
 }
 
-.chat-message.assistant {
+.web-assistant .chat-message.assistant {
+    background-color: #fdf8f8;
+    color: #BF2A45;
+    border: 1px solid #F2B8B8;
     align-self: flex-start;
-    background-color: #e0f7fa;
-    color: #006064;
 }
 
-.chat-message.user {
+.web-assistant .chat-message.user {
+    background-color: #E5FFE5;
+    color: #2A8F45;
+    border: 1px solid #B8F2B8;
     align-self: flex-end;
-    background-color: #bbdefb;
-    color: #0d47a1;
 }
 
-.input-container {
+.web-assistant .input-container {
     display: flex;
-    gap: 10px;
-}
-
-input[type="text"] {
-    flex: 1;
-    padding: 10px;
-    font-size: 16px;
-    border: 1px solid #ccc;
-    border-radius: 15px;
-}
-
-button {
-    padding: 10px 20px;
-    font-size: 16px;
-    color: #fff;
-    background-color: #3083DC;
-    border: none;
-    border-radius: 20px;
-    cursor: pointer;
-    transition: background-color 0.3s;
-}
-
-button:hover {
-    background-color: #216EC0;
-}
-
-button:disabled {
-    background-color: #b0bec5;
-    cursor: not-allowed;
-}
-
-.chat-icon-container {
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    width: 50px;
-    height: 50px;
-    background-color: #3083DC;
-    border-radius: 50%;
-    display: flex;
+    flex-direction: column;
     align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    z-index: 1001;
-    transition: transform 0.3s ease;
+    gap: 10px;
+    border-top: 1px solid #ddd;
+    padding-top: 10px;
+    background-color: #ffffff;
+    text-align: center;
 }
 
-.chat-icon {
-    color: #ffffff;
-    font-size: 24px;
+.web-assistant input[type='text'] {
+    width: 100%;
+    padding: 12px;
+    font-size: 16px;
+    border: 2px solid #BF2A45;
+    border-radius: 15px;
+    background-color: #FFE5E5;
+    box-sizing: border-box;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.web-assistant input[type='text']:focus {
+    border-color: #BF2A45;
+    box-shadow: 0 0 5px rgba(191, 42, 69, 0.3);
+    outline: none;
+}
+
+.web-assistant button {
+    padding: 12px 20px;
+    font-size: 16px;
+    color: white;
+    background-color: #BF2A45;
+    border: none;
+    border-radius: 15px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    width: fit-content;
+}
+
+.web-assistant button:hover {
+    background-color: #A11D2E;
+    transform: scale(1.05);
 }
 
 @media (max-width: 768px) {
-    .chat-container {
-        bottom: 0;
-        right: 0;
-        left: 0;
-        max-width: 100%;
-        padding: 15px;
-        border-radius: 12px 12px 0 0;
-        max-height: 60vh;
-        overflow: auto;
-    }
-
-    .chat-box {
-        max-height: 45vh;
-        padding: 10px;
-    }
-
-    .chat-message {
-        font-size: 14px;
-        padding: 10px 14px;
-        border-radius: 15px;
-        max-width: 85%;
-    }
-
-    .input-container {
-        gap: 8px;
-    }
-
-    input[type="text"] {
-        padding: 8px;
-        font-size: 14px;
-        border-radius: 6px;
-    }
-
-    button {
-        font-size: 14px;
-        padding: 8px 16px;
-        border-radius: 15px;
-    }
-}
-
-
-@media (max-width: 1024px) {
-    .chat-container {
-        max-width: 80%;
+    .web-assistant .chat-container {
+        bottom: 70px;
         right: 10px;
-        bottom: 10px;
+        left: 10px;
+        max-width: calc(100% - 20px);
+        padding: 15px;
+        border-radius: 12px;
         max-height: 70vh;
-        padding: 20px;
+        overflow-y: auto;
     }
 
-    .chat-box {
-        max-height: 50vh;
+    .web-assistant .chat-box {
+        max-height: calc(70vh - 80px);
     }
 
-    .chat-message {
-        font-size: 15px;
-        padding: 12px 16px;
-        max-width: 80%;
+    .web-assistant .input-container {
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
     }
 
-    input[type="text"] {
-        font-size: 15px;
+    .web-assistant input[type='text'] {
+        padding: 10px;
+        font-size: 14px;
     }
 
-    button {
-        font-size: 15px;
-        padding: 10px 18px;
+    .web-assistant button {
+        font-size: 14px;
+        padding: 10px 16px;
+        width: 100%;
+        text-align: center;
     }
 }
 
 @media (max-width: 480px) {
-    .chat-container {
+    .web-assistant .chat-container {
         padding: 10px;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        max-width: 100%;
-        border-radius: 0;
-        max-height: 50vh;
+        bottom: 60px;
+        left: 5px;
+        right: 5px;
+        max-width: calc(100% - 10px);
+        border-radius: 10px;
+        max-height: 65vh;
+        overflow-y: auto;
     }
 
-    .chat-box {
-        max-height: 35vh;
+    .web-assistant .chat-box {
+        max-height: calc(65vh - 80px);
     }
 
-    .chat-message {
+    .web-assistant .input-container {
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .web-assistant input[type='text'] {
+        padding: 8px;
+        font-size: 13px;
+    }
+
+    .web-assistant button {
         font-size: 13px;
         padding: 8px 12px;
-    }
-
-    input[type="text"] {
-        padding: 6px;
-        font-size: 13px;
-    }
-
-    button {
-        font-size: 13px;
-        padding: 6px 12px;
+        width: 100%;
+        text-align: center;
     }
 }

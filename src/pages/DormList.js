@@ -12,13 +12,13 @@ const DormList = () => {
     }, []);
 
     return (
-        <div className="style">
-            <h2>Dormitory List</h2>
-            <ul>
-                {dorms.map(dorm => (
-                    <li key={dorm.id}>{dorm.name}</li>
-                ))}
-            </ul>
+        <div className="style dorm-list-page">
+        <h2>Dormitory List</h2>
+        <ul>
+            {dorms.map(dorm => (
+                <li key={dorm.id}>{dorm.name}</li>
+            ))}
+        </ul>
         </div>
     );
 };
