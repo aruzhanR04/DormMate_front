@@ -138,7 +138,7 @@ const UserDashboard = () => {
                 {statusError && <p className="error">{statusError}</p>}
                 {status && <p className="status">{status}</p>}
 
-                {status === 'Заявка одобрена, внесите оплату и прикрепите скрин.' && (
+                {status === 'Ваша заявка одобрена, внесите оплату и прикрепите сюда чек.' && (
                     <div className="upload-section">
                         <h3>Загрузите скриншот оплаты</h3>
                         <input type="file" onChange={handleFileChange} />
