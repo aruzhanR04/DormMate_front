@@ -2,83 +2,82 @@
     max-width: 800px;
     margin: 0 auto;
     padding: 40px;
-    background-color: #ffffff;
-    border-radius: 12px;
-    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+    background: linear-gradient(360deg, #C32939, 20%, #EFEFEF);
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
     font-family: 'Droid Sans', sans-serif;
+    color: #333;
 }
 
 .admin-panel h1 {
     font-size: 2.5em;
-    color: #383A3B;
+    color: #222222;
     margin-bottom: 30px;
     text-align: center;
-    font-weight: 600;
+    font-weight: bold;
+    text-shadow: 1px 1px 5px rgba(0, 0, 0, 0.2);
 }
 
 .section {
     margin-bottom: 40px;
     padding: 25px;
-    border: 1px solid #e0e0e0;
-    border-radius: 10px;
-    background-color: #fafafa;
-    transition: background-color 0.3s ease;
+    border-radius: 15px;
+    background-color: #fff;
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s, background-color 0.3s;
 }
-
-/* .section:hover {
-    background-color: #f0f0f0;
-} */
 
 .section h2 {
     font-size: 1.8em;
-    color: #383A3B;
+    color: #BF1F1F;
     margin-bottom: 20px;
-    font-weight: 500;
+    font-weight: 600;
+    text-align: center;
 }
 
 .input[type="file"], 
 .input {
     margin-bottom: 20px;
-    padding: 10px;
-    border: 2px solid #3083DC;
+    padding: 12px 15px;
+    border: 2px solid #BF1F1F;
     border-radius: 15px;
     font-size: 16px;
-    color: #555;
+    color: #333;
     width: 100%;
-    max-width: 300px;
-    transition: border-color 0.3s, box-shadow 0.3s;
-    text-align: center;
-    background-color: #D6EEFF;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    max-width: 100%;
+    background: #fce4e4;
+    transition: border-color 0.3s, box-shadow 0.3s, background-color 0.3s;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
-input[type="file"]:hover, 
-input:hover{
-    border-color: #3083DC;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+.input[type="file"]:hover, 
+.input:hover {
+    border-color: #A11D2E ;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    background-color: #ffe6e6;
 }
 
 button {
     display: inline-block;
     padding: 12px 25px;
-    font-size: 16px;
+    font-size: 18px;
     color: #fff;
-    background-color: #3083DC;
+    background: #BF1F1F;
     border: none;
-    border-radius: 15px;
+    border-radius: 25px;
     cursor: pointer;
-    transition: background-color 0.3s ease;
+    transition: background 0.3s, transform 0.2s;
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
     margin-top: 15px;
-    margin-right: 10px;
-    margin: 15px;
-    width: calc(100% - 20px);
-    max-width: 250px;
     text-align: center;
-    /* box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); */
+    width: 100%;
+    margin: 10px;
+    max-width: 250px;
 }
 
 button:hover {
-    background-color: #216EC0;
+    background: #8C1E2E;
+    transform: scale(1.05);
 }
 
 button:disabled {
@@ -87,18 +86,11 @@ button:disabled {
     color: #eee;
 }
 
-.button-container {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 20px;
-    justify-content: space-between;
-}
-
 .message {
     margin-top: 25px;
     padding: 15px;
     font-size: 16px;
-    border-radius: 8px;
+    border-radius: 15px;
     text-align: center;
     font-weight: 500;
 }
@@ -115,101 +107,40 @@ button:disabled {
     border: 1px solid #f5c6cb;
 }
 
-@media (max-width: 1024px) {
-    .admin-panel {
-        padding: 30px;
-        max-width: 90%;
-    }
-
-    .admin-panel h1 {
-        font-size: 2.2em;
-    }
-
-    .section {
-        margin-bottom: 30px;
-        padding: 20px;
-    }
-
-    .section h2 {
-        font-size: 1.6em;
-    }
-
-    .input[type="file"],
-    .input {
-        font-size: 15px;
-        padding: 8px;
-        max-width: 100%;
-    }
-
-    button {
-        font-size: 15px;
-        padding: 10px;
-        max-width: 100%;
-    }
-
-    .button-container {
-        gap: 15px;
-        justify-content: center;
-    }
-
-    .message {
-        font-size: 15px;
-        padding: 12px;
-    }
-}
-
-/* Стиль для мобильных устройств (до 768px) */
 @media (max-width: 768px) {
     .admin-panel {
-        padding: 20px;
-        box-shadow: none;
-        width: 100%;
-        max-width: 100%;
+        padding: 30px;
     }
 
     .admin-panel h1 {
         font-size: 1.8em;
-        margin-bottom: 15px;
     }
 
     .section {
-        margin-bottom: 20px;
-        padding: 15px;
-    }
-
-    .section h2 {
-        font-size: 1.4em;
-        margin-bottom: 10px;
+        padding: 20px;
     }
 
     .input[type="file"],
     .input {
         font-size: 14px;
-        padding: 8px;
-        max-width: 100%;
+        padding: 10px;
     }
 
     button {
-        padding: 8px;
-        font-size: 14px;
-        width: 100%;
-        max-width: none;
-    }
-
-    .button-container {
-        flex-direction: column;
-        gap: 10px;
-        justify-content: center;
+        font-size: 16px;
+        padding: 10px;
     }
 
     .message {
         font-size: 14px;
-        padding: 10px;
     }
 }
 
-/* Стиль для маленьких экранов (до 480px) */
 @media (max-width: 480px) {
+    .admin-panel {
+        padding: 20px;
+    }
+
     .admin-panel h1 {
         font-size: 1.6em;
     }
@@ -219,8 +150,8 @@ button:disabled {
     }
 
     button {
-        font-size: 13px;
-        padding: 7px;
+        font-size: 14px;
+        padding: 8px;
     }
 
     .input[type="file"],
@@ -230,6 +161,5 @@ button:disabled {
 
     .message {
         font-size: 13px;
-        padding: 8px;
     }
 }

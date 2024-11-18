@@ -14,11 +14,11 @@
 
 .form-section {
   display: flex;
-  flex-direction: column;
+  /* flex-direction: column; */
   gap: 20px;
   flex: 1;
-  max-width: 450px;
-  margin-top: 90px;
+  max-width: 600px;
+  margin-top: 80px;
   margin-left: 50px;
   margin-right: 50px;
   padding: 30px;
@@ -51,7 +51,7 @@ select:focus, input:focus {
   font-weight: bold;
   cursor: pointer;
   transition: background-color 0.3s ease, transform 0.2s ease;
-  width: calc(100% - 20px);
+  width: 80%;
   margin: 0 auto;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
@@ -74,14 +74,13 @@ select:focus, input:focus {
 }
 
 .img_11 {
-  max-width: 80%;
+  max-width: 100%;
   height: auto;
   position: relative;
   top: 55px;
   left: 0;
   margin: auto;
   z-index: 10;
-  transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
   opacity: 1;
 }
 
