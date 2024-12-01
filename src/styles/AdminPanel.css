@@ -1,139 +1,130 @@
 .admin-panel {
-    max-width: 800px;
-    margin: 0 auto;
+    font-family: Arial, sans-serif;
+    background-color: #f7f7f7;
+    color: #333333;
     padding: 40px;
-    background: linear-gradient(360deg, #C32939, 20%, #EFEFEF);
-    border-radius: 15px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-    font-family: 'Droid Sans', sans-serif;
-    color: #333;
 }
 
 .admin-panel h1 {
-    font-size: 2.5em;
     color: #222222;
-    margin-bottom: 30px;
-    text-align: center;
+    font-size: 28px;
     font-weight: bold;
-    text-shadow: 1px 1px 5px rgba(0, 0, 0, 0.2);
+    margin-bottom: 15px;
+    border-bottom: 2px solid #cccccc;
+    padding-bottom: 5px;
+    text-align: left;
 }
 
-.section {
-    margin-bottom: 40px;
-    padding: 25px;
-    border-radius: 15px;
-    background-color: #fff;
-    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
-    transition: transform 0.3s, background-color 0.3s;
+.admin-panel h2 {
+    color: #555555;
+    font-size: 22px;
+    margin-bottom: 10px;
+    font-style: italic;
+    text-align: left;
 }
 
-.section h2 {
-    font-size: 1.8em;
-    color: #BF1F1F;
-    margin-bottom: 20px;
-    font-weight: 600;
+.admin-panel table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 20px 0;
+    background-color: #ffffff;
+    border: 1px solid #dddddd;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.admin-panel table th,
+.admin-panel table td {
+    text-align: left;
+    padding: 10px;
+    border: 1px solid #dddddd;
+}
+
+.admin-panel table th {
+    background-color: #f0f0f0;
+    font-weight: bold;
+}
+
+.admin-panel table tr:hover {
+    background-color: #f9f9f9;
+}
+
+.admin-panel button {
+    background: #C32939;
+    color: #fff;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 30px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    width: auto;
+    margin: 20px 0;
+    margin-left: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
     text-align: center;
 }
 
-.input[type="file"], 
-.input {
+.admin-panel button:hover {
+    background: #8C1E2E;
+}
+
+.admin-panel input[type="text"] {
+    width: auto;
+    padding: 12px 20px;
+    border: 1px solid #cccccc;
+    border-radius: 10px;
+    font-size: 14px;
+    transition: 0.3s ease;
+    background-color: #ffffff;
+    text-align: left;
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.admin-panel input[type="text"]:focus {
+    border-color: #0c4b33;
+    outline: none;
+    box-shadow: 0 0 8px rgba(12, 75, 51, 0.5);
+    background-color: #f9fdf9;
+}
+
+.admin-panel input[type="file"],
+.admin-panel select {
     margin-bottom: 20px;
     padding: 12px 15px;
     border: 2px solid #BF1F1F;
     border-radius: 15px;
     font-size: 16px;
     color: #333;
-    width: 100%;
+    width: auto;
     max-width: 100%;
     background: #fce4e4;
     transition: border-color 0.3s, box-shadow 0.3s, background-color 0.3s;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
-.input[type="file"]:hover, 
-.input:hover {
-    border-color: #A11D2E ;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    background-color: #ffe6e6;
+.admin-panel input[type="file"]:focus,
+.admin-panel select:focus {
+    background: #A11D2E;
 }
 
-button {
-    display: inline-block;
-    padding: 12px 25px;
-    font-size: 18px;
-    color: #fff;
-    background: #BF1F1F;
-    border: none;
-    border-radius: 25px;
-    cursor: pointer;
-    transition: background 0.3s, transform 0.2s;
-    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
-    margin-top: 15px;
-    text-align: center;
-    width: 100%;
-    margin: 10px;
-    max-width: 250px;
+.admin-panel .message {
+    padding: 10px 15px;
+    margin-bottom: 15px;
+    border-radius: 5px;
+    font-size: 14px;
+    text-align: left;
 }
 
-button:hover {
-    background: #8C1E2E;
-    transform: scale(1.05);
+.admin-panel .message.success {
+    background-color: #dff0d8;
+    color: #3c763d;
+    border: 1px solid #d6e9c6;
 }
 
-button:disabled {
-    background-color: #b0bec5;
-    cursor: not-allowed;
-    color: #eee;
-}
-
-.message {
-    margin-top: 25px;
-    padding: 15px;
-    font-size: 16px;
-    border-radius: 15px;
-    text-align: center;
-    font-weight: 500;
-}
-
-.message.success {
-    color: #155724;
-    background-color: #d4edda;
-    border: 1px solid #c3e6cb;
-}
-
-.message.error {
-    color: #721c24;
-    background-color: #f8d7da;
-    border: 1px solid #f5c6cb;
-}
-
-@media (max-width: 768px) {
-    .admin-panel {
-        padding: 30px;
-    }
-
-    .admin-panel h1 {
-        font-size: 1.8em;
-    }
-
-    .section {
-        padding: 20px;
-    }
-
-    .input[type="file"],
-    .input {
-        font-size: 14px;
-        padding: 10px;
-    }
-
-    button {
-        font-size: 16px;
-        padding: 10px;
-    }
-
-    .message {
-        font-size: 14px;
-    }
+.admin-panel .message.error {
+    background-color: #f2dede;
+    color: #a94442;
+    border: 1px solid #ebccd1;
 }
 
 @media (max-width: 480px) {

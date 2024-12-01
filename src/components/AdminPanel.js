@@ -119,7 +119,7 @@ const AdminPanel = () => {
   }, []);
 
   return (
-    <div className="admin-panel">
+   <div className="admin-panel">
       <h1>Панель администратора</h1>
 
       <div className="section">
@@ -128,6 +128,54 @@ const AdminPanel = () => {
         <button onClick={handleUpload}>Загрузить файл</button>
       </div>
 
+      <div className="section">
+        <h2>Все заявки</h2>
+        {allApplications.length > 0 ? (
+          <ol>
+            {allApplications.map((app) => (
+              <li key={app.id}>
+                <p>Заявка ID: {app.id}</p>
+                <p>Студент: {app.student.first_name} {app.student.last_name}</p>
+                <p>Статус: {app.status}</p>
+                <p>Общежитие: {app.dormitory_choice || 'Не выбрано'}</p>
+
+                <button onClick={() => handleApproveApplication(app.id)}>
+                  Одобрить заявку
+                </button>
+
+                {editingApplicationId === app.id ? (
+                  <div>
+                    <select
+                      onChange={(e) => handleChangeDormitory(app.id, e.target.value)}
+                      defaultValue=""
+                    >
+                      <option value="" disabled>
+                        Выберите общежитие
+                      </option>
+                      {dormitories.map((dorm) => (
+                        <option key={dorm.id} value={dorm.name}>
+                          {dorm.name}
+                        </option>
+                      ))}
+                    </select>
+                    <button onClick={() => setEditingApplicationId(null)}>Отменить</button>
+                  </div>
+                ) : (
+                  <button onClick={() => setEditingApplicationId(app.id)}>
+                    Изменить общежитие
+                  </button>
+                )}
+
+                <button onClick={() => handleDeleteApplication(app.id)}>
+                  Удалить заявку
+                </button>
+              </li>
+            ))}
+          </ol>
+        ) : (
+          <p>Нет заявок для отображения.</p>
+        )}
+      </div>
       <div className="section">
         <h2>Распределение студентов</h2>
         <button onClick={() => handleDistributeStudents('/distribute-students/')}>
@@ -138,58 +186,7 @@ const AdminPanel = () => {
         </button>
       </div>
 
-      {message && <div className={message.type}>{message.text}</div>}
-
-      <div className="section">
-  <h2>Все заявки</h2>
-  {allApplications.length > 0 ? (
-    <ol>
-      {allApplications.map((app) => (
-        <li key={app.id}>
-          <p>Заявка ID: {app.id}</p>
-          <p>Студент: {app.student.first_name} {app.student.last_name}</p>
-          <p>Статус: {app.status}</p>
-          <p>Общежитие: {app.dormitory_choice || 'Не выбрано'}</p> {/* Название общежития */}
-
-
-          <button onClick={() => handleApproveApplication(app.id)}>
-            Одобрить заявку
-          </button>
-
-          {editingApplicationId === app.id ? (
-            <div>
-              <select
-                onChange={(e) => handleChangeDormitory(app.id, e.target.value)}
-                defaultValue=""
-              >
-                <option value="" disabled>
-                  Выберите общежитие
-                </option>
-                {dormitories.map((dorm) => (
-                  <option key={dorm.id} value={dorm.name}>
-                    {dorm.name}
-                  </option>
-                ))}
-              </select>
-              <button onClick={() => setEditingApplicationId(null)}>Отменить</button>
-            </div>
-          ) : (
-            <button onClick={() => setEditingApplicationId(app.id)}>
-              Изменить общежитие
-            </button>
-          )}
-
-          <button onClick={() => handleDeleteApplication(app.id)}>
-            Удалить заявку
-          </button>
-        </li>
-      ))}
-    </ol>
-  ) : (
-    <p>Нет заявок для отображения.</p>
-  )}
-</div>
-
+      {message && <div className={`message ${message.type}`}>{message.text}</div>}
     </div>
   );
 };

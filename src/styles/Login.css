@@ -20,11 +20,13 @@
   font-size: 36px;
   margin-bottom: 5px;
   text-align: center;
+  color: white;
 }
 
 .login-left p {
   font-size: 26px;
   text-align: center;
+  color: white;
 }
 
 .login-btn {
@@ -36,7 +38,7 @@
   font-weight: bold;
   cursor: pointer;
   transition: background-color 0.3s ease, transform 0.2s ease;
-  width: 80%;
+  width: 40%;
   margin: 0;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }

@@ -27,7 +27,7 @@ const ApplicationPage = () => {
   const [dormitories, setDormitories] = useState([]);
   const [selectedDormPrice, setSelectedDormPrice] = useState('');
   const [errorMessage, setErrorMessage] = useState(null);
-  const [showFileFields, setShowFileFields] = useState(false); // Управление отображением полей файлов
+  const [showFileFields, setShowFileFields] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -178,10 +178,6 @@ const ApplicationPage = () => {
             </label>
           </div>
         )}
-
-        <button className="submit-btn" onClick={handleApplicationAndRedirect}>
-          Отправить заявку и перейти к тесту
-        </button>
         <button className="submit-btn" onClick={handleApplicationAndRedirect}>Отправить заявку и перейти к тесту</button>
       </div>
       <div className="visual-section">
