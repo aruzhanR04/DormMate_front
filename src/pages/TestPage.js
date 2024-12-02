@@ -73,9 +73,9 @@ const TestPage = () => {
     }
   };
 
-  if (loading) return <div>Загрузка вопросов...</div>;
+  if (loading) return <div className="loading-indicator">Загрузка вопросов<span className="loading-dots"></span></div>;
   if (error) return <div style={{ color: 'red' }}>Ошибка: {error}</div>;
-  if (thankYouMessage) return <div>Спасибо! Вы будете перенаправлены на страницу статуса заявки...</div>;
+  if (thankYouMessage) return <div className="loading-indicator">Спасибо! Вы будете перенаправлены на страницу статуса заявки<span className="loading-dots"></span></div>;
 
   const currentQuestion = questions[currentQuestionIndex];
   const questionText = currentQuestion ? currentQuestion.question : "Вопрос не найден";
