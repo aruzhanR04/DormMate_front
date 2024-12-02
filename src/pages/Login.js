@@ -52,7 +52,7 @@ const Login = () => {
           {error && <p style={{ color: 'red' }}>{error}</p>}
           <input
             type="text"
-            placeholder="User ID (s)"
+            placeholder="User ID(s)"
             value={s}
             onChange={(e) => setS(e.target.value)}
           />

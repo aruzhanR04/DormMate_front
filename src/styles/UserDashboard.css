@@ -64,21 +64,32 @@
 
 .status {
     font-size: 1.2em;
-    color: #ffffff;
+    color: #3c3c3c;
     font-weight: bold;
     margin-top: 10px;
     text-align: center;
 }
 
 .upload-section {
-    text-align: center;
-    margin-top: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 15px;
 }
 
-.upload-section h3 {
-    font-size: 1.2em;
-    color: #ffffff;
-    margin-bottom: 10px;
+.upload-section input[type="file"] {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 1em;
+    background-color: #fff;
+    cursor: pointer;
+    transition: border-color 0.3s ease;
+    width: 96%;
+}
+
+.upload-section input[type="file"]:hover {
+    border-color: #ff6b6b;
 }
 
 .upload-button {
@@ -90,8 +101,7 @@
     font-weight: bold;
     cursor: pointer;
     transition: background-color 0.3s ease, transform 0.2s ease;
-    width: calc(100% - 20px);
-    margin: 0 auto;
+    align-self: flex-start;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
@@ -103,7 +113,7 @@
 .upload-message {
     margin-top: 10px;
     font-size: 1em;
-    color: green;
+    color: rgb(3, 77, 3);
 }
 
 .password-input {
@@ -120,6 +130,13 @@
     outline: none;
 }
 
+.change-password-section {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 15px;
+}
+
 .change-password-button {
     background: #222222;
     color: #fff;
@@ -129,8 +146,7 @@
     font-weight: bold;
     cursor: pointer;
     transition: background-color 0.3s ease, transform 0.2s ease;
-    width: calc(100% - 20px);
-    margin: 0 auto;
+    align-self: flex-start;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
@@ -142,7 +158,7 @@
 .password-message {
     margin-top: 10px;
     font-size: 1em;
-    color: green;
+    color: rgb(3, 77, 3);
     text-align: center;
 }
 

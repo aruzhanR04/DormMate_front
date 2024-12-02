@@ -140,10 +140,10 @@ const ApplicationPage = () => {
 
         {showFileFields && (
           <div className="file-fields">
-            <label>
+            {/* <label>
               Приоритетное размещение:
               <input type="file" name="priority" onChange={handleChange} />
-            </label>
+            </label> */}
             <label>
               Справка сироты:
               <input type="file" name="orphan_certificate" onChange={handleChange} />

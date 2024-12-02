@@ -127,6 +127,60 @@
     border: 1px solid #ebccd1;
 }
 
+.admin-panel ol {
+    list-style: none; /* Убираем стандартные маркеры списка */
+    padding: 0;
+    margin: 0;
+}
+
+.admin-panel ol li {
+    margin-bottom: 20px;
+    padding: 15px;
+    background: #ffffff;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    border: 1px solid #dddddd;
+    text-align: left;
+}
+
+.admin-panel ol li:hover {
+    background: #f9f9f9;
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+.admin-panel ol li p {
+    margin: 5px 0;
+    font-size: 16px;
+    color: #333;
+    text-align: left;
+}
+
+.admin-panel ol li button {
+    background: #303030; 
+    color: #fff;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 30px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    width: auto;
+    margin: 10px 5px;
+    text-align: center;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.admin-panel ol li button:hover {
+    background: #646464;
+    transform: scale(1.05);
+}
+
+.admin-panel ol li select {
+    margin-top: 10px;
+}
+
+
+
 @media (max-width: 480px) {
     .admin-panel {
         padding: 20px;

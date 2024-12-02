@@ -8,7 +8,6 @@ const TestPage = () => {
   const [questions, setQuestions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [testResult, setTestResult] = useState(null);
   const [thankYouMessage, setThankYouMessage] = useState(false); 
   const navigate = useNavigate(); 
 
@@ -20,11 +19,11 @@ const TestPage = () => {
         id: q.id,
         question: q.question_text,
         options: [
-          q.answer_variant_a,
-          q.answer_variant_b,
-          q.answer_variant_c,
-          q.answer_variant_d,
-        ].filter(Boolean)  
+          { label: q.answer_variant_a, letter: 'A' },
+          { label: q.answer_variant_b, letter: 'B' },
+          { label: q.answer_variant_c, letter: 'C' },
+        ].filter(option => option.label), 
+        selectedAnswer: null,
       }));
       setQuestions(formattedQuestions);
     } catch (err) {
@@ -47,7 +46,7 @@ const TestPage = () => {
   };
 
   const submitTest = async () => {
-    const testAnswers = questions.map(q => q.selectedAnswer || "");
+    const testAnswers = questions.map(q => q.selectedAnswer?.letter || "");
     console.log("Test answers:", testAnswers); 
 
     if (testAnswers.includes("")) {
@@ -56,8 +55,8 @@ const TestPage = () => {
     }
 
     try {
-      const response = await api.post('test/', { test_answers: testAnswers });
-      setTestResult(response.data.result_letter);
+      const response = await api.post('/test/', { test_answers: testAnswers });
+      console.log("Результат отправлен:", response.data);
 
       setThankYouMessage(true);
 
@@ -80,7 +79,7 @@ const TestPage = () => {
 
   const currentQuestion = questions[currentQuestionIndex];
   const questionText = currentQuestion ? currentQuestion.question : "Вопрос не найден";
-  const options = currentQuestion.options || [];
+  const options = currentQuestion?.options || [];
 
   return (
     <div className="test-page">
@@ -100,9 +99,9 @@ const TestPage = () => {
                 updatedQuestions[currentQuestionIndex].selectedAnswer = option;
                 setQuestions(updatedQuestions);
               }}
-              checked={currentQuestion.selectedAnswer === option}
+              checked={currentQuestion.selectedAnswer?.letter === option.letter}
             />
-            {option}
+            {`${option.letter}. ${option.label}`}
           </label>
         ))}
       </div>
@@ -110,15 +109,17 @@ const TestPage = () => {
         <button
           onClick={() => setCurrentQuestionIndex(currentQuestionIndex - 1)}
           disabled={currentQuestionIndex === 0}
+          className="back-btn"
+
         >
           Назад
         </button>
-        <button onClick={handleNext}>
+        <button onClick={handleNext} className="next-btn">
           {currentQuestionIndex === questions.length - 1 ? "Отправить тест" : "Далее"}
         </button>
       </div>
     </div>
-  );
+  ); 
 };
 
 export default TestPage;
