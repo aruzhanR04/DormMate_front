@@ -19,6 +19,28 @@ const AdminPanel = () => {
     }
   };
 
+  const handleExportStudents = async (apiUrl) => {
+    try {
+      const response = await api.get(apiUrl, { responseType: 'blob' });
+  
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+  
+      link.setAttribute('download', 'students_in_dorm.xlsx');
+      document.body.appendChild(link);
+  
+      link.click();
+  
+      link.parentNode.removeChild(link);
+  
+      setMessage({ type: 'success', text: 'Файл успешно выгружен!' });
+    } catch (error) {
+      console.error('Ошибка при выгрузке студентов:', error);
+      setMessage({ type: 'error', text: 'Ошибка при подключении к серверу' });
+    }
+  };
+
   const handleFileChange = (e) => {
     setFile(e.target.files[0]);
   };
@@ -183,6 +205,9 @@ const AdminPanel = () => {
         </button>
         <button onClick={() => handleDistributeStudents('/distribute-students2/')}>
           Распределить студентов по комнатам
+        </button>
+        <button onClick={() => handleExportStudents('/export-students/')}>
+          Выгрузить заселенных студентов
         </button>
       </div>
 
