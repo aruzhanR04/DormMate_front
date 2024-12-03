@@ -10,6 +10,25 @@
   position: relative;
   z-index: 10;
 }
+.notification-bell {
+  position: relative;
+  cursor: pointer;
+}
+
+.notification-bell img {
+  width: 24px;
+  height: 24px;
+}
+
+.notification-dot {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 8px;
+  height: 8px;
+  background-color: red;
+  border-radius: 50%;
+}
 
 .logo img {
   width: 130px;

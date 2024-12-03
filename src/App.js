@@ -24,34 +24,71 @@ function App() {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [userRole, setUserRole] = useState(null);
     const [isChatOpen, setIsChatOpen] = useState(false);
+    const [hasNewNotification, setHasNewNotification] = useState(false);
 
-    // Проверка авторизации при загрузке
     useEffect(() => {
         const checkAuthStatus = async () => {
             const accessToken = localStorage.getItem('access');
-            if (accessToken) {
-                try {
-                    const response = await api.get('/usertype/');
-                    if (response.data) {
-                        setIsAuthenticated(true);
-                        setUserRole(response.data.user_type);
-                        console.log(response.data)
-                    }
-                } catch (error) {
-                    setIsAuthenticated(false);
-                    setUserRole(null);
+
+            if (!accessToken) {
+                setIsAuthenticated(false);
+                setUserRole(null);
+                return;
+            }
+
+            try {
+                const response = await api.get('/usertype/');
+                const userType = response?.data?.user_type;
+
+                if (userType) {
+                    setIsAuthenticated(true);
+                    setUserRole(userType);
                 }
-            } else {
+            } catch {
                 setIsAuthenticated(false);
                 setUserRole(null);
             }
         };
 
-        // Вызываем checkAuthStatus при загрузке компонента
         checkAuthStatus();
     }, []);
 
-    // Обработчики логина и логаута
+    useEffect(() => {
+        let socket;
+
+        if (isAuthenticated) {
+            // Initialize WebSocket connection
+            const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const socketUrl = `${protocol}//${window.location.host}/ws/application-status/`;
+
+            socket = new WebSocket(socketUrl);
+
+            // Listen for messages from the server
+            socket.onmessage = (event) => {
+                const data = JSON.parse(event.data);
+
+                // Check for a status change notification
+                if (data.type === 'status_update') {
+                    const currentStatus = localStorage.getItem('applicationStatus');
+                    if (data.status !== currentStatus) {
+                        setHasNewNotification(true);
+                        localStorage.setItem('applicationStatus', data.status);
+                    }
+                }
+            };
+
+            // Handle WebSocket errors
+            socket.onerror = (error) => {
+                console.error('WebSocket error:', error);
+            };
+
+            // Cleanup WebSocket connection on component unmount
+            return () => {
+                socket.close();
+            };
+        }
+    }, [isAuthenticated]);
+
     const handleLogin = () => {
         setIsAuthenticated(true);
     };
@@ -61,17 +98,26 @@ function App() {
         setUserRole(null);
         localStorage.removeItem('access');
         localStorage.removeItem('refresh');
+        localStorage.removeItem('applicationStatus');
+    };
+
+    const clearNotification = () => {
+        setHasNewNotification(false);
     };
 
     return (
         <Router>
             <div>
-                <Navbar isAuthenticated={isAuthenticated} userRole={userRole} onLogout={handleLogout} />
-                <Routes>
-                    <Route path="/login" element={<Login onLogin={handleLogin} />} />
-                    <Route path="/web-assistant" element={<WebAssistant />} />
-                    <Route path="/" element={<Home />} />
+                <Navbar
+                    isAuthenticated={isAuthenticated}
+                    userRole={userRole}
+                    onLogout={handleLogout}
+                    hasNewNotification={hasNewNotification}
+                />
 
+                <Routes>
+                    <Route path="/" element={<Home />} />
+                    <Route path="/login" element={<Login onLogin={handleLogin} />} />
                     <Route
                         path="/profile"
                         element={
@@ -132,7 +178,7 @@ function App() {
                         path="/application-status"
                         element={
                             <PrivateRoute isAuthenticated={isAuthenticated}>
-                                <ApplicationStatus />
+                                <ApplicationStatus clearNotification={clearNotification} />
                             </PrivateRoute>
                         }
                     />
@@ -152,7 +198,6 @@ function App() {
                             </PrivateRoute>
                         }
                     />
-
                     <Route
                         path="/admin"
                         element={
