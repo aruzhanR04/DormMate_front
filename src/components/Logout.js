@@ -9,6 +9,7 @@ const Logout = () => {
     localStorage.removeItem('refresh');
 
     navigate('/login');
+    window.location.reload();
   }, [navigate]);
 
   return null; 

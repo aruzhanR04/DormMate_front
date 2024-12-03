@@ -33,6 +33,7 @@ const Login = () => {
         localStorage.setItem('isAdmin', user_type === 'admin');
         
         navigate(user_type === 'admin' ? '/admin' : '/profile');
+        window.location.reload();
       }
     } catch (err) {
       const errorData = err.response?.data || {};

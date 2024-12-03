@@ -4,7 +4,6 @@ import api from '../api';
 import '../styles/Application.css';
 import img_11 from '../assets/img_11.svg';
 
-
 const ApplicationPage = () => {
   const [formData, setFormData] = useState({
     firstName: '',
@@ -27,6 +26,7 @@ const ApplicationPage = () => {
   const [dormitories, setDormitories] = useState([]);
   const [selectedDormPrice, setSelectedDormPrice] = useState('');
   const [errorMessage, setErrorMessage] = useState(null);
+  const [notification, setNotification] = useState(''); // Уведомление
   const [showFileFields, setShowFileFields] = useState(false);
   const navigate = useNavigate();
 
@@ -100,7 +100,7 @@ const ApplicationPage = () => {
       });
 
       if (response.status === 201) {
-        alert(`Заявка успешно создана! ID заявки: ${response.data.application_id}`);
+        setNotification(`Заявка успешно создана! ID заявки: ${response.data.application_id}`); // Уведомление
         navigate('/testpage');
       } else {
         setErrorMessage(`Ошибка: ${response.data.message || 'Не удалось создать заявку'}`);
@@ -118,6 +118,7 @@ const ApplicationPage = () => {
   return (
     <div className="application-page">
       <div className="form-section">
+        {notification && <div className="notification">{notification}</div>} {/* Уведомление */}
         {errorMessage && <p style={{ color: 'red' }}>{errorMessage}</p>}
         <input type="text" placeholder="Имя" name="firstName" value={formData.firstName || ''} readOnly />
         <input type="text" placeholder="Фамилия" name="lastName" value={formData.lastName || ''} readOnly />
@@ -140,10 +141,6 @@ const ApplicationPage = () => {
 
         {showFileFields && (
           <div className="file-fields">
-            {/* <label>
-              Приоритетное размещение:
-              <input type="file" name="priority" onChange={handleChange} />
-            </label> */}
             <label>
               Справка сироты:
               <input type="file" name="orphan_certificate" onChange={handleChange} />
