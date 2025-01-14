@@ -26,7 +26,7 @@ const ApplicationPage = () => {
   const [dormitories, setDormitories] = useState([]);
   const [selectedDormPrice, setSelectedDormPrice] = useState('');
   const [errorMessage, setErrorMessage] = useState(null);
-  const [notification, setNotification] = useState(''); // Уведомление
+  const [notification, setNotification] = useState('');
   const [showFileFields, setShowFileFields] = useState(false);
   const navigate = useNavigate();
 
@@ -100,7 +100,7 @@ const ApplicationPage = () => {
       });
 
       if (response.status === 201) {
-        setNotification(`Заявка успешно создана! ID заявки: ${response.data.application_id}`); // Уведомление
+        setNotification(`Заявка успешно создана! ID заявки: ${response.data.application_id}`); 
         navigate('/testpage');
       } else {
         setErrorMessage(`Ошибка: ${response.data.message || 'Не удалось создать заявку'}`);
