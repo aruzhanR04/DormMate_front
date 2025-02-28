@@ -38,8 +38,12 @@ const ApplicationPage = () => {
           firstName: response.data.first_name || '',
           lastName: response.data.last_name || '',
           birthDate: response.data.birth_date || '',
+          phoneNumber: response.data.phone_number || '',
+          email: response.data.email || '',
           gender: response.data.gender === 'F' ? 'Женский' : response.data.gender === 'M' ? 'Мужской' : 'Не указан',
           course: response.data.course || '',
+          entResult: '',
+          gpa: '',
           priceRange: '',
         });
       } catch (error) {
@@ -50,7 +54,7 @@ const ApplicationPage = () => {
 
     const fetchDormitories = async () => {
       try {
-        const response = await api.get('http://127.0.0.1:8000/api/v1/dormlist');
+        const response = await api.get('http://127.0.0.1:8000/api/v1/dorms/costs/');
         setDormitories(response.data);
       } catch (error) {
         console.error('Ошибка загрузки общежитий:', error);
@@ -77,14 +81,16 @@ const ApplicationPage = () => {
     }
 
     if (name === 'priceRange') {
-      const selectedDorm = dormitories.find((dorm) => dorm.id.toString() === value);
-      setSelectedDormPrice(selectedDorm ? selectedDorm.cost : '');
+      const selectedCost = dormitories.find((cost) => cost.toString() === value);
+      setSelectedDormPrice(selectedCost || '');
     }
   };
 
   const handleApplicationAndRedirect = async () => {
     const formDataToSend = new FormData();
-    formDataToSend.append('dormitory_choice', formData.priceRange);
+    formDataToSend.append('dormitory_cost', formData.priceRange);
+    formDataToSend.append('ent_result', formData.entResult);
+    formDataToSend.append('gpa', formData.gpa);
 
     Object.keys(formData).forEach((key) => {
       if (formData[key] instanceof File) {
@@ -125,13 +131,21 @@ const ApplicationPage = () => {
         <input type="text" placeholder="Дата рождения" name="birthDate" value={formData.birthDate || ''} readOnly />
         <input type="text" placeholder="Пол" name="gender" value={formData.gender || ''} readOnly />
         <input type="text" placeholder="Курс" name="course" value={formData.course || ''} readOnly />
+        <input type="text" placeholder="Номер телефона" name="phoneNumber" value={formData.phoneNumber || ''} readOnly />
+        <input type="text" placeholder="Почта" name="Email;" value={formData.email || ''} readOnly />
+        {parseInt(formData.course) === 1 ? (
+        <input type="number" placeholder="Результат ЕНТ" name="entResult" value={formData.entResult || ''} onChange={handleChange} />
+        ) : (
+        <input type="number" step="0.01" placeholder="GPA" name="gpa" value={formData.gpa || ''} onChange={handleChange} />
+      )}
         <select name="priceRange" value={formData.priceRange || ''} onChange={handleChange}>
           <option value="">Выберите общежитие</option>
-          {dormitories.map((dorm) => (
-            <option key={dorm.id} value={dorm.id}>
-              {dorm.name} - {dorm.cost} тг
+          {dormitories.map((cost, index) => (
+            <option key={index} value={cost}>
+              {cost} тг
             </option>
           ))}
+
         </select>
         {selectedDormPrice && <p>Стоимость: {selectedDormPrice} тг</p>}
 

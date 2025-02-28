@@ -14,80 +14,46 @@ import UploadPayment from './pages/UploadPayment';
 import WebAssistant from './pages/WebAssistant';
 import PrivateRoute from './components/PrivateRoute';
 import AdminRoute from './components/AdminRoute';
-import AdminPanel from './components/AdminPanel';
 import Logout from './components/Logout';
 import ChatIcon from './components/ChatIcon';
 import DormDetails from './pages/DormDetails';
 import api from './api';
+// Новые компоненты админки:
+import AdminPanel from './components/AdminPanel';
+import AdminStudentsPage from './components/AdminStudentsPage';
+import AdminDormitoriesPage from './components/AdminDormitoriesPage';
+import AdminApplicationsPage from './components/AdminApplicationsPage';
+import ApplicationDetailPage from './components/ApplicationDetailPage';
+import DormitoriesViewAll from './components/DormitoriesViewAll';
+import StudentsViewAll from './components/StudentsViewAll';
 
 function App() {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [userRole, setUserRole] = useState(null);
     const [isChatOpen, setIsChatOpen] = useState(false);
-    const [hasNewNotification, setHasNewNotification] = useState(false);
 
     useEffect(() => {
         const checkAuthStatus = async () => {
             const accessToken = localStorage.getItem('access');
-
-            if (!accessToken) {
-                setIsAuthenticated(false);
-                setUserRole(null);
-                return;
-            }
-
-            try {
-                const response = await api.get('/usertype/');
-                const userType = response?.data?.user_type;
-
-                if (userType) {
-                    setIsAuthenticated(true);
-                    setUserRole(userType);
+            if (accessToken) {
+                try {
+                    const response = await api.get('/usertype/');
+                    if (response.data) {
+                        setIsAuthenticated(true);
+                        setUserRole(response.data.user_type);
+                        console.log(response.data);
+                    }
+                } catch (error) {
+                    setIsAuthenticated(false);
+                    setUserRole(null);
                 }
-            } catch {
+            } else {
                 setIsAuthenticated(false);
                 setUserRole(null);
             }
         };
-
         checkAuthStatus();
     }, []);
-
-    useEffect(() => {
-        let socket;
-
-        if (isAuthenticated) {
-            // Initialize WebSocket connection
-            const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-            const socketUrl = `${protocol}//${window.location.host}/ws/application-status/`;
-
-            socket = new WebSocket(socketUrl);
-
-            // Listen for messages from the server
-            socket.onmessage = (event) => {
-                const data = JSON.parse(event.data);
-
-                // Check for a status change notification
-                if (data.type === 'status_update') {
-                    const currentStatus = localStorage.getItem('applicationStatus');
-                    if (data.status !== currentStatus) {
-                        setHasNewNotification(true);
-                        localStorage.setItem('applicationStatus', data.status);
-                    }
-                }
-            };
-
-            // Handle WebSocket errors
-            socket.onerror = (error) => {
-                console.error('WebSocket error:', error);
-            };
-
-            // Cleanup WebSocket connection on component unmount
-            return () => {
-                socket.close();
-            };
-        }
-    }, [isAuthenticated]);
 
     const handleLogin = () => {
         setIsAuthenticated(true);
@@ -98,26 +64,17 @@ function App() {
         setUserRole(null);
         localStorage.removeItem('access');
         localStorage.removeItem('refresh');
-        localStorage.removeItem('applicationStatus');
-    };
-
-    const clearNotification = () => {
-        setHasNewNotification(false);
     };
 
     return (
         <Router>
             <div>
-                <Navbar
-                    isAuthenticated={isAuthenticated}
-                    userRole={userRole}
-                    onLogout={handleLogout}
-                    hasNewNotification={hasNewNotification}
-                />
-
+                <Navbar isAuthenticated={isAuthenticated} userRole={userRole} onLogout={handleLogout} />
                 <Routes>
-                    <Route path="/" element={<Home />} />
                     <Route path="/login" element={<Login onLogin={handleLogin} />} />
+                    <Route path="/web-assistant" element={<WebAssistant />} />
+                    <Route path="/" element={<Home />} />
+
                     <Route
                         path="/profile"
                         element={
@@ -151,14 +108,6 @@ function App() {
                         }
                     />
                     <Route
-                        path="/dormitories/:id"
-                        element={
-                            <PrivateRoute isAuthenticated={isAuthenticated}>
-                                <DormDetails />
-                            </PrivateRoute>
-                        }
-                    />
-                    <Route
                         path="/create-application"
                         element={
                             <PrivateRoute isAuthenticated={isAuthenticated}>
@@ -178,7 +127,7 @@ function App() {
                         path="/application-status"
                         element={
                             <PrivateRoute isAuthenticated={isAuthenticated}>
-                                <ApplicationStatus clearNotification={clearNotification} />
+                                <ApplicationStatus />
                             </PrivateRoute>
                         }
                     />
@@ -198,11 +147,61 @@ function App() {
                             </PrivateRoute>
                         }
                     />
+
+                    {/* Новые маршруты админки */}
                     <Route
                         path="/admin"
                         element={
                             <AdminRoute isAuthenticated={isAuthenticated} userRole={userRole}>
                                 <AdminPanel />
+                            </AdminRoute>
+                        }
+                    />
+                    <Route
+                        path="/admin/students"
+                        element={
+                            <AdminRoute isAuthenticated={isAuthenticated} userRole={userRole}>
+                                <AdminStudentsPage />
+                            </AdminRoute>
+                        }
+                    />
+                    <Route
+                        path="/admin/students/view-all"
+                        element={
+                            <AdminRoute isAuthenticated={isAuthenticated} userRole={userRole}>
+                                <StudentsViewAll />
+                            </AdminRoute>
+                        }
+                    />
+                    <Route
+                        path="/admin/dormitories"
+                        element={
+                            <AdminRoute isAuthenticated={isAuthenticated} userRole={userRole}>
+                                <AdminDormitoriesPage />
+                            </AdminRoute>
+                        }
+                    />
+                    <Route
+                        path="/admin/dormitories/view-all"
+                        element={
+                            <AdminRoute isAuthenticated={isAuthenticated} userRole={userRole}>
+                                <DormitoriesViewAll />
+                            </AdminRoute>
+                        }
+                    />
+                    <Route
+                        path="/admin/applications"
+                        element={
+                            <AdminRoute isAuthenticated={isAuthenticated} userRole={userRole}>
+                                <AdminApplicationsPage />
+                            </AdminRoute>
+                        }
+                    />
+                    <Route
+                        path="/admin/applications/:id"
+                        element={
+                            <AdminRoute isAuthenticated={isAuthenticated} userRole={userRole}>
+                                <ApplicationDetailPage />
                             </AdminRoute>
                         }
                     />

@@ -14,8 +14,9 @@ const TestPage = () => {
   const fetchQuestions = async () => {
     setLoading(true);
     try {
-      const response = await api.get('questionlist');
-      const formattedQuestions = response.data.map((q) => ({
+      const response = await api.get('http://127.0.0.1:8000/api/v1/questionlist');
+      console.log(response.data.results);
+      const formattedQuestions = response.data.results.map((q) => ({
         id: q.id,
         question: q.question_text,
         options: [
