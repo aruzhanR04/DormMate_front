@@ -32,11 +32,10 @@ const ApplicationDetailPage = () => {
         <p><strong>Пол:</strong> {application.student.gender}</p>
         <p><strong>GPA:</strong> {application.gpa}</p>
         <p><strong>ЕНТ:</strong> {application.ent_result}</p>
-        {/* Дополнительная информация по заявке */}
       </div>
       <div className="detail-actions">
-        <button onClick={() => {/* Логика одобрения */}}>Одобрить</button>
-        <button onClick={() => {/* Логика отклонения */}}>Отклонить</button>
+        <button onClick={() => {}}>Одобрить</button>
+        <button onClick={() => {}}>Отклонить</button>
         <button onClick={() => navigate(-1)}>Назад</button>
       </div>
     </div>

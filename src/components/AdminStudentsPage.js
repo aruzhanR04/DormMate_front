@@ -1,65 +1,49 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../api';
+import AdminSidebar from './AdminSidebar';
 import '../styles/AdminActions.css';
+import upicon from '../assets/upicon.png';
 
 const AdminStudentsPage = () => {
   const navigate = useNavigate();
-  const [file, setFile] = useState(null);
   const [message, setMessage] = useState('');
 
-  const handleFileChange = (e) => {
-    setFile(e.target.files[0]);
-  };
-
-  const handleUpload = async () => {
-    if (!file) return;
-    const formData = new FormData();
-    formData.append('file', file);
-    try {
-      await api.post('/upload-excel/', formData);
-      setMessage({ type: 'success', text: 'Данные успешно загружены и обновлены' });
-    } catch (error) {
-      console.error('Ошибка при загрузке файла:', error);
-      setMessage({ type: 'error', text: 'Ошибка при подключении к серверу' });
-    }
-  };
-
-  const handleExportStudents = async () => {
-    try {
-      const response = await api.get('/export-students/', { responseType: 'blob' });
-      const url = window.URL.createObjectURL(new Blob([response.data]));
-      const link = document.createElement('a');
-      link.href = url;
-      link.setAttribute('download', 'students_in_dorm.xlsx');
-      document.body.appendChild(link);
-      link.click();
-      link.parentNode.removeChild(link);
-      setMessage({ type: 'success', text: 'Файл успешно выгружен!' });
-    } catch (error) {
-      console.error('Ошибка при выгрузке студентов:', error);
-      setMessage({ type: 'error', text: 'Ошибка при подключении к серверу' });
+  const handleFileChange = async (e) => {
+    const selectedFile = e.target.files[0];
+    if (selectedFile) {
+      const formData = new FormData();
+      formData.append('file', selectedFile);
+      try {
+        await api.post('/upload-excel/', formData);
+        setMessage({ type: 'success', text: 'Данные успешно загружены и обновлены' });
+      } catch (error) {
+        console.error('Ошибка при загрузке файла:', error);
+        setMessage({ type: 'error', text: 'Ошибка при подключении к серверу' });
+      }
     }
   };
 
   return (
-    <div className="admin-actions">
-      <h1>Студенты</h1>
-      <div className="actions-list">
-        <button onClick={() => navigate('/admin/students/add-excel')}>Добавить по Excel</button>
-        <button onClick={() => navigate('/admin/students/add-one')}>Добавить одного</button>
-        <button onClick={() => navigate('/admin/students/view-all')}>Просмотр всех</button>
-        <button onClick={() => navigate('/admin/students/view-one')}>Просмотр одного</button>
-        <button onClick={() => navigate('/admin/students/update-one')}>Изменение одного</button>
-        <button onClick={() => navigate('/admin/students/delete-one')}>Удаление</button>
+    <div className="admin-page-container">
+      <AdminSidebar />
+      <div className="content-area">
+        <h1>Студенты</h1>
+        <div className="actions-list">
+          <button onClick={() => navigate('/admin/students/add-student')}>Добавить студента</button>
+          <button onClick={() => navigate('/admin/students/work')}>Просмотр всех студентов</button>
+        </div>
+        <div className="excel-upload-section">
+          <h2>Загрузка Excel файла</h2>
+          <div className="file-upload-wrapper">
+            <input type="file" onChange={handleFileChange} id="excelInput" />
+            <label htmlFor="excelInput" className="upload-icon-wrapper">
+              <img src={upicon} alt="Upload Excel" className="upload-icon" />
+            </label>
+          </div>
+        </div>
+        {message && <div className={`message ${message.type}`}>{message.text}</div>}
       </div>
-      <div className="excel-upload-section">
-        <h2>Загрузка Excel файла</h2>
-        <input type="file" onChange={handleFileChange} />
-        <button onClick={handleUpload}>Загрузить файл</button>
-        <button onClick={handleExportStudents}>Выгрузить студентов</button>
-      </div>
-      {message && <div className={`message ${message.type}`}>{message.text}</div>}
     </div>
   );
 };

@@ -1,86 +1,221 @@
-.admin-actions {
-    padding: 20px;
-    text-align: center;
-  }
-  
-  .admin-actions h1 {
-    font-size: 28px;
-    color: #0c4b33;
-    margin-bottom: 20px;
-  }
-  
-  .actions-list {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 15px;
-    margin-bottom: 20px;
-  }
-  
-  .actions-list button {
-    padding: 10px 20px;
-    font-size: 16px;
-    border: none;
-    border-radius: 5px;
-    background-color: #D50032;
-    color: #ffffff;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-  }
-  
-  .actions-list button:hover {
-    background-color: #A11D2E;
-  }
-  
-  .excel-upload-section {
-    margin-top: 20px;
-  }
-  
-  .excel-upload-section h2 {
-    font-size: 22px;
-    color: #555555;
-    margin-bottom: 10px;
-    font-style: italic;
-  }
-  
-  .excel-upload-section input[type="file"] {
-    padding: 8px;
-    border: 1px solid #cccccc;
-    border-radius: 5px;
-    margin-bottom: 10px;
-  }
-  
-  .excel-upload-section button {
-    padding: 8px 12px;
-    margin: 5px;
-    border: none;
-    border-radius: 5px;
-    background-color: #D50032;
-    color: #ffffff;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-  }
-  
-  .excel-upload-section button:hover {
-    background-color: #A11D2E;
-  }
-  
-  .message {
-    margin-top: 15px;
-    padding: 10px 15px;
-    border-radius: 5px;
-    font-size: 14px;
-  }
-  
-  .message.success {
-    background-color: #dff0d8;
-    color: #3c763d;
-    border: 1px solid #d6e9c6;
-  }
-  
-  .message.error {
-    background-color: #f2dede;
-    color: #a94442;
-    border: 1px solid #ebccd1;
-  }
-  
+.admin-page-container {
+  display: flex;
+  min-height: 100vh;
+}
+
+.content-area {
+  flex: 1;
+  padding: 40px;
+}
+
+.content-area h1 {
+  font-size: 32px;
+  color: #0c4b33;
+  margin-bottom: 30px;
+  text-align: left;
+}
+
+
+.actions-list {
+  display: flex;
+  gap: 20px;
+  margin-bottom: 30px;
+  justify-content: flex-start;
+}
+
+.actions-list button {
+  padding: 12px 24px;
+  font-size: 16px;
+  border: none;
+  border-radius: 8px;
+  background-color: #D50032;
+  color: #ffffff;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.actions-list button:hover {
+  background-color: #A11D2E;
+  transform: scale(1.05);
+}
+
+
+.dormitories-table-container {
+  margin-top: 30px;
+  overflow-x: auto;
+}
+
+.dormitories-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.dormitories-table th,
+.dormitories-table td {
+  border: 1px solid #cccccc;
+  padding: 8px 12px;
+  text-align: left;
+}
+
+.dormitories-table th {
+  background-color: #f2f2f2;
+}
+
+.dormitories-table tr:hover {
+  background-color: #f9f9f9;
+}
+
+
+.students-table-container {
+  margin-top: 20px;
+  overflow-x: auto;
+}
+
+.students-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.students-table th,
+.students-table td {
+  border: 1px solid #cccccc;
+  padding: 8px 12px;
+  text-align: left;
+}
+
+.students-table th {
+  background-color: #f2f2f2;
+}
+
+.students-table tr:hover {
+  background-color: #f9f9f9;
+}
+
+
+input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  accent-color: #D50032;
+  cursor: pointer;
+}
+
+
+.student-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.student-avatar-placeholder {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: #cccccc;
+}
+
+/* Иконки операций */
+.operation-icon {
+  width: 20px;
+  height: 20px;
+  margin: 0 5px;
+  cursor: pointer;
+  transition: transform 0.3s ease;
+}
+
+.operation-icon:hover {
+  transform: scale(1.2);
+}
+
+/* Секция загрузки Excel файла */
+.excel-upload-section {
+  margin-top: 30px;
+  padding: 20px;
+  border: 1px solid #cccccc;
+  border-radius: 8px;
+  background-color: #f9f9f9;
+  max-width: 400px;
+  text-align: center;
+}
+
+.excel-upload-section h2 {
+  font-size: 22px;
+  color: #333333;
+  margin-bottom: 15px;
+  font-weight: bold;
+}
+
+
+.file-upload-wrapper {
+  position: relative;
+  width: 120px;
+  height: 120px;
+  margin: 0 auto 15px auto;
+}
+
+.file-upload-wrapper input[type="file"] {
+  opacity: 0;
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  cursor: pointer;
+}
+
+.upload-icon-wrapper {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.upload-icon {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  transition: transform 0.3s ease;
+}
+
+.upload-icon-wrapper:hover .upload-icon {
+  transform: scale(1.1);
+}
+
+.save-button {
+  background-color: #4CAF50;
+  color: #fff;
+  border: none;
+  padding: 8px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+  margin-right: 10px;
+}
+
+.cancel-button {
+  background-color: #D50032;
+  color: #fff;
+  border: none;
+  padding: 8px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+
+.message {
+  margin-top: 15px;
+  padding: 10px 15px;
+  border-radius: 5px;
+  font-size: 14px;
+}
+
+.message.success {
+  background-color: #dff0d8;
+  color: #3c763d;
+  border: 1px solid #d6e9c6;
+}
+
+.message.error {
+  background-color: #f2dede;
+  color: #a94442;
+  border: 1px solid #ebccd1;
+}
+
