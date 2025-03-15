@@ -14,7 +14,7 @@ const AdminStudentEditPage = () => {
   useEffect(() => {
     const fetchStudent = async () => {
       try {
-        const response = await api.get(`/students/${id}`);
+        const response = await api.get(`/students/${id}/`);
         setStudent(response.data);
         setFormData(response.data);
       } catch (error) {

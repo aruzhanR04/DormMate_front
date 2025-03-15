@@ -21,7 +21,7 @@ const AdminDormitoryEditPage = () => {
     useEffect(() => {
         const fetchDormData = async () => {
             try {
-                const response = await api.get(`/dormitories/${id}`);
+                const response = await api.get(`/dorms/${id}/`);
                 setDormData(response.data);
             } catch (err) {
                 setError('Ошибка при загрузке данных общежития.');

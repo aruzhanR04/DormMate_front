@@ -71,7 +71,7 @@ const AdminDormitoryAddPage = () => {
                         <input type="number" name="cost" value={formData.cost} onChange={handleChange} required />
                     </label>
                     <div className="form-actions">
-                        <button type="submit">Добавить</button>
+                        <button type="submit" className="save-button">Добавить</button>
                         <button type="button" className="cancel-button" onClick={() => navigate("/admin/dormitories")}>
                             Отмена
                         </button>

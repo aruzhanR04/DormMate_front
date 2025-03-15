@@ -100,7 +100,7 @@ const AdminStudentAddPage = () => {
                         <input type="password" name="password" value={formData.password} onChange={handleChange} required />
                     </label>
                     <div className="form-actions">
-                        <button type="submit">Добавить</button>
+                        <button type="submit" className="save-button">Добавить</button>
                         <button type="button" className="cancel-button" onClick={() => navigate("/admin/students")}>
                             Отмена
                         </button>
