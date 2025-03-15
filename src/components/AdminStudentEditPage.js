@@ -33,7 +33,8 @@ const AdminStudentEditPage = () => {
   const handleSave = async (e) => {
     e.preventDefault();
     try {
-      await api.put(`/students/${id}`, formData);
+      const { avatar, ...filteredData } = formData;
+      await api.put(`/students/${id}/`, filteredData);
       setMessage('Данные успешно сохранены.');
       navigate('/admin/students');
     } catch (error) {
@@ -41,7 +42,7 @@ const AdminStudentEditPage = () => {
       setMessage('Ошибка при сохранении данных.');
     }
   };
-
+  
   const handleCancel = () => {
     navigate('/admin/students');
   };

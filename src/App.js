@@ -26,11 +26,15 @@ import AdminPanel from './components/AdminPanel';
 import AdminStudentsPage from './components/AdminStudentsPage';
 import AdminDormitoriesPage from './components/AdminDormitoriesPage';
 import AdminDormitoriesOperations from './components/AdminDormitoriesOperations';
+import AdminDormitoryAddPage from './components/AdminDormitoryAddPage';
+ import AdminDormitoryViewPage from './components/AdminDormitoryViewPage';
+ import AdminDormitoryEditPage from './components/AdminDormitoryEditPage';
 import AdminApplicationsPage from './components/AdminApplicationsPage';
 import ApplicationDetailPage from './components/ApplicationDetailPage';
 import StudentRoomDistributionPage from './components/StudentRoomDistributionPage';
 import AdminStudentsWorkPage from './components/AdminStudentsWorkPage';
 import AdminSelectStudentsPage from './components/AdminSelectStudentsPage';
+import AdminStudentAddPage from './components/AdminStudentAddPage';
 import AdminStudentViewPage from './components/AdminStudentViewPage';
 import AdminStudentEditPage from './components/AdminStudentEditPage';
 
@@ -138,6 +142,11 @@ function App() {
             element={<AdminRoute isAuthenticated={isAuthenticated} userRole={userRole}><AdminStudentsWorkPage /></AdminRoute>}
           />
           <Route
+             path="/admin/students/add"
+             element={<AdminRoute isAuthenticated={isAuthenticated} userRole={userRole}><AdminStudentAddPage /></AdminRoute>}
+           />
+
+          <Route
             path="/admin/students/view-one/:id"
             element={<AdminRoute isAuthenticated={isAuthenticated} userRole={userRole}><AdminStudentViewPage /></AdminRoute>}
           />
@@ -153,6 +162,18 @@ function App() {
             path="/admin/dormitories/operations"
             element={<AdminRoute isAuthenticated={isAuthenticated} userRole={userRole}><AdminDormitoriesOperations /></AdminRoute>}
           />
+           <Route
+             path="/admin/dormitories/add"
+             element={<AdminRoute isAuthenticated={isAuthenticated} userRole={userRole}><AdminDormitoryAddPage /></AdminRoute>}
+           />
+           <Route
+             path="/admin/dormitories/view-one/:id"
+             element={<AdminRoute isAuthenticated={isAuthenticated} userRole={userRole}><AdminDormitoryViewPage /></AdminRoute>}
+           />
+           <Route
+             path="/admin/dormitories/change/:id"
+             element={<AdminRoute isAuthenticated={isAuthenticated} userRole={userRole}><AdminDormitoryEditPage /></AdminRoute>}
+           />
           <Route
             path="/admin/applications"
             element={<AdminRoute isAuthenticated={isAuthenticated} userRole={userRole}><AdminApplicationsPage /></AdminRoute>}

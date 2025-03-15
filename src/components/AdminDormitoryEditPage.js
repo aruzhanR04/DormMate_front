@@ -40,7 +40,7 @@ const AdminDormitoryEditPage = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            await api.put(`/dormitories/${id}`, dormData);
+            await api.put(`/dorms/${id}/`, dormData);
             navigate('/admin/dormitories');
         } catch (err) {
             setError('Ошибка при сохранении данных общежития.');
