@@ -1,199 +1,171 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import api from '../api';
 import '../styles/Application.css';
-import img_11 from '../assets/img_11.svg';
 
 const ApplicationPage = () => {
+  // Состояния
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
-    birthDate: '',
-    gender: '',
     course: '',
     priceRange: '',
-    priority: null,
-    orphan_certificate: null,
-    disability_1_2_certificate: null,
-    disability_3_certificate: null,
-    parents_disability_certificate: null,
-    loss_of_breadwinner_certificate: null,
-    social_aid_certificate: null,
-    mangilik_el_certificate: null,
-    olympiad_winner_certificate: null,
+    documents: {},
   });
 
-  const [dormitories, setDormitories] = useState([]);
-  const [selectedDormPrice, setSelectedDormPrice] = useState('');
-  const [errorMessage, setErrorMessage] = useState(null);
-  const [notification, setNotification] = useState('');
-  const [showFileFields, setShowFileFields] = useState(false);
+  const dormitories = ['400000', '800000']; // Константа вместо состояния
+  const [isModalOpen, setModalOpen] = useState(false);
   const navigate = useNavigate();
 
+  // Загрузка данных студента
   useEffect(() => {
     const fetchStudentData = async () => {
       try {
         const response = await api.get('studentdetail/');
-        setFormData({
+        setFormData((prevData) => ({
+          ...prevData,
           firstName: response.data.first_name || '',
           lastName: response.data.last_name || '',
-          birthDate: response.data.birth_date || '',
-          phoneNumber: response.data.phone_number || '',
-          email: response.data.email || '',
-          gender: response.data.gender === 'F' ? 'Женский' : response.data.gender === 'M' ? 'Мужской' : 'Не указан',
           course: response.data.course || '',
-          entResult: '',
-          gpa: '',
-          priceRange: '',
-        });
+        }));
       } catch (error) {
         console.error('Ошибка загрузки данных студента:', error);
-        setErrorMessage('Не удалось загрузить данные студента');
-      }
-    };
-
-    const fetchDormitories = async () => {
-      try {
-        const response = await api.get('http://127.0.0.1:8000/api/v1/dorms/costs/');
-        setDormitories(response.data);
-      } catch (error) {
-        console.error('Ошибка загрузки общежитий:', error);
-        setErrorMessage('Не удалось загрузить список общежитий');
       }
     };
 
     fetchStudentData();
-    fetchDormitories();
   }, []);
 
+  // Обработчик изменения файлов
   const handleChange = (e) => {
-    const { name, value, files } = e.target;
+    const { name, files } = e.target;
     if (files) {
       setFormData((prevData) => ({
         ...prevData,
-        [name]: files[0],
+        documents: { ...prevData.documents, [name]: files[0] },
       }));
-    } else {
-      setFormData((prevData) => ({
-        ...prevData,
-        [name]: value,
-      }));
-    }
-
-    if (name === 'priceRange') {
-      const selectedCost = dormitories.find((cost) => cost.toString() === value);
-      setSelectedDormPrice(selectedCost || '');
     }
   };
 
-  const handleApplicationAndRedirect = async () => {
-    const formDataToSend = new FormData();
-    formDataToSend.append('dormitory_cost', formData.priceRange);
-    formDataToSend.append('ent_result', formData.entResult);
-    formDataToSend.append('gpa', formData.gpa);
-
-    Object.keys(formData).forEach((key) => {
-      if (formData[key] instanceof File) {
-        formDataToSend.append(key, formData[key]);
-      }
-    });
-
+  // Обработчик отправки заявки
+  const handleApplicationSubmit = async () => {
     try {
-      const response = await api.post('http://127.0.0.1:8000/api/v1/create_application/', formDataToSend, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
+      const formDataToSend = new FormData();
+      formDataToSend.append('dormitory_cost', formData.priceRange);
+
+      Object.keys(formData.documents).forEach((key) => {
+        if (formData.documents[key]) {
+          formDataToSend.append(key, formData.documents[key]);
+        }
       });
 
-      if (response.status === 201) {
-        setNotification(`Заявка успешно создана! ID заявки: ${response.data.application_id}`); 
-        navigate('/testpage');
-      } else {
-        setErrorMessage(`Ошибка: ${response.data.message || 'Не удалось создать заявку'}`);
-      }
+      await api.post('http://127.0.0.1:8000/api/v1/create_application/', formDataToSend, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+
+      navigate('/testpage');
     } catch (error) {
       console.error('Ошибка при создании заявки:', error);
-      setErrorMessage('Ошибка при соединении с сервером');
     }
   };
 
-  const toggleFileFields = () => {
-    setShowFileFields((prev) => !prev);
-  };
+  // Рендер модального окна
+  const renderModal = () => (
+    <div className="modal">
+      <div className="modal-content">
+        <button className="close-btn" onClick={() => setModalOpen(false)}>✖</button>
+        <h3>Загрузка документов</h3>
+        <div className="file-upload">
+          {[
+            { name: 'orphan_certificate', label: 'Справка сироты' },
+            { name: 'disability_1_2_certificate', label: 'Справка инвалидности 1-2 группы' },
+            { name: 'disability_3_certificate', label: 'Справка инвалидности 3 группы' },
+            { name: 'parents_disability_certificate', label: 'Справка инвалидности родителей' },
+            { name: 'loss_of_breadwinner_certificate', label: 'Справка о потере кормильца' },
+            { name: 'social_aid_certificate', label: 'Справка о получении социальной помощи' },
+            { name: 'mangilik_el_certificate', label: 'Сертификат "Мәңгілік Ел"' },
+            { name: 'olympiad_winner_certificate', label: 'Сертификат победителя олимпиады' },
+          ].map((doc) => (
+            <label key={doc.name} className="file-label">
+              {doc.label}
+              <input type="file" name={doc.name} onChange={handleChange} />
+            </label>
+          ))}
+        </div>
+        <button className="upload-btn">Загрузить</button>
+      </div>
+    </div>
+  );
 
   return (
     <div className="application-page">
-      <div className="form-section">
-        {notification && <div className="notification">{notification}</div>} {/* Уведомление */}
-        {errorMessage && <p style={{ color: 'red' }}>{errorMessage}</p>}
-        <input type="text" placeholder="Имя" name="firstName" value={formData.firstName || ''} readOnly />
-        <input type="text" placeholder="Фамилия" name="lastName" value={formData.lastName || ''} readOnly />
-        <input type="text" placeholder="Дата рождения" name="birthDate" value={formData.birthDate || ''} readOnly />
-        <input type="text" placeholder="Пол" name="gender" value={formData.gender || ''} readOnly />
-        <input type="text" placeholder="Курс" name="course" value={formData.course || ''} readOnly />
-        <input type="text" placeholder="Номер телефона" name="phoneNumber" value={formData.phoneNumber || ''} readOnly />
-        <input type="text" placeholder="Почта" name="Email;" value={formData.email || ''} readOnly />
-        {parseInt(formData.course) === 1 ? (
-        <input type="number" placeholder="Результат ЕНТ" name="entResult" value={formData.entResult || ''} onChange={handleChange} />
-        ) : (
-        <input type="number" step="0.01" placeholder="GPA" name="gpa" value={formData.gpa || ''} onChange={handleChange} />
-      )}
-        <select name="priceRange" value={formData.priceRange || ''} onChange={handleChange}>
-          <option value="">Выберите общежитие</option>
-          {dormitories.map((cost, index) => (
-            <option key={index} value={cost}>
-              {cost} тг
-            </option>
-          ))}
-
-        </select>
-        {selectedDormPrice && <p>Стоимость: {selectedDormPrice} тг</p>}
-
-        <button className='test-btn' onClick={toggleFileFields}>
-          {showFileFields ? 'Скрыть формы' : 'Прикрепите необходимые справки и документы'}
-        </button>
-
-        {showFileFields && (
-          <div className="file-fields">
-            <label>
-              Справка сироты:
-              <input type="file" name="orphan_certificate" onChange={handleChange} />
-            </label>
-            <label>
-              Справка инвалидности 1-2 группы:
-              <input type="file" name="disability_1_2_certificate" onChange={handleChange} />
-            </label>
-            <label>
-              Справка инвалидности 3 группы:
-              <input type="file" name="disability_3_certificate" onChange={handleChange} />
-            </label>
-            <label>
-              Справка инвалидности родителей:
-              <input type="file" name="parents_disability_certificate" onChange={handleChange} />
-            </label>
-            <label>
-              Справка о потере кормильца:
-              <input type="file" name="loss_of_breadwinner_certificate" onChange={handleChange} />
-            </label>
-            <label>
-              Справка о получении социальной помощи:
-              <input type="file" name="social_aid_certificate" onChange={handleChange} />
-            </label>
-            <label>
-              Сертификат "Мәңгілік Ел":
-              <input type="file" name="mangilik_el_certificate" onChange={handleChange} />
-            </label>
-            <label>
-              Сертификат победителя олимпиады:
-              <input type="file" name="olympiad_winner_certificate" onChange={handleChange} />
-            </label>
+      <div className="application-container">
+        {/* Карточка контактов */}
+        <div className="contact-card">
+          <h3>Контакты для информации</h3>
+          <p>При случае Lorem ipsum odor amet, consectetuer adipiscing elit.</p>
+          <div className="contact-info">
+            <p>📞 +777 777 77 77</p>
+            <p>📞 +777 777 88 88</p>
+            <p>📧 Support@narxoz.kz</p>
           </div>
-        )}
-        <button className="submit-btn" onClick={handleApplicationAndRedirect}>Отправить заявку и перейти к тесту</button>
+        </div>
+
+        {/* Форма заявки */}
+        <div className="form-section">
+          <div className="form-grid">
+            <div className="input-group">
+              <label>Имя</label>
+              <input type="text" value={formData.firstName} readOnly />
+            </div>
+            <div className="input-group">
+              <label>Фамилия</label>
+              <input type="text" value={formData.lastName} readOnly />
+            </div>
+            <div className="input-group">
+              <label>Курс</label>
+              <input type="text" value={formData.course} readOnly />
+            </div>
+            <div className="input-group">
+              <label>Ценовой диапазон</label>
+              <div className="price-range-select">
+                <select
+                  name="priceRange"
+                  value={formData.priceRange || ''}
+                  onChange={(e) => {
+                    setFormData({ ...formData, priceRange: e.target.value });
+                  }}
+                >
+                  
+                  {dormitories.map((cost, index) => (
+                    <option key={index} value={cost}>
+                      {cost} тг
+                    </option>
+                  ))}
+                </select>
+              </div>
+              {formData.priceRange && (
+                <p className="selected-price">
+                  Стоимость: <strong>{formData.priceRange} тг</strong>
+                </p>
+              )}
+            </div>
+          </div>
+
+          {/* Кнопки */}
+          <div className="button-group">
+            <button className="upload-btn" onClick={() => setModalOpen(true)}>
+              Загрузить документы
+            </button>
+            <button className="upload-btn" onClick={handleApplicationSubmit}>
+              Отправить заявку
+            </button>
+          </div>
+        </div>
       </div>
-      <div className="visual-section">
-        <img src={img_11} alt="img_11" className="img_11" />
-      </div>
+
+      {/* Модальное окно */}
+      {isModalOpen && renderModal()}
     </div>
   );
 };

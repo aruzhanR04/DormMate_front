@@ -19,7 +19,7 @@ const WebAssistant = () => {
         }
     };
     fetchFrequentQuestions();
-
+            // Вызов загрузки вопросов при старте
     useEffect(() => {
         const fetchFrequentQuestions = async () => {
             try {

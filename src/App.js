@@ -17,20 +17,20 @@ import AdminRoute from './components/AdminRoute';
 import Logout from './components/Logout';
 import ChatIcon from './components/ChatIcon';
 import api from './api';
+import Dormitory1 from './pages/Dormitory1';
+import Dormitory2 from './pages/Dormitory2';
+import Dormitory3 from './pages/Dormitory3';
 
+// Новые компоненты админки:
 import AdminPanel from './components/AdminPanel';
 import AdminStudentsPage from './components/AdminStudentsPage';
 import AdminDormitoriesPage from './components/AdminDormitoriesPage';
 import AdminDormitoriesOperations from './components/AdminDormitoriesOperations';
-import AdminDormitoryAddPage from './components/AdminDormitoryAddPage';
-import AdminDormitoryViewPage from './components/AdminDormitoryViewPage';
-import AdminDormitoryEditPage from './components/AdminDormitoryEditPage';
 import AdminApplicationsPage from './components/AdminApplicationsPage';
 import ApplicationDetailPage from './components/ApplicationDetailPage';
 import StudentRoomDistributionPage from './components/StudentRoomDistributionPage';
 import AdminStudentsWorkPage from './components/AdminStudentsWorkPage';
 import AdminSelectStudentsPage from './components/AdminSelectStudentsPage';
-import AdminStudentAddPage from './components/AdminStudentAddPage';
 import AdminStudentViewPage from './components/AdminStudentViewPage';
 import AdminStudentEditPage from './components/AdminStudentEditPage';
 
@@ -121,7 +121,10 @@ function App() {
             path="/logout"
             element={<PrivateRoute isAuthenticated={isAuthenticated}><Logout onLogout={handleLogout} /></PrivateRoute>}
           />
-          
+        <Route path="/dormitory1" element={<Dormitory1 />} />
+        <Route path="/dormitory2" element={<Dormitory2 />} />
+        <Route path="/dormitory3" element={<Dormitory3 />} />
+          {/* Новые маршруты админки */}
           <Route
             path="/admin"
             element={<AdminRoute isAuthenticated={isAuthenticated} userRole={userRole}><AdminPanel /></AdminRoute>}
@@ -133,10 +136,6 @@ function App() {
           <Route
             path="/admin/students/work"
             element={<AdminRoute isAuthenticated={isAuthenticated} userRole={userRole}><AdminStudentsWorkPage /></AdminRoute>}
-          />
-          <Route
-            path="/admin/students/add"
-            element={<AdminRoute isAuthenticated={isAuthenticated} userRole={userRole}><AdminStudentAddPage /></AdminRoute>}
           />
           <Route
             path="/admin/students/view-one/:id"
@@ -153,18 +152,6 @@ function App() {
           <Route
             path="/admin/dormitories/operations"
             element={<AdminRoute isAuthenticated={isAuthenticated} userRole={userRole}><AdminDormitoriesOperations /></AdminRoute>}
-          />
-          <Route
-            path="/admin/dormitories/add"
-            element={<AdminRoute isAuthenticated={isAuthenticated} userRole={userRole}><AdminDormitoryAddPage /></AdminRoute>}
-          />
-          <Route
-            path="/admin/dormitories/view-one/:id"
-            element={<AdminRoute isAuthenticated={isAuthenticated} userRole={userRole}><AdminDormitoryViewPage /></AdminRoute>}
-          />
-          <Route
-            path="/admin/dormitories/change/:id"
-            element={<AdminRoute isAuthenticated={isAuthenticated} userRole={userRole}><AdminDormitoryEditPage /></AdminRoute>}
           />
           <Route
             path="/admin/applications"

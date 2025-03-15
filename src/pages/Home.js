@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React from "react";
+import { Link } from "react-router-dom"; // Импортируем Link
 import "../styles/Home.css";
 import BannerCarousel from "./BannerCarousel";
 import img_12 from "../assets/img_12.jpeg";
@@ -6,18 +7,9 @@ import img_13 from "../assets/img_13.jpg";
 import img_14 from "../assets/img_14.jpg";
 
 const Home = () => {
-  const [modalData, setModalData] = useState(null);
-
-  const handleModalOpen = (data) => {
-    setModalData(data);
-  };
-
-  const handleModalClose = () => {
-    setModalData(null);
-  };
-
   const dormitories = [
     {
+      id: 1,
       title: "Дом студентов Narxoz Residence",
       address: "микрорайон 10",
       price: "80 000тг",
@@ -26,6 +18,7 @@ const Home = () => {
       img: img_12,
     },
     {
+      id: 2,
       title: "Дом студентов №2 Б",
       address: "мкрн. Таугуль, 34",
       price: "46 000 тг.",
@@ -34,6 +27,7 @@ const Home = () => {
       img: img_13,
     },
     {
+      id: 3,
       title: "Дом студентов №3",
       address: "мкрн 1-й., 81",
       price: "46 000 тг.",
@@ -49,8 +43,8 @@ const Home = () => {
         <BannerCarousel />
       </section>
 
-      {dormitories.map((dorm, index) => (
-        <section key={index} className="block second-block">
+      {dormitories.map((dorm) => (
+        <section key={dorm.id} className="block second-block">
           <div className="content-wrapper">
             <div className="text-block">
               <h1>{dorm.title}</h1>
@@ -59,12 +53,10 @@ const Home = () => {
                 <br />
                 <span>Проживание в месяц: {dorm.price}</span>
               </p>
-              <button
-                className="detail-button"
-                onClick={() => handleModalOpen(dorm)}
-              >
+              {/* Используем Link для перехода на страницу общежития */}
+              <Link to={`/dormitory${dorm.id}`} className="detail-button">
                 Подробнее
-              </button>
+              </Link>
             </div>
             <div className="image-block">
               <img src={dorm.img} alt="Dormitory" />
@@ -72,21 +64,6 @@ const Home = () => {
           </div>
         </section>
       ))}
-
-      {modalData && (
-        <div className="modal-overlay" onClick={handleModalClose}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <h2>{modalData.title}</h2>
-            <p><strong>Адрес:</strong> {modalData.address}</p>
-            <p><strong>Проживание в месяц:</strong> {modalData.price}</p>
-            <p><strong>Количество мест в комнате:</strong> {modalData.rooms.join(", ")}</p>
-            <p>{modalData.description}</p>
-            <button className="close-button" onClick={handleModalClose}>
-              Закрыть
-            </button>
-          </div>
-        </div>
-      )}
     </div>
   );
 };
