@@ -34,11 +34,11 @@ const AdminStudentEditPage = () => {
     e.preventDefault();
     try {
       await api.put(`/students/${id}`, formData);
-      setMessage({ type: 'success', text: 'Данные успешно сохранены' });
+      setMessage('Данные успешно сохранены.');
       navigate('/admin/students');
     } catch (error) {
       console.error('Ошибка при сохранении данных:', error);
-      setMessage({ type: 'error', text: 'Ошибка при сохранении данных' });
+      setMessage('Ошибка при сохранении данных.');
     }
   };
 
@@ -98,7 +98,12 @@ const AdminStudentEditPage = () => {
           </label>
           <label>
             Область:
-            <input type="text" name="region" value={formData.region ? formData.region.region_name : ''} onChange={handleChange} />
+            <input
+              type="text"
+              name="region"
+              value={formData.region?.region_name || ''}
+              onChange={handleChange}
+            />
           </label>
           <label>
             Пол:
@@ -109,11 +114,15 @@ const AdminStudentEditPage = () => {
             </select>
           </label>
           <div className="form-actions">
-            <button type="button" className="cancel-button" onClick={handleCancel}>Отмена</button>
-            <button type="submit" className="save-button">Сохранить</button>
+            <button type="button" className="cancel-button" onClick={handleCancel}>
+              Отмена
+            </button>
+            <button type="submit" className="save-button">
+              Сохранить
+            </button>
           </div>
         </form>
-        {message && <div className={`message ${message.type}`}>{message.text}</div>}
+        {message && <div className={`message ${message.includes('ошибка') ? 'error' : 'success'}`}>{message}</div>}
       </div>
     </div>
   );

@@ -34,11 +34,11 @@ const AdminDormitoriesOperations = () => {
       <AdminSidebar />
       <div className="content-area">
         <h1>Общежития</h1>
-        <div className="actions-list">
+        {/* <div className="actions-list">
           <button onClick={() => navigate('/admin/dormitories/add')}>Добавить общежитие</button>
           <button onClick={() => navigate('/admin/dormitories/update')}>Изменение</button>
           <button onClick={() => navigate('/admin/dormitories/delete')}>Удаление</button>
-        </div>
+        </div> */}
         {message && <div className={`message ${message.type}`}>{message.text}</div>}
         <div className="dormitories-table-container">
           <table className="dormitories-table">

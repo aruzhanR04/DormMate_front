@@ -1,4 +1,3 @@
-// src/components/AdminSidebar.js
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import sicon from '../assets/sicon2.png';
@@ -14,7 +13,7 @@ const AdminSidebar = () => {
           <li onClick={() => navigate('/admin/students')}>
             <img src={sicon} alt="Студенты" className="nav-icon" /> <span>Студенты</span>
           </li>
-          <li onClick={() => navigate('/admin/dormitories/operations')}>
+          <li onClick={() => navigate('/admin/dormitories')}>
             <img src={dicon} alt="Общежития" className="nav-icon" /> <span>Общежития</span>
           </li>
           <li onClick={() => navigate('/admin/applications')}>

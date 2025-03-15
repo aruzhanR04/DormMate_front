@@ -49,7 +49,7 @@ const AdminStudentViewPage = () => {
           <p><strong>Телефон:</strong> {student.phone_number || '-'}</p>
           <p><strong>Дата рождения:</strong> {student.birth_date ? new Date(student.birth_date).toLocaleDateString() : '-'}</p>
           <p><strong>Курс:</strong> {student.course}</p>
-          <p><strong>Область:</strong> {student.region ? student.region.region_name : '-'}</p>
+          <p><strong>Область:</strong> {student.region?.region_name || '-'}</p>
           <p><strong>Пол:</strong> {student.gender || '-'}</p>
         </div>
         <button className="cancel-button" onClick={() => navigate('/admin/students')}>Назад к списку</button>

@@ -30,7 +30,7 @@ const AdminStudentsPage = () => {
       <div className="content-area">
         <h1>Студенты</h1>
         <div className="actions-list">
-          <button onClick={() => navigate('/admin/students/add-student')}>Добавить студента</button>
+          <button onClick={() => navigate('/admin/students/add')}>Добавить студента</button>
           <button onClick={() => navigate('/admin/students/work')}>Просмотр всех студентов</button>
         </div>
         <div className="excel-upload-section">
