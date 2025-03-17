@@ -1,9 +1,9 @@
 import React, { useState } from "react";
 import banner from "../assets/banner.png";
-import banner2 from "../assets/banner2.png";
+// import banner2 from "../assets/banner2.png";
 import banner3 from "../assets/banner3.png";
 
-const banners = [banner, banner3, banner2];
+const banners = [banner, banner3];
 
 const BannerCarousel = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
