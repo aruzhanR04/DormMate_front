@@ -1,0 +1,82 @@
+/* Сам Navbar (упрощён) */
+.navbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #fff; 
+  box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+  padding: 0 20px;
+}
+
+/* Колокольчик */
+.notification-bell {
+  position: relative;
+  cursor: pointer;
+  margin-left: 10px;
+}
+
+.notification-bell .bell-icon {
+  width: 24px;
+  height: 24px;
+}
+
+/* Красная точка при новых уведомлениях */
+.notification-dot {
+  position: absolute;
+  top: -4px;
+  right: -6px;
+  width: 10px;
+  height: 10px;
+  background: red;
+  border-radius: 50%;
+}
+
+/* Окно уведомлений */
+.notifications-popup {
+  position: absolute;
+  top: 70px;    /* Чуть ниже navbar */
+  right: 20px;  /* Прижать к правому краю */
+  width: 280px;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  padding: 12px;
+  z-index: 9999;
+}
+
+/* Заголовок */
+.notifications-popup h4 {
+  margin: 0 0 10px;
+  font-size: 1rem;
+  color: #333;
+}
+
+/* Если нет уведомлений */
+.no-notifications {
+  font-size: 0.9rem;
+  color: #777;
+  text-align: center;
+}
+
+/* Список уведомлений */
+.notification-item {
+  border: 1px solid #eee;
+  border-radius: 5px;
+  padding: 8px;
+  margin-bottom: 8px;
+  font-size: 0.9rem;
+}
+
+/* Кнопка «Скрыть» */
+.notification-item button {
+  background: #f6f6f6;
+  border: 1px solid #ccc;
+  padding: 4px 8px;
+  font-size: 0.85rem;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-top: 5px;
+}
+.notification-item button:hover {
+  background: #eaeaea;
+}

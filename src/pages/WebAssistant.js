@@ -1,145 +1,193 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../api';
 import '../styles/ChatAssistant.css';
 
 const WebAssistant = () => {
-    const [messages, setMessages] = useState([{ type: 'assistant', text: 'Здравствуйте! Чем могу помочь?' }]);
-    const [userInput, setUserInput] = useState('');
-    const [error, setError] = useState(null);
-    const [isChatEnded, setIsChatEnded] = useState(false);
-    const [frequentQuestions, setFrequentQuestions] = useState([]); 
-    
-    const fetchFrequentQuestions = async () => {
-        try {
-            const response = await axios.get('http://127.0.0.1:8000/api/v1/web_assistant/questions/');
-            // Сохраняем только два вопроса в состоянии
-            setFrequentQuestions(response.data.slice(0, 2));
-        } catch (err) {
-            console.error('Ошибка при загрузке частых вопросов:', err);
+  const [chatId, setChatId] = useState(localStorage.getItem('chatId') || null);
+  const [messages, setMessages] = useState([]);
+  const [userInput, setUserInput] = useState('');
+  const [chatActive, setChatActive] = useState(true);
+  const [error, setError] = useState(null);
+
+  const userType = localStorage.getItem('user_type') || 'student';
+
+  const fetchMessages = async (cId) => {
+    try {
+      const res = await api.get(`chats/${cId}/messages/`);
+      const data = Array.isArray(res.data) ? res.data : res.data.results || [];
+
+      const transformed = data.map((msg) => {
+        const senderType = msg.sender_type;
+        const isUser = senderType === userType;
+
+        let timeString = '';
+        if (msg.timestamp) {
+          const d = new Date(msg.timestamp);
+          if (!isNaN(d)) {
+            timeString = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+          }
         }
-    };
-    fetchFrequentQuestions();
-            // Вызов загрузки вопросов при старте
-    useEffect(() => {
-        const fetchFrequentQuestions = async () => {
-            try {
-                const response = await axios.get('http://127.0.0.1:8000/api/v1/web_assistant/frequent_questions/?limit=2');
-                setFrequentQuestions(response.data);
-            } catch (err) {
-                console.error('Ошибка при загрузке частых вопросов:', err);
-            }
+
+        return {
+          id: msg.id,
+          text: msg.content,
+          type: isUser ? 'user' : 'admin',
+          timestamp: timeString,
         };
-        fetchFrequentQuestions();
-    }, []);
-    
-    const handleSendMessage = async () => {
-        if (!userInput.trim()) return;
+      });
 
-        setMessages(prevMessages => [...prevMessages, { type: 'user', text: userInput }]);
+      setMessages(transformed);
+    } catch (err) {
+      console.error('Ошибка при загрузке сообщений:', err);
+      if (err.response?.status === 404) {
+        localStorage.removeItem('chatId');
+        setChatId(null);
+      }
+      setError('Ошибка при загрузке сообщений.');
+    }
+  };
 
-        let assistantReply = '';
+  const handleSendMessage = async () => {
+    if (!userInput.trim() || !chatActive) return;
+    const text = userInput;
+    setUserInput('');
 
-        if (/привет|здравствуйте|добрый день/i.test(userInput)) {
-            assistantReply = 'Здравствуйте! Чем могу помочь? Вот несколько часто задаваемых вопросов:';
-        } 
-        else if (/пока|до свидания/i.test(userInput)) {
-            assistantReply = 'До свидания! Рад был помочь.';
-            setIsChatEnded(true);
-        } 
-        else if (/спасибо/i.test(userInput)) {
-            assistantReply = 'Пожалуйста! Был ли ответ полезен?';
-            setIsChatEnded(true);
-        } else {
-            try {
-                const response = await axios.get(`http://127.0.0.1:8000/api/v1/web_assistant/questions/?search=${encodeURIComponent(userInput)}`);
-                
-                if (response.data.length > 0) {
-                    assistantReply = response.data[0].answer;
-                } else {
-                    assistantReply = 'Извините, я не нашел ответа на ваш вопрос. Пожалуйста, обратитесь к нашему менеджеру для получения дополнительной информации.';
-                }
-            } catch (err) {
-                console.error('Ошибка при получении ответа:', err);
-                setError("Ошибка при подключении к серверу. Попробуйте позже.");
-                assistantReply = "Произошла ошибка, попробуйте снова позже.";
-            }
+    try {
+      const searchRes = await api.get(`questions/?search=${encodeURIComponent(text)}`);
+      const autoAnswer = searchRes.data?.[0]?.answer;
+
+      let currentChatId = chatId;
+      if (!currentChatId) {
+        const createRes = await api.post('student/chats/create/', {});
+        currentChatId = createRes.data.id;
+        setChatId(currentChatId);
+        localStorage.setItem('chatId', currentChatId);
+      }
+
+      await api.post(`chats/${currentChatId}/send/`, { text });
+      fetchMessages(currentChatId);
+
+      if (autoAnswer) {
+        setMessages(prev => [
+          ...prev,
+          {
+            id: Date.now(),
+            text: autoAnswer,
+            type: userType === 'student' ? 'admin' : 'user',
+            timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+          }
+        ]);
+      } else {
+        setMessages(prev => [
+          ...prev,
+          {
+            id: Date.now() + 1,
+            text: 'Администратор подключается к чату...',
+            type: userType === 'student' ? 'admin' : 'user',
+            timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+          }
+        ]);
+      }
+
+    } catch (err) {
+      console.error('Ошибка при отправке сообщения:', err);
+      setError('Не удалось отправить сообщение.');
+    }
+  };
+
+  const handleRequestOperator = async () => {
+    if (!chatId || !chatActive) return;
+    try {
+      await api.post('notifications/request-admin/', { chat_id: chatId });
+      setMessages(prev => [
+        ...prev,
+        {
+          id: Date.now() + 2,
+          text: 'Оператор вызван. Ожидайте...',
+          type: userType === 'student' ? 'admin' : 'user',
+          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
         }
+      ]);
+    } catch (err) {
+      console.error('Ошибка при вызове оператора:', err);
+      setError('Не удалось вызвать оператора.');
+    }
+  };
 
-        setMessages(prevMessages => [...prevMessages, { type: 'assistant', text: assistantReply }]);
-
-        if (isChatEnded || assistantReply.includes('Пожалуйста, обратитесь к нашему менеджеру')) {
-            setTimeout(() => {
-                setMessages(prevMessages => [
-                    ...prevMessages,
-                    { type: 'assistant', text: 'Хотите продолжить разговор или завершить работу?' }
-                ]);
-                setIsChatEnded(true);
-            }, 1000);
+  const handleEndChat = async () => {
+    if (!chatId || !chatActive) return;
+    try {
+      await api.post(`chats/${chatId}/end/`);
+      setChatActive(false);
+      setMessages(prev => [
+        ...prev,
+        {
+          id: 'end',
+          text: 'Чат завершён.',
+          type: userType === 'student' ? 'admin' : 'user',
+          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
         }
+      ]);
+      localStorage.removeItem('chatId');
+      setChatId(null);
+    } catch (err) {
+      console.error('Ошибка при завершении чата:', err);
+      setError('Не удалось завершить чат.');
+    }
+  };
 
-        setUserInput('');
-    };
+  useEffect(() => {
+    if (chatId) {
+      fetchMessages(chatId);
+      const interval = setInterval(() => fetchMessages(chatId), 5000);
+      return () => clearInterval(interval);
+    }
+  }, [chatId]);
 
-    const handleFrequentQuestionClick = async (question) => {
-        setUserInput(question);
-        await handleSendMessage();
-    };
-
-    const restartChat = () => {
-        setMessages([{ type: 'assistant', text: 'Здравствуйте! Чем могу помочь?' }]);
-        setIsChatEnded(false);
-        setUserInput('');
-        setError(null);
-    };
-
-    return (
-        <div className="web-assistant">
-        <div className="chat-container">
-            <h2>Веб-помощник</h2>
-            <div className="chat-box">
-                {messages.map((message, index) => (
-                    <div key={index} className={`chat-message ${message.type}`}>
-                        {message.text}
-                    </div>
-                ))}
-                
-                {messages.length === 1 && frequentQuestions.length > 0 && (
-                    <div className="frequent-questions">
-                        <h4>Часто задаваемые вопросы:</h4>
-                        {frequentQuestions.map((item, index) => (
-                            <button 
-                                key={index} 
-                                onClick={() => handleFrequentQuestionClick(item.question)}
-                                className="frequent-question"
-                            >
-                                {item.question}
-                            </button>
-                        ))}
-                    </div>
+  return (
+    <div className="web-assistant">
+      <div className="chat-container">
+        <h2>Веб-помощник</h2>
+        <div className="chat-box">
+          {messages.length > 0 ? (
+            messages.map(msg => (
+              <div key={msg.id} className={`chat-message ${msg.type}`}>
+                <span className="text">{msg.text}</span>
+                {msg.timestamp && (
+                  <span className="timestamp">{msg.timestamp}</span>
                 )}
+              </div>
+            ))
+          ) : (
+            <p>Нет сообщений</p>
+          )}
+        </div>
+
+        {error && <p className="error">{error}</p>}
+
+        {chatActive ? (
+          <>
+            <div className="input-container">
+              <input
+                type="text"
+                placeholder="Введите вопрос..."
+                value={userInput}
+                onChange={e => setUserInput(e.target.value)}
+                onKeyDown={e => e.key === 'Enter' && handleSendMessage()}
+              />
+              <button onClick={handleSendMessage}>Отправить</button>
             </div>
-            {error && <p style={{ color: 'red' }}>{error}</p>}
-            
-            {isChatEnded ? (
-                <div className="chat-end-options">
-                    <button onClick={restartChat}>Продолжить чат</button>
-                    <button onClick={() => setIsChatEnded(true)}>Завершить работу</button>
-                </div>
-            ) : (
-                <div className="input-container">
-                    <input 
-                        type="text" 
-                        placeholder="Введите ваш вопрос..." 
-                        value={userInput} 
-                        onChange={(e) => setUserInput(e.target.value)} 
-                        onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
-                    />
-                    <button onClick={handleSendMessage}>Отправить</button>
-                </div>
-            )}
-        </div>
-        </div>
-    );
+            <div className="chat-actions">
+              <button onClick={handleRequestOperator}>Вызвать оператора</button>
+              <button onClick={handleEndChat}>Завершить чат</button>
+            </div>
+          </>
+        ) : (
+          <p>Чат завершён.</p>
+        )}
+      </div>
+    </div>
+  );
 };
 
 export default WebAssistant;

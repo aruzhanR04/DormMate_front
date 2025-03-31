@@ -2,8 +2,9 @@ import React, { useState } from "react";
 import banner from "../assets/banner.png";
 import banner2 from "../assets/banner2.png";
 import banner3 from "../assets/banner3.png";
+import banner4 from "../assets/banner4.png";
 
-const banners = [banner, banner3, banner2];
+const banners = [banner, banner2, banner3, banner4];
 
 const BannerCarousel = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -39,9 +40,7 @@ const BannerCarousel = () => {
         {banners.map((_, index) => (
           <span
             key={index}
-            className={`indicator ${
-              index === currentIndex ? "active" : ""
-            }`}
+            className={`indicator ${index === currentIndex ? "active" : ""}`}
             onClick={() => goToIndex(index)}
           ></span>
         ))}

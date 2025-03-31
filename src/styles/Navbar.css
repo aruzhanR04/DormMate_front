@@ -95,3 +95,102 @@
     padding: 10px 0;
   }
 }
+.notifications-popup {
+  position: absolute;
+  top: 70px;
+  right: 20px;
+  width: 280px;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  padding: 12px;
+  z-index: 9999;
+  /* Можно слегка уменьшить общий шрифт в самом контейнере */
+  font-size: 0.875rem; /* ~14px */
+}
+
+.notifications-popup h4 {
+  margin: 0 0 10px;
+  font-size: 0.95rem; /* заголовок чуть крупнее */
+  color: #333;
+}
+
+.notification-item {
+  border: 1px solid #eee;
+  border-radius: 5px;
+  padding: 8px;
+  margin-bottom: 8px;
+  /* Уведем еще чуть-чуть шрифт */
+  font-size: 0.85rem; /* ~13px */
+}
+
+.notification-item button {
+  background: #f6f6f6;
+  border: 1px solid #ccc;
+  padding: 4px 8px;
+  font-size: 0.75rem; /* кнопка еще мельче */
+  border-radius: 4px;
+  cursor: pointer;
+  margin-top: 5px;
+}
+
+.admin-notifications-popup {
+  position: absolute;
+  top: 60px;
+  right: 20px;
+  width: 300px;
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  padding: 12px;
+  z-index: 9999;
+  font-family: 'Segoe UI', Tahoma, sans-serif;
+}
+
+.admin-notifications-popup h4 {
+  margin-top: 0;
+  font-size: 1rem;
+  margin-bottom: 8px;
+  color: #333;
+  text-align: center;
+}
+
+.no-notifications {
+  font-size: 0.9rem;
+  color: #666;
+  text-align: center;
+}
+
+.admin-notification-item {
+  border: 1px solid #eee;
+  border-radius: 5px;
+  padding: 8px;
+  margin-bottom: 8px;
+  background: #fafafa;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.notif-message {
+  margin: 0;
+  font-size: 0.9rem;
+  color: #333;
+}
+
+.notif-button {
+  align-self: flex-end;
+  background: #f3f3f3;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  padding: 4px 10px;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.notif-button:hover {
+  background: #e7e7e7;
+}
+
