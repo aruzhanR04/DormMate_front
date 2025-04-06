@@ -1,42 +1,43 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
-import Navbar from './components/Navbar';
-import Home from './pages/Home';
-import Login from './pages/Login';
-import Profile from './pages/Profile';
-import TestPage from './pages/TestPage';
-import StudentList from './pages/StudentList';
-import DormList from './pages/DormList';
-import CreateApplication from './pages/CreateApplication';
-import TestSubmission from './pages/TestSubmission';
-import ApplicationStatus from './pages/ApplicationStatus';
-import UploadPayment from './pages/UploadPayment';
-import WebAssistant from './pages/WebAssistant';
-import PrivateRoute from './components/PrivateRoute';
-import AdminRoute from './components/AdminRoute';
-import Logout from './components/Logout';
-import ChatIcon from './components/ChatIcon';
 import api from './api';
-import Dormitory1 from './pages/Dormitory1';
-import Dormitory2 from './pages/Dormitory2';
-import Dormitory3 from './pages/Dormitory3';
+import Navbar from './components/common/Navbar';
+import PrivateRoute from './components/common/PrivateRoute';
+import Logout from './components/common/Logout';
+import ChatIcon from './components/chat/ChatIcon';
 
-// Новые компоненты админки
-import AdminPanel from './components/AdminPanel';
-import AdminStudentsPage from './components/AdminStudentsPage';
-import AdminDormitoriesPage from './components/AdminDormitoriesPage';
-import AdminDormitoriesOperations from './components/AdminDormitoriesOperations';
-import AdminDormitoryAddPage from './components/AdminDormitoryAddPage';
-import AdminDormitoryViewPage from './components/AdminDormitoryViewPage';
-import AdminDormitoryEditPage from './components/AdminDormitoryEditPage';
-import AdminApplicationsPage from './components/AdminApplicationsPage';
-import ApplicationDetailPage from './components/ApplicationDetailPage';
-import StudentRoomDistributionPage from './components/StudentRoomDistributionPage';
-import AdminStudentsWorkPage from './components/AdminStudentsWorkPage';
-import AdminSelectStudentsPage from './components/AdminSelectStudentsPage';
-import AdminStudentAddPage from './components/AdminStudentAddPage';
-import AdminStudentViewPage from './components/AdminStudentViewPage';
-import AdminStudentEditPage from './components/AdminStudentEditPage';
+import AdminPanel from './components/admin/AdminPanel';
+import AdminStudentsPage from './components/admin/AdminStudentsPage';
+import AdminDormitoriesPage from './components/admin/AdminDormitoriesPage';
+import AdminDormitoriesOperations from './components/admin/AdminDormitoriesOperations';
+import AdminDormitoryAddPage from './components/admin/AdminDormitoryAddPage';
+import AdminDormitoryViewPage from './components/admin/AdminDormitoryViewPage';
+import AdminDormitoryEditPage from './components/admin/AdminDormitoryEditPage';
+import AdminApplicationsPage from './components/admin/AdminApplicationsPage';
+import ApplicationDetailPage from './components/admin/ApplicationDetailPage';
+import StudentRoomDistributionPage from './components/admin/StudentRoomDistributionPage';
+import AdminStudentsWorkPage from './components/admin/AdminStudentsWorkPage';
+import AdminSelectStudentsPage from './components/admin/AdminSelectStudentsPage';
+import AdminStudentAddPage from './components/admin/AdminStudentAddPage';
+import AdminStudentViewPage from './components/admin/AdminStudentViewPage';
+import AdminStudentEditPage from './components/admin/AdminStudentEditPage';
+import AdminRoute from './components/admin/AdminRoute';
+
+import Home from './pages/main/Home';
+import Login from './pages/auth/Login';
+import Profile from './pages/user/Profile';
+import TestPage from './pages/application/TestPage';
+import StudentList from './pages/user/NotificationsPage'; // Или куда у тебя отнесён список студентов
+import DormList from './pages/dormitories/DormList';
+import CreateApplication from './pages/application/CreateApplication';
+import TestSubmission from './pages/application/TestSubmission';
+import ApplicationStatus from './pages/application/ApplicationStatus';
+import UploadPayment from './pages/application/UploadPayment';
+import WebAssistant from './pages/elements/WebAssistant';
+
+import Dormitory1 from './pages/dormitories/Dormitory1';
+import Dormitory2 from './pages/dormitories/Dormitory2';
+import Dormitory3 from './pages/dormitories/Dormitory3';
 
 const DormAdd = () => <div>Добавление общежития</div>;
 const DormUpdate = () => <div>Изменение общежития</div>;
@@ -201,7 +202,7 @@ function App() {
           />
         </Routes>
 
-        {/* 👇 Чат и иконка чата – только для студентов */}
+        {/* Чат и иконка чата – только для студентов */}
         {isAuthenticated && userRole === 'student' && (
           <>
             <ChatIcon isChatOpen={isChatOpen} toggleChat={() => setIsChatOpen(!isChatOpen)} />

@@ -7,7 +7,7 @@
   /* Левая часть с изображением */
   .login-left {
     flex: 1;
-    background: url('../assets/login.png') no-repeat center center/cover;
+    background: url('../assets/images/login.png') no-repeat center center/cover;
     display: flex;
     flex-direction: column;
     justify-content: center;
