@@ -5,18 +5,19 @@ import AdminSidebar from './AdminSidebar';
 
 const AdminSelectStudentsPage = () => {
   const [applications, setApplications] = useState([]);
+  const [filter, setFilter] = useState('all');
+
+  const fetchApplications = async () => {
+    try {
+      const response = await api.get('/applications');
+      const apps = response.data.results || response.data;
+      setApplications(apps);
+    } catch (error) {
+      console.error('Ошибка при загрузке заявок:', error);
+    }
+  };
 
   useEffect(() => {
-    const fetchApplications = async () => {
-      try {
-        const response = await api.get('/applications');
-        const apps = response.data.results || response.data;
-        setApplications(apps);
-      } catch (error) {
-        console.error('Ошибка при загрузке заявок:', error);
-      }
-    };
-
     fetchApplications();
   }, []);
 
@@ -42,25 +43,53 @@ const AdminSelectStudentsPage = () => {
     }
   };
 
-  const handleApproveMedicalCert = async (id) => {
+  // Функция для обновления статуса конкретного документа
+  const handleUpdateEvidenceStatus = async (evidenceId, approved) => {
     try {
-      await api.put(`/applications/${id}/approve-medical-cert/`);
-      setApplications(applications.map(app => 
-        app.id === id ? { ...app, medical_cert_approved: true } : app
-      ));
+      await api.put(`/evidences/${evidenceId}/update-status/`, { approved });
+      setApplications(prevApps =>
+        prevApps.map(app => {
+          const updatedEvidences = app.evidences.map(evi => {
+            if (evi.id === evidenceId) {
+              return { ...evi, approved };
+            }
+            return evi;
+          });
+          return { ...app, evidences: updatedEvidences };
+        })
+      );
     } catch (error) {
-      console.error('Ошибка при одобрении медсправки:', error);
+      console.error('Ошибка при обновлении статуса доказательства:', error);
     }
   };
 
-  const handleRejectMedicalCert = async (id) => {
+  // Фильтрация заявок
+  const filteredApplications = applications.filter(app => {
+    if (filter === 'all') return true;
+    if (filter === 'approved') return app.status === 'approved' || app.status === 'awaiting_payment';
+    if (filter === 'rejected') return app.status === 'rejected';
+    return true;
+  });
+
+  // Обработчик автоматического отбора
+  const handleAutomaticSelection = async () => {
     try {
-      await api.put(`/applications/${id}/reject-medical-cert/`);
-      setApplications(applications.map(app => 
-        app.id === id ? { ...app, medical_cert_approved: false } : app
-      ));
+      const response = await api.post('/generate-selection/');
+      alert(response.data.detail);
+      fetchApplications();
     } catch (error) {
-      console.error('Ошибка при отклонении медсправки:', error);
+      console.error('Ошибка при автоматическом отборе:', error);
+    }
+  };
+
+  // Обработчик уведомления студентов
+  const handleNotifyStudents = async () => {
+    try {
+      const response = await api.post('/notify-approved/');
+      alert(response.data.detail);
+      fetchApplications();
+    } catch (error) {
+      console.error('Ошибка при уведомлении студентов:', error);
     }
   };
 
@@ -68,17 +97,41 @@ const AdminSelectStudentsPage = () => {
     <div className="admin-page-container">
       <AdminSidebar />
       <div className="content-area">
+        <div className="admin-actions">
+          <select value={filter} onChange={(e) => setFilter(e.target.value)}>
+            <option value="all">Все</option>
+            <option value="approved">Одобренные</option>
+            <option value="rejected">Отклонённые</option>
+          </select>
+          <button className="auto-select-btn" onClick={handleAutomaticSelection}>
+            Автоматический отбор
+          </button>
+          <button className="notify-btn" onClick={handleNotifyStudents}>
+            Уведомить студентов
+          </button>
+        </div>
         <h1>Все заявки</h1>
         <div className="applications-list">
-          {applications.map(app => (
+          {filteredApplications.map(app => (
             <div key={app.id} className="application-item">
-              <p><strong>Студент:</strong> {app.student.first_name} {app.student.last_name}</p>
-              <p><strong>Курс:</strong> {app.student.course}</p>
-              <p><strong>GPA:</strong> {app.gpa || 'Нет данных'}</p>
-              <p><strong>Общежитие:</strong> {app.dormitory_name || 'Не выбрано'}</p>
-              <p><strong>Статус:</strong> {app.status}</p>
               <p>
-                <strong>Оплата:</strong> {app.payment_screenshot ? (
+                <strong>Студент:</strong> {app.student.first_name} {app.student.last_name}
+              </p>
+              <p>
+                <strong>Курс:</strong> {app.student.course}
+              </p>
+              <p>
+                <strong>GPA:</strong> {app.gpa || 'Нет данных'}
+              </p>
+              <p>
+                <strong>Общежитие:</strong> {app.dormitory_cost || 'Не выбрано'}
+              </p>
+              <p>
+                <strong>Статус:</strong> {app.status}
+              </p>
+              <p>
+                <strong>Оплата:</strong>{' '}
+                {app.payment_screenshot ? (
                   <a 
                     href={`http://127.0.0.1:8000/api/v1/applications/${app.id}/payment-screenshot/`} 
                     target="_blank" 
@@ -88,13 +141,62 @@ const AdminSelectStudentsPage = () => {
                   </a>
                 ) : 'Нет'}
               </p>
-              <p>
-                <strong>Медсправка:</strong> {app.medical_cert_approved ? 'Одобрена' : 'Не одобрена'}
-              </p>
-              <button className="approve-btn" onClick={() => handleApprove(app.id)}>Одобрить заявку</button>
-              <button className="reject-btn" onClick={() => handleReject(app.id)}>Отклонить заявку</button>
-              <button className="approve-cert-btn" onClick={() => handleApproveMedicalCert(app.id)}>Одобрить справку</button>
-              <button className="reject-cert-btn" onClick={() => handleRejectMedicalCert(app.id)}>Отклонить справку</button>
+              {/* Отображение вложенных документов */}
+              <div className="evidences">
+                <h4>Документы:</h4>
+                {app.evidences && app.evidences.length > 0 ? (
+                  <ul>
+                    {app.evidences.map(evi => (
+                      <li key={evi.id}>
+                        <strong>{evi.evidence_type}</strong>:{' '}
+                        {evi.file ? (
+                          <a
+                            href={`http://127.0.0.1:8000/api/v1/applications/${app.id}/document/${evi.evidence_type}/`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            Просмотреть файл
+                          </a>
+                        ) : evi.numeric_value ? (
+                          <span>{evi.numeric_value}</span>
+                        ) : (
+                          <span>Нет данных</span>
+                        )}
+                        <p>
+                          <strong>Статус справки:</strong>{' '}
+                          {evi.approved === true
+                            ? 'Одобрена'
+                            : evi.approved === false
+                            ? 'Отклонена'
+                            : 'Не проверена'}
+                        </p>
+                        <button 
+                          className="approve-cert-btn" 
+                          onClick={() => handleUpdateEvidenceStatus(evi.id, true)}
+                        >
+                          Одобрить
+                        </button>
+                        <button 
+                          className="reject-cert-btn" 
+                          onClick={() => handleUpdateEvidenceStatus(evi.id, false)}
+                        >
+                          Отклонить
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p>Нет прикрепленных документов</p>
+                )}
+              </div>
+              <div className="actions">
+                <button className="approve-btn" onClick={() => handleApprove(app.id)}>
+                  Одобрить заявку
+                </button>
+                <button className="reject-btn" onClick={() => handleReject(app.id)}>
+                  Отклонить заявку
+                </button>
+              </div>
             </div>
           ))}
         </div>

@@ -4,16 +4,16 @@ import api from '../../api';
 import '../../styles/Application.css';
 
 const ApplicationPage = () => {
-  // Состояния
+  // Начальное состояние формы
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
     course: '',
     priceRange: '',
-    documents: {},
+    documents: {}, // ключ – код документа, значение – объект File
   });
-
-  const dormitories = ['400000', '800000']; // Константа вместо состояния
+  const [evidenceTypes, setEvidenceTypes] = useState([]); // Список EvidenceType с сервера
+  const dormitories = ['400000', '800000'];
   const [isModalOpen, setModalOpen] = useState(false);
   const navigate = useNavigate();
 
@@ -36,20 +36,54 @@ const ApplicationPage = () => {
     fetchStudentData();
   }, []);
 
-  // Обработчик изменения файлов
+  // Загрузка списка EvidenceType от сервера
+  useEffect(() => {
+    const fetchEvidenceTypes = async () => {
+      try {
+        const response = await api.get('evidence-types/');
+        console.log('Ответ evidence-types:', response.data);
+        const types = Array.isArray(response.data)
+          ? response.data
+          : response.data.results || [];
+        setEvidenceTypes(types);
+      } catch (error) {
+        console.error('Ошибка загрузки типов документов:', error);
+      }
+    };
+
+    fetchEvidenceTypes();
+  }, []);
+
+  // Лог изменений выбранных документов (для отладки)
+  useEffect(() => {
+    console.log('Файлы в состоянии formData.documents:', formData.documents);
+  }, [formData.documents]);
+
+  // Обработчик выбора файла
   const handleChange = (e) => {
     const { name, files } = e.target;
-    if (files) {
-      setFormData((prevData) => ({
-        ...prevData,
-        documents: { ...prevData.documents, [name]: files[0] },
-      }));
+    if (files && files.length) {
+      setFormData((prevData) => {
+        const updatedDocuments = { ...prevData.documents, [name]: files[0] };
+        console.log(`Выбран файл для ${name}:`, files[0]);
+        return { ...prevData, documents: updatedDocuments };
+      });
     }
+  };
+
+  // Обработчик удаления файла для заданного evidenceType (по коду)
+  const handleRemoveFile = (code) => {
+    setFormData((prevData) => {
+      const updatedDocuments = { ...prevData.documents };
+      delete updatedDocuments[code];
+      return { ...prevData, documents: updatedDocuments };
+    });
   };
 
   // Обработчик отправки заявки
   const handleApplicationSubmit = async () => {
     try {
+      console.log('Отправка заявки. Текущие документы:', formData.documents);
       const formDataToSend = new FormData();
       formDataToSend.append('dormitory_cost', formData.priceRange);
 
@@ -65,42 +99,75 @@ const ApplicationPage = () => {
 
       navigate('/testpage');
     } catch (error) {
-      console.error('Ошибка при создании заявки:', error);
+      if (error.response && error.response.data) {
+        console.error('Ошибка при создании заявки:', error.response.data);
+      } else {
+        console.error('Ошибка при создании заявки:', error);
+      }
     }
   };
 
-  // Рендер модального окна
+  // Рендер модального окна с динамическим списком EvidenceType
   const renderModal = () => (
     <div className="modal">
       <div className="modal-content">
-        <button className="close-btn" onClick={() => setModalOpen(false)}>✖</button>
+        <button className="close-btn" onClick={() => setModalOpen(false)}>
+          ✖
+        </button>
         <h3>Загрузка документов</h3>
         <div className="file-upload">
-          {[
-            { name: 'orphan_certificate', label: 'Справка сироты' },
-            { name: 'disability_1_2_certificate', label: 'Справка инвалидности 1-2 группы' },
-            { name: 'disability_3_certificate', label: 'Справка инвалидности 3 группы' },
-            { name: 'parents_disability_certificate', label: 'Справка инвалидности родителей' },
-            { name: 'loss_of_breadwinner_certificate', label: 'Справка о потере кормильца' },
-            { name: 'social_aid_certificate', label: 'Справка о получении социальной помощи' },
-            { name: 'mangilik_el_certificate', label: 'Сертификат "Мәңгілік Ел"' },
-            { name: 'olympiad_winner_certificate', label: 'Сертификат победителя олимпиады' },
-          ].map((doc) => (
-            <label key={doc.name} className="file-label">
-              {doc.label}
-              <input type="file" name={doc.name} onChange={handleChange} />
-            </label>
-          ))}
+          {evidenceTypes.map((doc) => {
+            const selectedFile = formData.documents[doc.code];
+            return (
+              <div key={doc.code} className="file-upload-item">
+                <label className="file-label">{doc.label || doc.name}</label>
+                {selectedFile ? (
+                  <div className="file-actions">
+                    <span>{selectedFile.name}</span>
+                    <button type="button" onClick={() => handleRemoveFile(doc.code)}>
+                      Удалить
+                    </button>
+                    <input type="file" name={doc.code} onChange={handleChange} />
+                  </div>
+                ) : (
+                  <input type="file" name={doc.code} onChange={handleChange} />
+                )}
+              </div>
+            );
+          })}
         </div>
-        <button className="upload-btn">Загрузить</button>
+        <button className="upload-btn" onClick={() => setModalOpen(false)}>
+          Закрыть
+        </button>
       </div>
     </div>
   );
 
+  // Отображение выбранных файлов для наглядности в основной форме
+  const renderSelectedFiles = () => {
+    const docs = formData.documents;
+    if (!docs || Object.keys(docs).length === 0) return null;
+    return (
+      <div className="selected-files">
+        <h4>Выбранные документы:</h4>
+        <ul>
+          {Object.keys(docs).map((key) => (
+            <li key={key}>
+              {key}: {docs[key].name}{' '}
+              <button type="button" onClick={() => handleRemoveFile(key)}>
+                Удалить
+              </button>
+            </li>
+          ))}
+        </ul>
+      </div>
+    );
+  };
+
   return (
     <div className="application-page">
       <div className="application-container">
-        {/* Карточка контактов */}
+        {/* Контактная информация */}
         <div className="contact-card">
           <h3>Контакты для информации</h3>
           <p>При случае Lorem ipsum odor amet, consectetuer adipiscing elit.</p>
@@ -132,11 +199,10 @@ const ApplicationPage = () => {
                 <select
                   name="priceRange"
                   value={formData.priceRange || ''}
-                  onChange={(e) => {
-                    setFormData({ ...formData, priceRange: e.target.value });
-                  }}
+                  onChange={(e) =>
+                    setFormData({ ...formData, priceRange: e.target.value })
+                  }
                 >
-                  
                   {dormitories.map((cost, index) => (
                     <option key={index} value={cost}>
                       {cost} тг
@@ -152,7 +218,8 @@ const ApplicationPage = () => {
             </div>
           </div>
 
-          {/* Кнопки */}
+          {renderSelectedFiles()}
+
           <div className="button-group">
             <button className="upload-btn" onClick={() => setModalOpen(true)}>
               Загрузить документы
@@ -164,7 +231,6 @@ const ApplicationPage = () => {
         </div>
       </div>
 
-      {/* Модальное окно */}
       {isModalOpen && renderModal()}
     </div>
   );

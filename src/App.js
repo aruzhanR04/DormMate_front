@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import api from './api';
+import './index.css';
+
 import Navbar from './components/common/Navbar';
 import PrivateRoute from './components/common/PrivateRoute';
 import Logout from './components/common/Logout';
