@@ -34,3 +34,22 @@
   height: 100%;
   object-fit: contain;
 }
+
+/* Новая кнопка Чаты */
+.chat-button {
+  margin-top: 30px;
+  padding: 20px 40px;
+  font-size: 24px;
+  font-weight: bold;
+  background-color: #ffffff;
+  color: #C32939;
+  border: 2px solid #C32939;
+  border-radius: 25px;
+  cursor: pointer;
+  transition: transform 0.3s ease, background-color 0.3s ease;
+}
+
+.chat-button:hover {
+  background-color: #fce4e4;
+  transform: scale(1.05);
+}

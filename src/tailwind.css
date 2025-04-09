@@ -1,0 +1,17 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* @layer components {
+  .dashboard-button {
+    @apply w-[450px] h-[500px] cursor-pointer transition-transform duration-300 hover:scale-[1.1];
+  }
+
+  .dashboard-image {
+    @apply w-full h-full object-contain;
+  }
+
+  .chat-button {
+    @apply mt-[30px] px-[40px] py-[20px] text-[24px] font-bold bg-white text-[#C32939] border-[2px] border-[#C32939] rounded-[25px] cursor-pointer transition-all duration-300 hover:bg-[#fce4e4] hover:scale-[1.05];
+  }
+} */
