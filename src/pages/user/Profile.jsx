@@ -139,6 +139,13 @@ const UserDashboard = () => {
                             <button onClick={() => setIsModalOpen(true)} className="edit-password-button">
                                 Изменить Пароль
                             </button>
+                            <button
+                                onClick={() => navigate('/edit-application')}
+                                className="edit-password-button"
+                                style={{ background: '#c32939', marginTop: '10px' }}
+                            >
+                                Редактировать заявку
+                            </button>
                         </div>
                     )
                 )}

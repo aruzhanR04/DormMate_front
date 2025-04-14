@@ -23,7 +23,6 @@ const AdminDormitoryViewPage = () => {
                 setLoading(false);
             }
         };
-
         fetchDormData();
     }, [id]);
 
@@ -43,6 +42,22 @@ const AdminDormitoryViewPage = () => {
                     <p><strong>Комнаты на 4:</strong> {dormData.rooms_for_four}</p>
                     <p><strong>Стоимость:</strong> {dormData.cost}</p>
                 </div>
+                {/* Блок для отображения фотографий, если они есть */}
+                {dormData.images && dormData.images.length > 0 && (
+                    <div className="dormitory-images">
+                        <h2>Фотографии общежития</h2>
+                        <div className="images-container">
+                            {dormData.images.map((img) => (
+                                <img 
+                                    key={img.id} 
+                                    src={img.image} 
+                                    alt={`Фото ${img.id}`} 
+                                    style={{ maxWidth: '200px', marginRight: '10px', marginBottom: '10px' }}
+                                />
+                            ))}
+                        </div>
+                    </div>
+                )}
                 <button className="cancel-button" onClick={() => navigate('/admin/dormitories')}>
                     Назад
                 </button>

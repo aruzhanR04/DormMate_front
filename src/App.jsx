@@ -28,7 +28,7 @@ import Home from './pages/main/Home';
 import Login from './pages/auth/Login';
 import Profile from './pages/user/Profile';
 import TestPage from './pages/application/TestPage';
-import StudentList from './pages/user/NotificationsPage'; // Или куда у тебя отнесён список студентов
+import StudentList from './pages/user/NotificationsPage';
 import DormList from './pages/dormitories/DormList';
 import CreateApplication from './pages/application/CreateApplication';
 import TestSubmission from './pages/application/TestSubmission';

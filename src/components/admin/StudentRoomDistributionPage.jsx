@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import api from '../api';
+import api from '../../api';
 import AdminSidebar from './AdminSidebar';
-import '../styles/AdminActions.css';
+import '../../styles/AdminActions.css';
 
 const StudentRoomDistributionPage = () => {
   const navigate = useNavigate();
