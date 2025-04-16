@@ -1,34 +1,98 @@
-import React from 'react';
-import '../../styles/Dormitory.css';
-import img_12 from '../../assets/images/img_12.jpeg';
+import React, { useState, useEffect } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import api from "../../api";
+import "../../styles/Dormitory.css";
+import defaultDormImg from "../../assets/images/banner.png";
 
-const Dormitory1 = () => {
+const DormitoryDetail = () => {
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const [dorm, setDorm] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    const fetchDorm = async () => {
+      try {
+        const response = await api.get(`dorms/${id}/`);
+        setDorm(response.data);
+      } catch (err) {
+        setError("Ошибка при загрузке данных общежития.");
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchDorm();
+  }, [id]);
+
+  if (loading) return <p>Загрузка...</p>;
+  if (error) return <p className="error-message">{error}</p>;
+  if (!dorm) return <p>Общежитие не найдено.</p>;
+
+  const dormImg =
+    dorm.images && dorm.images.length > 0 ? dorm.images[0].image : defaultDormImg;
+
+  const dormAddress = dorm.address ? dorm.address : dorm.name;
+  const encodedAddress = encodeURIComponent(dormAddress);
+  const mapUrl = `https://yandex.kz/map-widget/v1/?text=${encodedAddress}&z=17.19`;
+
   return (
     <div className="dormitory-page">
       <div className="dormitory-header">
         <div className="dormitory-info">
-          <h1>Дом студентов Narxoz Residence</h1>
-          <p><strong>Адрес:</strong> микрорайон 10</p>
-          <p><strong>Проживание в месяц:</strong> 80 000 тг</p>
-          <p><strong>Описание:</strong> Современное общежитие с удобствами и отличной транспортной доступностью.</p>
+          <h1>{dorm.name}</h1>
+          <p>
+            <strong>Описание:</strong>{" "}
+            {dorm.description ? dorm.description : "Описание отсутствует"}
+          </p>
+          <p>
+            <strong>Стоимость за 10 месяцев:</strong> {dorm.cost} тг
+          </p>
+          <p>
+            <strong>Количество мест:</strong> {dorm.total_places}
+          </p>
+          {dorm.address && (
+            <p>
+              <strong>Адрес:</strong> {dorm.address}
+            </p>
+          )}
         </div>
         <div className="dormitory-image">
-          <img src={img_12} alt="Narxoz Residence" />
+          <img src={dormImg} alt={dorm.name} style={{ maxWidth: "400px" }} />
         </div>
       </div>
       <div className="map-container">
-        <iframe
-          title="Карта Narxoz Residence"
-          src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2907.55032504427!2d76.86627087601673!3d43.21892017112602!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x388369007acd6145%3A0xfa3c943b79e749fb!2z0JTQvtC8INGB0YLRg9C00LXQvdGC0L7QsiBFbWVuINCj0L3QuNCy0LXRgNGB0LjRgtC10YLQsCDQndCw0YDRhdC-0Lc!5e0!3m2!1sen!2skz!4v1741977591497!5m2!1sen!2skz"
-          width="100%"
-          height="450"
-          style={{ border: 0 }}
-          allowFullScreen=""
-          loading="lazy"
-        ></iframe>
+        <div style={{ position: "relative", overflow: "hidden" }}>
+          <a
+            href={`https://yandex.kz/maps/?text=${encodedAddress}&utm_medium=mapframe&utm_source=maps`}
+            style={{ color: "#eee", fontSize: "12px", position: "absolute", top: "0px" }}
+          >
+            {dormAddress}
+          </a>
+          <a
+            href={`https://yandex.kz/maps/?text=${encodedAddress}&z=17.19&utm_medium=mapframe&utm_source=maps`}
+            style={{ color: "#eee", fontSize: "12px", position: "absolute", top: "14px" }}
+          >
+            {dormAddress} — Яндекс Карты
+          </a>
+          <iframe
+            src={mapUrl}
+            width="560"
+            height="400"
+            frameBorder="1"
+            allowFullScreen={true}
+            loading="lazy"
+            style={{ position: "relative" }}
+            title={`Карта ${dormAddress}`}
+          ></iframe>
+        </div>
       </div>
+      <button className="cancel-button" onClick={() => navigate("/admin/dormitories")}>
+        Назад
+      </button>
     </div>
   );
 };
 
-export default Dormitory1;
+export default DormitoryDetail;

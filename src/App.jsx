@@ -36,7 +36,7 @@ import ApplicationStatus from './pages/application/ApplicationStatus';
 import UploadPayment from './pages/application/UploadPayment';
 import WebAssistant from './pages/elements/WebAssistant';
 
-import Dormitory1 from './pages/dormitories/Dormitory1';
+import DormitoryDetail from './pages/dormitories/Dormitory1';
 import Dormitory2 from './pages/dormitories/Dormitory2';
 import Dormitory3 from './pages/dormitories/Dormitory3';
 
@@ -128,7 +128,7 @@ function App() {
             path="/logout"
             element={<PrivateRoute isAuthenticated={isAuthenticated}><Logout onLogout={handleLogout} /></PrivateRoute>}
           />
-          <Route path="/dormitory1" element={<Dormitory1 />} />
+          <Route path="/dormitory/:id" element={<DormitoryDetail />} />
           <Route path="/dormitory2" element={<Dormitory2 />} />
           <Route path="/dormitory3" element={<Dormitory3 />} />
 
@@ -203,7 +203,6 @@ function App() {
           />
         </Routes>
 
-        {/* Чат и иконка чата – только для студентов */}
         {isAuthenticated && userRole === 'student' && (
           <>
             <ChatIcon isChatOpen={isChatOpen} toggleChat={() => setIsChatOpen(!isChatOpen)} />

@@ -1,41 +1,26 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
+import api from "../../api.js";
 import "../../styles/Home.css";
 import BannerCarousel from "../elements/BannerCarousel";
-import img_12 from "../../assets/images/img_12.jpeg";
-import img_13 from "../../assets/images/img_13.jpg";
-import img_14 from "../../assets/images/img_14.jpg";
+import defaultDormImg from "../../assets/images/banner.png";
 
 const Home = () => {
-  const dormitories = [
-    {
-      id: 1,
-      title: "Дом студентов Narxoz Residence",
-      address: "микрорайон 10",
-      price: "80 000тг",
-      description: "Современное общежитие с удобствами и отличной транспортной доступностью.",
-      rooms: [2, 3, 4],
-      img: img_12,
-    },
-    {
-      id: 2,
-      title: "Дом студентов №2 Б",
-      address: "мкрн. Таугуль, 34",
-      price: "46 000 тг.",
-      description: "Общежитие для студентов с уютной атмосферой и развитой инфраструктурой.",
-      rooms: [2, 3],
-      img: img_13,
-    },
-    {
-      id: 3,
-      title: "Дом студентов №3",
-      address: "мкрн 1-й., 81",
-      price: "46 000 тг.",
-      description: "Комфортное место проживания с доступом ко всем необходимым удобствам.",
-      rooms: [3, 4],
-      img: img_14,
-    },
-  ];
+  const [dormitories, setDormitories] = useState([]);
+
+  useEffect(() => {
+    const fetchDormitories = async () => {
+      try {
+        const response = await api.get("dorms/");
+        const dormData = response.data.results ? response.data.results : response.data;
+        setDormitories(dormData);
+      } catch (error) {
+        console.error("Ошибка при загрузке общаг:", error);
+      }
+    };
+
+    fetchDormitories();
+  }, []);
 
   return (
     <div className="home">
@@ -47,19 +32,26 @@ const Home = () => {
         <section key={dorm.id} className="block second-block">
           <div className="content-wrapper">
             <div className="text-block">
-              <h1>{dorm.title}</h1>
+              <h1>{dorm.name}</h1>
               <p>
+                <span>Стоимость: {dorm.cost} тг</span>
+                <br />
                 <span>Адрес: {dorm.address}</span>
                 <br />
-                <span>Проживание в месяц: {dorm.price}</span>
               </p>
-              {/* Используем Link для перехода на страницу общежития */}
-              <Link to={`/dormitory${dorm.id}`} className="detail-button">
+              <Link to={`/dormitory/${dorm.id}`} className="detail-button">
                 Подробнее
               </Link>
             </div>
             <div className="image-block">
-              <img src={dorm.img} alt="Dormitory" />
+              <img
+                src={
+                  dorm.images && dorm.images.length > 0
+                    ? dorm.images[0].image
+                    : defaultDormImg
+                }
+                alt="Dormitory"
+              />
             </div>
           </div>
         </section>
