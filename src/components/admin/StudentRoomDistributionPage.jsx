@@ -224,7 +224,7 @@ const StudentRoomDistributionPage = () => {
         <div className="filters" style={{ marginBottom: '20px', display: 'flex', alignItems: 'center' }}>
           <div style={{ marginRight: '20px' }}>
             <label htmlFor="priceFilter" style={{ marginRight: '5px' }}>Цена:</label>
-            <select 
+            <select className="modal-select"
               id="priceFilter" 
               value={selectedPrice} 
               onChange={e => setSelectedPrice(e.target.value)}
@@ -237,7 +237,7 @@ const StudentRoomDistributionPage = () => {
           </div>
           <div style={{ marginRight: '20px' }}>
             <label htmlFor="genderFilter" style={{ marginRight: '5px' }}>Пол:</label>
-            <select 
+            <select className="modal-select"
               id="genderFilter" 
               value={selectedGender} 
               onChange={e => setSelectedGender(e.target.value)}
@@ -250,6 +250,7 @@ const StudentRoomDistributionPage = () => {
           <div>
             <label htmlFor="roomStatusFilter" style={{ marginRight: '5px' }}>Статус заселения:</label>
             <select 
+            className="modal-select"
               id="roomStatusFilter" 
               value={selectedRoomStatus} 
               onChange={e => setSelectedRoomStatus(e.target.value)}

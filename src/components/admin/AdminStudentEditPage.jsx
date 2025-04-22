@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../../api';
 import AdminSidebar from './AdminSidebar';
-import '../../styles/AdminStudentDetails.css';
+import '../../styles/AdminFormShared.css'; // Подключаем нужный стиль
 
 const AdminStudentEditPage = () => {
   const { id } = useParams();
@@ -42,7 +42,7 @@ const AdminStudentEditPage = () => {
       setMessage('Ошибка при сохранении данных.');
     }
   };
-  
+
   const handleCancel = () => {
     navigate('/admin/students');
   };
@@ -63,67 +63,65 @@ const AdminStudentEditPage = () => {
     <div className="admin-page-container">
       <AdminSidebar />
       <div className="content-area">
-        <h1>Редактирование студента</h1>
-        <form className="student-details" onSubmit={handleSave}>
-          <label>
-            S:
-            <input type="text" name="s" value={formData.s || ''} onChange={handleChange} disabled />
-          </label>
-          <label>
-            Имя:
-            <input type="text" name="first_name" value={formData.first_name || ''} onChange={handleChange} />
-          </label>
-          <label>
-            Фамилия:
-            <input type="text" name="last_name" value={formData.last_name || ''} onChange={handleChange} />
-          </label>
-          <label>
-            Отчество:
-            <input type="text" name="middle_name" value={formData.middle_name || ''} onChange={handleChange} />
-          </label>
-          <label>
-            Email:
-            <input type="email" name="email" value={formData.email || ''} onChange={handleChange} />
-          </label>
-          <label>
-            Телефон:
-            <input type="text" name="phone_number" value={formData.phone_number || ''} onChange={handleChange} />
-          </label>
-          <label>
-            Дата рождения:
-            <input type="date" name="birth_date" value={formData.birth_date || ''} onChange={handleChange} />
-          </label>
-          <label>
-            Курс:
-            <input type="number" name="course" value={formData.course || ''} onChange={handleChange} />
-          </label>
-          <label>
-            Область:
-            <input
-              type="text"
-              name="region"
-              value={formData.region?.region_name || ''}
-              onChange={handleChange}
-            />
-          </label>
-          <label>
-            Пол:
-            <select name="gender" value={formData.gender || ''} onChange={handleChange}>
-              <option value="">Выберите</option>
-              <option value="M">М</option>
-              <option value="F">Ж</option>
-            </select>
-          </label>
-          <div className="form-actions">
-            <button type="button" className="cancel-button" onClick={handleCancel}>
-              Отмена
-            </button>
-            <button type="submit" className="save-button">
-              Сохранить
-            </button>
-          </div>
-        </form>
-        {message && <div className={`message ${message.includes('ошибка') ? 'error' : 'success'}`}>{message}</div>}
+        <div className="admin-form-container">
+          <h2>Редактирование студента</h2>
+          <form className="form-container" onSubmit={handleSave}>
+            <label>
+              S:
+              <input type="text" name="s" value={formData.s || ''} onChange={handleChange} disabled />
+            </label>
+            <label>
+              Имя:
+              <input type="text" name="first_name" value={formData.first_name || ''} onChange={handleChange} />
+            </label>
+            <label>
+              Фамилия:
+              <input type="text" name="last_name" value={formData.last_name || ''} onChange={handleChange} />
+            </label>
+            <label>
+              Отчество:
+              <input type="text" name="middle_name" value={formData.middle_name || ''} onChange={handleChange} />
+            </label>
+            <label>
+              Email:
+              <input type="email" name="email" value={formData.email || ''} onChange={handleChange} />
+            </label>
+            <label>
+              Телефон:
+              <input type="text" name="phone_number" value={formData.phone_number || ''} onChange={handleChange} />
+            </label>
+            <label>
+              Дата рождения:
+              <input type="date" name="birth_date" value={formData.birth_date || ''} onChange={handleChange} />
+            </label>
+            <label>
+              Курс:
+              <input type="number" name="course" value={formData.course || ''} onChange={handleChange} />
+            </label>
+            <label>
+              Область:
+              <input type="text" name="region" value={formData.region?.region_name || ''} onChange={handleChange} />
+            </label>
+            <label>
+              Пол:
+              <select name="gender" value={formData.gender || ''} onChange={handleChange}>
+                <option value="">Выберите</option>
+                <option value="M">М</option>
+                <option value="F">Ж</option>
+              </select>
+            </label>
+
+            <div className="form-actions">
+              <button type="button" className="cancel-button" onClick={handleCancel}>
+                Отмена
+              </button>
+              <button type="submit" className="save-button">
+                Сохранить
+              </button>
+            </div>
+          </form>
+          {message && <div className={`message ${message.includes('ошибка') ? 'error' : 'success'}`}>{message}</div>}
+        </div>
       </div>
     </div>
   );

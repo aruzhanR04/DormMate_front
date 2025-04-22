@@ -23,6 +23,32 @@
   justify-content: flex-start;
 }
 
+.admin-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 30px;
+}
+
+/* Стили для селекта (дропдауна) */
+.admin-actions select {
+  padding: 10px 14px;
+  font-size: 16px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  background-color: #f9f9f9;
+  color: #333;
+  outline: none;
+  cursor: pointer;
+  transition: border-color 0.2s ease;
+}
+
+.admin-actions select:focus {
+  border-color: #C32939;
+}
+
+
 .actions-list button {
   padding: 12px 24px;
   font-size: 16px;
@@ -180,6 +206,66 @@ input[type="checkbox"] {
   transform: scale(1.1);
 }
 
+.auto-select-btn,
+.notify-btn,
+.approve-cert-btn,
+.reject-cert-btn,
+.approve-btn,
+.reject-btn {
+  padding: 10px 20px;
+  font-size: 15px;
+  border: none;
+  border-radius: 8px;
+  margin: 6px 6px 0 0;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+/* 🔴 Авто-отбор */
+.auto-select-btn {
+  background-color: #C32939;
+  color: white;
+}
+.auto-select-btn:hover {
+  background-color: #a6212e;
+  transform: scale(1.03);
+}
+
+/* 🔔 Уведомить */
+.notify-btn {
+  background-color: #6c757d;
+  color: white;
+}
+.notify-btn:hover {
+  background-color: #5a6268;
+  transform: scale(1.03);
+}
+
+/* ✅ Одобрить документ / заявку */
+.approve-cert-btn,
+.approve-btn {
+  background-color: #C32939;
+  color: white;
+}
+.approve-cert-btn:hover,
+.approve-btn:hover {
+  background-color: #a6212e;
+  transform: scale(1.03);
+}
+
+/* ❌ Отклонить документ / заявку */
+.reject-cert-btn,
+.reject-btn {
+  background-color: #6c757d;
+  color: white;
+}
+.reject-cert-btn:hover,
+.reject-btn:hover {
+  background-color: #5a6268;
+  transform: scale(1.03);
+}
+
+
 .save-button {
   background-color: #4CAF50;
   color: #fff;
@@ -235,3 +321,115 @@ input[type="checkbox"] {
   border: 1px solid #ebccd1;
 }
 
+.application-item {
+  background-color: #f9f9f9;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  padding: 25px;
+  margin-bottom: 25px;
+  text-align: left;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+  font-size: 17px; /* ← чуть крупнее */
+  line-height: 1.6;
+}
+
+/* Текст внутри карточки */
+.application-item p,
+.application-item li,
+.application-item h4 {
+  text-align: left;
+  margin: 10px 0; /* ← чуть больше отступа */
+}
+
+.application-item ul {
+  padding-left: 25px;
+}
+
+/* Для ссылок */
+.application-item a {
+  color: #C32939;
+  text-decoration: underline;
+}
+
+.application-item h4 {
+  font-size: 18px;
+  font-weight: 600;
+  margin-top: 16px;
+}
+
+.content-area {
+  font-size: 16px;
+  color: #333333;
+  line-height: 1.6;
+}
+
+/* Заголовки */
+.content-area h1,
+.content-area h2 {
+  font-size: 32x;
+  font-weight: 600;
+  margin-bottom: 20px;
+}
+
+/* Таблица — читаемость */
+.students-table th,
+.students-table td {
+  font-size: 17px;
+  padding: 10px 12px;
+}
+.modal-select {
+  padding: 10px 14px;
+  font-size: 15px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  background-color: #fff;
+  color: #333;
+  cursor: pointer;
+}
+
+/* Фильтры */
+.filters label,
+.filters select,
+.filters option {
+  font-size: 17px;
+}
+.filters select.modal-select {
+  background-color: #fff;
+  color: #333;
+  border: 1px solid #ccc;
+}
+
+/* Кнопки действий */
+.distribution-actions button,
+.filters select {
+  font-size: 15px;
+  padding: 10px 18px;
+  border-radius: 8px;
+  border: none;
+  background-color: #C32939;
+  color: white;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.distribution-actions button:hover {
+  background-color: #a6212e;
+}
+
+/* input file */
+input[type="file"] {
+  padding: 10px;
+  font-size: 15px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  background-color: #f9f9f9;
+  cursor: pointer;
+}
+
+
+
+/* Модалка */
+.modal-content {
+  font-size: 15px;
+  line-height: 1.5;
+}

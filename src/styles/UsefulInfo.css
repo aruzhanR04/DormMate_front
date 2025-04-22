@@ -1,0 +1,44 @@
+.useful-info-container {
+    max-width: 800px;
+    margin: 80px auto;
+    padding: 20px;
+    background-color: #fff;
+    border-radius: 16px;
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.08);
+    font-family: 'Figtree', sans-serif;
+  }
+  
+  .section-title {
+    font-size: 32px;
+    font-weight: bold;
+    color: #C32939;
+    margin-bottom: 20px;
+  }
+  
+  .section-subtitle {
+    font-size: 18px;
+    color: #444;
+    margin-bottom: 25px;
+  }
+  
+  .link-list {
+    list-style: none;
+    padding: 0;
+    font-size: 18px;
+  }
+  
+  .link-list li {
+    margin-bottom: 15px;
+  }
+  
+  .link-list a {
+    color: #1d4ed8;
+    text-decoration: none;
+    transition: color 0.3s ease;
+  }
+  
+  .link-list a:hover {
+    color: #2563eb;
+    text-decoration: underline;
+  }
+  

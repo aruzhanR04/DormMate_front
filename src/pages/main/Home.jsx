@@ -28,30 +28,33 @@ const Home = () => {
         <BannerCarousel />
       </section>
 
-      {dormitories.map((dorm) => (
-        <section key={dorm.id} className="block second-block">
-          <div className="content-wrapper">
-            <div className="text-block">
-              <h1>{dorm.name}</h1>
-              <p>
-                <span>Стоимость: {dorm.cost} тг</span>
-                <br />
-                <span>Адрес: {dorm.address}</span>
-                <br />
-              </p>
-              <Link to={`/dormitory/${dorm.id}`} className="detail-button">
+      {/* Улучшенная кнопка "Полезное" */}
+      <div className="useful-button-wrapper">
+        <Link to="/guide" className="useful-button">
+          Полезное для студентов
+        </Link>
+      </div>
+
+      {/* Карточки общежитий без рамок и с чередующимися фонами */}
+      {dormitories.map((dorm, index) => (
+        <section
+          key={dorm.id}
+          className={`dorm-fullwidth ${index % 2 === 0 ? "bg-gray" : "bg-white"}`}
+        >
+          <div className="dorm-content">
+            <div className="dorm-image">
+              <img
+                src={dorm.images?.[0]?.image || defaultDormImg}
+                alt={dorm.name}
+              />
+            </div>
+            <div className="dorm-info">
+              <h2>{dorm.name}</h2>
+              <p>Стоимость: <strong>{dorm.cost} тг</strong></p>
+              <p>Адрес: {dorm.address}</p>
+              <Link to={`/dormitory/${dorm.id}`} className="dorm-more-button">
                 Подробнее
               </Link>
-            </div>
-            <div className="image-block">
-              <img
-                src={
-                  dorm.images && dorm.images.length > 0
-                    ? dorm.images[0].image
-                    : defaultDormImg
-                }
-                alt="Dormitory"
-              />
             </div>
           </div>
         </section>

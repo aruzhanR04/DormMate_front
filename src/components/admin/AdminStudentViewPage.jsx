@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../../api';
 import AdminSidebar from './AdminSidebar';
-import '../../styles/AdminStudentDetails.css';
+import '../../styles/AdminFormShared.css'; // подключаем общий стиль
 
 const AdminStudentViewPage = () => {
   const { id } = useParams();
@@ -39,21 +39,71 @@ const AdminStudentViewPage = () => {
     <div className="admin-page-container">
       <AdminSidebar />
       <div className="content-area">
-        <h1>Просмотр студента</h1>
-        <div className="student-details">
-          <p><strong>S:</strong> {student.s}</p>
-          <p><strong>Имя:</strong> {student.first_name}</p>
-          <p><strong>Фамилия:</strong> {student.last_name}</p>
-          <p><strong>Отчество:</strong> {student.middle_name || '-'}</p>
-          <p><strong>Email:</strong> {student.email || '-'}</p>
-          <p><strong>Телефон:</strong> {student.phone_number || '-'}</p>
-          <p><strong>Дата рождения:</strong> {student.birth_date ? new Date(student.birth_date).toLocaleDateString() : '-'}</p>
-          <p><strong>Курс:</strong> {student.course}</p>
-          <p><strong>Область:</strong> {student.region?.region_name || '-'}</p>
-          <p><strong>Пол:</strong> {student.gender || '-'}</p>
+        <div className="admin-form-container">
+          <h1>Просмотр студента</h1>
+          <div className="form-container">
+            <label>
+              <strong>S:</strong>
+              <input type="text" value={student.s} disabled />
+            </label>
+            <label>
+              <strong>Имя:</strong>
+              <input type="text" value={student.first_name} disabled />
+            </label>
+            <label>
+              <strong>Фамилия:</strong>
+              <input type="text" value={student.last_name} disabled />
+            </label>
+            <label>
+              <strong>Отчество:</strong>
+              <input type="text" value={student.middle_name || '-'} disabled />
+            </label>
+            <label>
+              <strong>Email:</strong>
+              <input type="text" value={student.email || '-'} disabled />
+            </label>
+            <label>
+              <strong>Телефон:</strong>
+              <input type="text" value={student.phone_number || '-'} disabled />
+            </label>
+            <label>
+              <strong>Дата рождения:</strong>
+              <input
+                type="text"
+                value={
+                  student.birth_date
+                    ? new Date(student.birth_date).toLocaleDateString()
+                    : '-'
+                }
+                disabled
+              />
+            </label>
+            <label>
+              <strong>Курс:</strong>
+              <input type="text" value={student.course} disabled />
+            </label>
+            <label>
+              <strong>Область:</strong>
+              <input
+                type="text"
+                value={student.region?.region_name || '-'}
+                disabled
+              />
+            </label>
+            <label>
+              <strong>Пол:</strong>
+              <input type="text" value={student.gender || '-'} disabled />
+            </label>
+          </div>
+
+          <div className="form-actions">
+            <button className="cancel-button" onClick={() => navigate('/admin/students')}>
+              Назад к списку
+            </button>
+          </div>
+
+          {message && <div className="error-message">{message}</div>}
         </div>
-        <button className="cancel-button" onClick={() => navigate('/admin/students')}>Назад к списку</button>
-        {message && <div className="message error">{message}</div>}
       </div>
     </div>
   );

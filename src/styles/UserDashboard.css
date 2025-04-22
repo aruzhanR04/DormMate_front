@@ -3,7 +3,7 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    min-height: 650px;
+    min-height: 100vh;
     background: linear-gradient(to bottom, #ffffff 50%, #fce4e4 50%);
     font-family: 'Droid Sans', sans-serif;
     width: 100%;
@@ -18,7 +18,7 @@
     background: white;
     border-radius: 12px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    transform: translateY(50px);
+    transform: none;
 }
 
 .profile-section h2,
@@ -51,29 +51,20 @@
 }
 
 
+.edit-password-button,
 .upload-button {
-    background: #6c757d;
-    color: #fff;
-    padding: 8px 16px;
-    border: none;
-    border-radius: 8px;
-    font-weight: bold;
-    cursor: pointer;
-    transition: background-color 0.3s ease, transform 0.2s ease;
+  background: #6c757d;
+  color: #fff;
+  padding: 8px 18px;
+  border: none;
+  border-radius: 8px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+  margin-top: 10px;
+  width: fit-content; /* ← чтобы кнопки были по размеру текста */
 }
 
-.edit-password-button {
-    background: #6c757d;
-    color: #fff;
-    padding: 8px 16px;
-    border: none;
-    border-radius: 8px;
-    font-weight: bold;
-    cursor: pointer;
-    transition: background-color 0.3s ease, transform 0.2s ease;
-    margin-top: 10px;
-    grid-column: 2;
-}
 .password-modal {
     position: fixed;
     top: 50%;
@@ -149,21 +140,28 @@
 @media (max-width: 768px) {
     .profile-section,
     .status-section {
-        max-width: 80%;
-        padding: 15px;
-        margin: 10px auto;
+      max-width: 90%;
+      padding: 15px;
+      margin: 10px auto;
     }
-
+  
     .profile-info {
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
     }
-
+  
     .profile-field {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 8px;
-        width: 100%;
+      flex-direction: column;
+      align-items: flex-start;
+      text-align: left;
+      gap: 4px;
+      width: 100%;
     }
-}
+  
+    .edit-password-button,
+    .upload-button {
+      align-self: flex-start;
+    }
+  }
+  

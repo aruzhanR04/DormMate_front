@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import api from './api';
 import './tailwind.css';
+
 import Navbar from './components/common/Navbar';
 import PrivateRoute from './components/common/PrivateRoute';
 import Logout from './components/common/Logout';
@@ -24,12 +25,15 @@ import AdminStudentViewPage from './components/admin/AdminStudentViewPage';
 import AdminStudentEditPage from './components/admin/AdminStudentEditPage';
 import AdminRoute from './components/admin/AdminRoute';
 
+import AdminCreatePage from './components/admin/AdminCreatePage';
+import EvidenceCategoriesPage from './components/admin/EvidenceCategoriesPage';
+
 import Home from './pages/main/Home';
+import UsefulInfoPage from './pages/main/UsefulInfoPage';
 import Login from './pages/auth/Login';
 import Profile from './pages/user/Profile';
 import TestPage from './pages/application/TestPage';
 import StudentList from './pages/user/NotificationsPage';
-import DormList from './pages/dormitories/DormList';
 import CreateApplication from './pages/application/CreateApplication';
 import TestSubmission from './pages/application/TestSubmission';
 import ApplicationStatus from './pages/application/ApplicationStatus';
@@ -90,6 +94,7 @@ function App() {
         <Routes>
           <Route path="/login" element={<Login onLogin={handleLogin} />} />
           <Route path="/" element={<Home />} />
+          <Route path="/guide" element={<UsefulInfoPage />} />
           <Route path="/web-assistant" element={<WebAssistant />} />
 
           <Route
@@ -103,10 +108,6 @@ function App() {
           <Route
             path="/students"
             element={<PrivateRoute isAuthenticated={isAuthenticated}><StudentList /></PrivateRoute>}
-          />
-          <Route
-            path="/dormitories"
-            element={<PrivateRoute isAuthenticated={isAuthenticated}><DormList /></PrivateRoute>}
           />
           <Route
             path="/create-application"
@@ -132,7 +133,7 @@ function App() {
           <Route path="/dormitory2" element={<Dormitory2 />} />
           <Route path="/dormitory3" element={<Dormitory3 />} />
 
-          {/* Админ маршруты */}
+          {/* === Админ маршруты === */}
           <Route
             path="/admin"
             element={<AdminRoute isAuthenticated={isAuthenticated} userRole={userRole}><AdminPanel /></AdminRoute>}
@@ -200,6 +201,15 @@ function App() {
           <Route
             path="/admin/applications/export"
             element={<AdminRoute isAuthenticated={isAuthenticated} userRole={userRole}><AppExport /></AdminRoute>}
+          />
+
+          <Route
+            path="/admin/admins/add"
+            element={<AdminRoute isAuthenticated={isAuthenticated} userRole={userRole}><AdminCreatePage /></AdminRoute>}
+          />
+          <Route
+            path="/admin/evidence-types"
+            element={<AdminRoute isAuthenticated={isAuthenticated} userRole={userRole}><EvidenceCategoriesPage /></AdminRoute>}
           />
         </Routes>
 
