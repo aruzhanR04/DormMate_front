@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import api from '../../api';
 import '../../styles/UserDashboard.css';
 
@@ -18,6 +19,7 @@ const UserDashboard = () => {
     const [passwordMessage, setPasswordMessage] = useState('');
 
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const navigate = useNavigate();
 
     useEffect(() => {
         const fetchProfile = async () => {

@@ -39,6 +39,7 @@ import TestSubmission from './pages/application/TestSubmission';
 import ApplicationStatus from './pages/application/ApplicationStatus';
 import UploadPayment from './pages/application/UploadPayment';
 import WebAssistant from './pages/elements/WebAssistant';
+import EditApplication from './pages/application/EditApplication';
 
 import DormitoryDetail from './pages/dormitories/Dormitory1';
 import Dormitory2 from './pages/dormitories/Dormitory2';
@@ -124,6 +125,10 @@ function App() {
           <Route
             path="/upload-payment"
             element={<PrivateRoute isAuthenticated={isAuthenticated}><UploadPayment /></PrivateRoute>}
+          />
+          <Route
+            path="/edit-application"
+            element={<PrivateRoute isAuthenticated={isAuthenticated}><EditApplication /></PrivateRoute>}
           />
           <Route
             path="/logout"

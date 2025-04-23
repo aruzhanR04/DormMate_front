@@ -108,16 +108,19 @@ const EditApplication = () => {
 
         <div className="input-group">
           <label>Ценовой диапазон</label>
-          <select
-            name="priceRange"
-            value={formData.priceRange}
-            onChange={(e) => setFormData({ ...formData, priceRange: e.target.value })}
-          >
-            <option value="">Выберите стоимость</option>
-            <option value="400000">400 000 тг</option>
-            <option value="800000">800 000 тг</option>
-          </select>
+          <div className="price-range-select" style={{ marginRight: '20px' }}>
+            <select
+              name="priceRange"
+              value={formData.priceRange}
+              onChange={(e) => setFormData({ ...formData, priceRange: e.target.value })}
+            >
+              <option value="">Выберите стоимость</option>
+              <option value="400000">400 000 тг</option>
+              <option value="800000">800 000 тг</option>
+            </select>
+          </div>
         </div>
+
 
         {Object.keys(formData.documents).length > 0 && (
           <div className="selected-files">

@@ -225,6 +225,24 @@ input[type="file"] {
 .upload-btn:hover {
   background: #c43737; 
 }
+
+.price-range-select select {
+  width: 100%;
+  padding: 8px 0;
+  border: none;
+  background: transparent;
+  font-size: 16px;
+  color: #333;
+  appearance: none;
+  cursor: pointer;
+  outline: none;
+  margin-right: 55px;
+}
+.price-range-select::after {
+  content: '▼';
+  margin-right: 30px;
+}
+
 @media (max-width: 768px) {
   .application-container {
     flex-direction: column; 
