@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../../api';
 import AdminSidebar from './AdminSidebar';
-import '../../styles/AdminFormShared.css'; // подключаем общий стиль
+import '../../styles/AdminFormShared.css';
 
 const AdminStudentViewPage = () => {
   const { id } = useParams();

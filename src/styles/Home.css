@@ -217,7 +217,7 @@
   color: white;
 }
 
-/* Полноэкранные карточки общежитий */
+
 .dorm-fullwidth {
   width: 100%;
   padding: 50px 0;
@@ -278,13 +278,13 @@
   border-radius: 25px;
   text-decoration: none;
   transition: background-color 0.3s ease;
-  width: fit-content; /* ← ЭТО — делает кнопку компактной */
+  width: fit-content; 
 }
 .dorm-more-button:hover {
   background-color: #a6212e;
 }
 
-/* Адаптивность */
+
 @media (max-width: 768px) {
   .dorm-content {
     flex-direction: column;

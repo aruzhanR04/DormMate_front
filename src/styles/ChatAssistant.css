@@ -39,7 +39,7 @@
     background-color: #fdf8f8 !important;
     color: #BF2A45 !important;
     border: 1px solid #F2B8B8 !important;
-    align-self: flex-start !important; /* админ слева */
+    align-self: flex-start !important; 
     text-align: left !important;
 }
 
@@ -47,7 +47,7 @@
     background-color: #E5FFE5 !important;
     color: #2A8F45 !important;
     border: 1px solid #B8F2B8 !important;
-    align-self: flex-end !important; /* студент справа */
+    align-self: flex-end !important; 
     text-align: right !important;
 }
 
@@ -83,7 +83,7 @@
     transition: border-color 0.3s ease, box-shadow 0.3s ease;
 }
 .chat-message.user {
-    align-self: flex-end; /* справа */
+    align-self: flex-end; 
     background-color: #E5FFE5;
     color: #2A8F45;
     border: 1px solid #B8F2B8;
@@ -91,7 +91,7 @@
   }
   
   .chat-message.admin {
-    align-self: flex-start; /* слева */
+    align-self: flex-start;
     background-color: #fdf8f8;
     color: #BF2A45;
     border: 1px solid #F2B8B8;

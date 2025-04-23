@@ -1,6 +1,6 @@
 .chat-list-container {
     width: 100vw;
-    height: calc(100vh - 80px); /* отнимаем высоту navbar */
+    height: calc(100vh - 80px);
     padding: 30px 40px;
     box-sizing: border-box;
     background-color: #fff5f5;
