@@ -9,6 +9,8 @@ const AdminDormitoryAddPage = () => {
 
   const [formData, setFormData] = useState({
     name: "",
+    address: "", 
+    description: "",
     total_places: "",
     rooms_for_two: "",
     rooms_for_three: "",
@@ -58,6 +60,12 @@ const AdminDormitoryAddPage = () => {
           <form onSubmit={handleSubmit} className="form-container">
             <label>Название:
               <input type="text" name="name" value={formData.name} onChange={handleChange} required />
+            </label>
+            <label>Адрес:
+              <input type="text" name="address" value={formData.address} onChange={handleChange} required />
+            </label>
+            <label>Описание:
+              <textarea name="description" value={formData.description} onChange={handleChange} rows={4} required />
             </label>
             <label>Количество мест:
               <input type="number" name="total_places" value={formData.total_places} onChange={handleChange} required />

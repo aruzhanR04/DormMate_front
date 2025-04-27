@@ -9,6 +9,8 @@ const AdminDormitoryEditPage = () => {
   const navigate = useNavigate();
   const [dormData, setDormData] = useState({
     name: '',
+    address: '',
+    description: '',
     total_places: '',
     rooms_for_two: '',
     rooms_for_three: '',
@@ -83,6 +85,12 @@ const AdminDormitoryEditPage = () => {
           <form className="form-container" onSubmit={handleSubmit}>
             <label>Название:
               <input type="text" name="name" value={dormData.name} onChange={handleChange} />
+            </label>
+            <label>Адрес:
+              <input type="text" name="address" value={dormData.address} onChange={handleChange} required />
+            </label>
+            <label>Описание:
+              <textarea name="description" value={dormData.description} onChange={handleChange} rows={4} required />
             </label>
             <label>Количество мест:
               <input type="number" name="total_places" value={dormData.total_places} onChange={handleChange} />

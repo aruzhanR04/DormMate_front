@@ -38,6 +38,8 @@ const AdminDormitoryViewPage = () => {
 
           <div className="form-container">
             <p><strong>Название:</strong> {dormData.name}</p>
+            <p><strong>Адрес:</strong> {dormData.addres}</p>
+            <p><strong>Описание:</strong> {dormData.description}</p>
             <p><strong>Мест всего:</strong> {dormData.total_places}</p>
             <p><strong>Комнат на 2:</strong> {dormData.rooms_for_two}</p>
             <p><strong>Комнат на 3:</strong> {dormData.rooms_for_three}</p>

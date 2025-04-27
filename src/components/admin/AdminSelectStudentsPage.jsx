@@ -151,7 +151,8 @@ const AdminSelectStudentsPage = () => {
                         <strong>{evi.evidence_type}</strong>:{' '}
                         {evi.file ? (
                           <a
-                            href={`http://127.0.0.1:8000/api/v1/applications/${app.id}/document/${evi.evidence_type}/`}
+                          href={evi.file}
+
                             target="_blank"
                             rel="noopener noreferrer"
                           >
