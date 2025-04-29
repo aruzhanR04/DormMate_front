@@ -4,126 +4,145 @@ import api from '../../api';
 import '../../styles/Application.css';
 
 const ApplicationPage = () => {
-  // Начальное состояние формы
+  // состояние формы
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
     course: '',
     priceRange: '',
-    documents: {}, // ключ – код документа, значение – объект File
+    documents: {}, 
+    birthDate: '',   
+    gender: '',       
+    parentPhone: '', 
+    entResult: '',
   });
-  const [evidenceTypes, setEvidenceTypes] = useState([]); // Список EvidenceType с сервера
-  const dormitories = ['400000', '800000'];
+  // список типов документов
+  const [evidenceTypes, setEvidenceTypes] = useState([]);
+  // список цен общежитий
+  const [dormitories, setDormitories] = useState([]);
   const [isModalOpen, setModalOpen] = useState(false);
   const navigate = useNavigate();
 
-  // Загрузка данных студента
+  // 1) загрузить данные студента
   useEffect(() => {
-    const fetchStudentData = async () => {
+    const fetchStudent = async () => {
       try {
-        const response = await api.get('studentdetail/');
-        setFormData((prevData) => ({
-          ...prevData,
-          firstName: response.data.first_name || '',
-          lastName: response.data.last_name || '',
-          course: response.data.course || '',
+        const res = await api.get('studentdetail/');
+        setFormData(fd => ({
+          ...fd,
+          firstName:  res.data.first_name  || '',
+          lastName:   res.data.last_name   || '',
+          course:     res.data.course      || '',
+          birthDate:  res.data.birth_date  || '',   // новое поле
+          gender: res.data.gender === 'M' || res.data.gender === 'male' ? 'Мужской' :
+          res.data.gender === 'F' || res.data.gender === 'female' ? 'Женский' :
+          '',
+          parentPhone: res.data.parent_phone || '', // новое поле
         }));
-      } catch (error) {
-        console.error('Ошибка загрузки данных студента:', error);
+      } catch (err) {
+        console.error('Ошибка загрузки данных студента:', err);
       }
     };
-
-    fetchStudentData();
+    fetchStudent();
   }, []);
 
-  // Загрузка списка EvidenceType от сервера
+  // 2) загрузить виды документов
   useEffect(() => {
-    const fetchEvidenceTypes = async () => {
+    const fetchEvidence = async () => {
       try {
-        const response = await api.get('evidence-types/');
-        console.log('Ответ evidence-types:', response.data);
-        const types = Array.isArray(response.data)
-          ? response.data
-          : response.data.results || [];
-        setEvidenceTypes(types);
-      } catch (error) {
-        console.error('Ошибка загрузки типов документов:', error);
+        const res = await api.get('evidence-types/');
+        const list = Array.isArray(res.data)
+          ? res.data
+          : res.data.results || [];
+        setEvidenceTypes(list);
+      } catch (err) {
+        console.error('Ошибка загрузки типов документов:', err);
       }
     };
-
-    fetchEvidenceTypes();
+    fetchEvidence();
   }, []);
 
-  // Лог изменений выбранных документов (для отладки)
+  // 3) загрузить цены общежитий
   useEffect(() => {
-    console.log('Файлы в состоянии formData.documents:', formData.documents);
+    const fetchDormCosts = async () => {
+      try {
+        const res = await api.get('dorms/costs/');
+        const list = Array.isArray(res.data) ? res.data : res.data.results || [];
+        console.log('raw dorm costs:', list);
+  
+        const costs = list.map(item => String(item));
+  
+        console.log('parsed costs:', costs);
+        setDormitories(costs);
+      } catch (err) {
+        console.error('Ошибка загрузки цен общежитий:', err);
+      }
+    };
+   
+    fetchDormCosts();
+  }, []);
+  
+
+  // логируем изменения файлов
+  useEffect(() => {
+    console.log('formData.documents:', formData.documents);
   }, [formData.documents]);
 
-  // Обработчик выбора файла
-  const handleChange = (e) => {
+  // выбор файла
+  const handleChange = e => {
     const { name, files } = e.target;
-    if (files && files.length) {
-      setFormData((prevData) => {
-        const updatedDocuments = { ...prevData.documents, [name]: files[0] };
-        console.log(`Выбран файл для ${name}:`, files[0]);
-        return { ...prevData, documents: updatedDocuments };
-      });
+    if (files?.[0]) {
+      setFormData(fd => ({
+        ...fd,
+        documents: {
+          ...fd.documents,
+          [name]: files[0],
+        }
+      }));
     }
   };
 
-  // Обработчик удаления файла для заданного evidenceType (по коду)
-  const handleRemoveFile = (code) => {
-    setFormData((prevData) => {
-      const updatedDocuments = { ...prevData.documents };
-      delete updatedDocuments[code];
-      return { ...prevData, documents: updatedDocuments };
+  // удалить файл по коду
+  const handleRemoveFile = code => {
+    setFormData(fd => {
+      const docs = { ...fd.documents };
+      delete docs[code];
+      return { ...fd, documents: docs };
     });
   };
 
-  // Обработчик отправки заявки
+  // отправка заявки
   const handleApplicationSubmit = async () => {
     try {
-      console.log('Отправка заявки. Текущие документы:', formData.documents);
-      const formDataToSend = new FormData();
-      formDataToSend.append('dormitory_cost', formData.priceRange);
-
-      Object.keys(formData.documents).forEach((key) => {
-        if (formData.documents[key]) {
-          formDataToSend.append(key, formData.documents[key]);
-        }
+      const payload = new FormData();
+      payload.append('dormitory_cost', formData.priceRange);
+      Object.entries(formData.documents).forEach(([code, file]) => {
+        payload.append(code, file);
       });
-
-      await api.post('http://127.0.0.1:8000/api/v1/create_application/', formDataToSend, {
-        headers: { 'Content-Type': 'multipart/form-data' },
+      await api.post('create_application/', payload, {
+        headers: { 'Content-Type': 'multipart/form-data' }
       });
-
       navigate('/testpage');
-    } catch (error) {
-      if (error.response && error.response.data) {
-        console.error('Ошибка при создании заявки:', error.response.data);
-      } else {
-        console.error('Ошибка при создании заявки:', error);
-      }
+    } catch (err) {
+      console.error('Ошибка при создании заявки:', err.response?.data || err);
     }
   };
 
-  // Рендер модального окна с динамическим списком EvidenceType
+  // модальное окно загрузки файлов
   const renderModal = () => (
     <div className="modal">
       <div className="modal-content">
-        <button className="close-btn" onClick={() => setModalOpen(false)}>
-          ✖
-        </button>
+        <button className="close-btn" onClick={() => setModalOpen(false)}>✖</button>
         <h3>Загрузка документов</h3>
         <div className="file-upload">
-          {evidenceTypes.map((doc) => {
-            const selectedFile = formData.documents[doc.code];
+          {evidenceTypes.map(doc => {
+            const file = formData.documents[doc.code];
             return (
               <div key={doc.code} className="file-upload-item">
                 <label className="file-label">{doc.label || doc.name}</label>
-                {selectedFile ? (
+                {file ? (
                   <div className="file-actions">
-                    <span>{selectedFile.name}</span>
+                    <span>{file.name}</span>
                     <button type="button" onClick={() => handleRemoveFile(doc.code)}>
                       Удалить
                     </button>
@@ -143,18 +162,18 @@ const ApplicationPage = () => {
     </div>
   );
 
-  // Отображение выбранных файлов для наглядности в основной форме
+  // список выбранных файлов
   const renderSelectedFiles = () => {
     const docs = formData.documents;
-    if (!docs || Object.keys(docs).length === 0) return null;
+    if (!docs || !Object.keys(docs).length) return null;
     return (
       <div className="selected-files">
         <h4>Выбранные документы:</h4>
         <ul>
-          {Object.keys(docs).map((key) => (
-            <li key={key}>
-              {key}: {docs[key].name}{' '}
-              <button type="button" onClick={() => handleRemoveFile(key)}>
+          {Object.entries(docs).map(([code, file]) => (
+            <li key={code}>
+              {code}: {file.name}{' '}
+              <button type="button" onClick={() => handleRemoveFile(code)}>
                 Удалить
               </button>
             </li>
@@ -194,17 +213,46 @@ const ApplicationPage = () => {
               <input type="text" value={formData.course} readOnly />
             </div>
             <div className="input-group">
+              <label>Дата рождения</label>
+              <input type="text" value={formData.birthDate} readOnly />
+            </div>
+            <div className="input-group">
+              <label>Пол</label>
+              <input type="text" value={formData.gender} readOnly />
+            </div>
+            <div className="input-group">
+              <label>Телефон родителей</label>
+              <input
+                type="text"
+                value={formData.parentPhone}
+                onChange={e => setFormData({ ...formData, parentPhone: e.target.value })}
+                placeholder="Введите номер родителей"
+              />
+            </div>
+            <div className="input-group">
+              <label>Результат ЕНТ</label>
+              <input
+                type="number"
+                min="0"
+                max="140"
+                value={formData.entResult}
+                onChange={e => setFormData({ ...formData, entResult: e.target.value })}
+              />
+              <small style={{ color: 'gray', fontSize: '0.85em' }}>
+                Загрузите ЕНТ сертификат в разделе "Загрузить документы", без этого сертификата ваш результат учитываться не будет
+              </small>
+            </div>
+            <div className="input-group">
               <label>Ценовой диапазон</label>
               <div className="price-range-select">
                 <select
                   name="priceRange"
-                  value={formData.priceRange || ''}
-                  onChange={(e) =>
-                    setFormData({ ...formData, priceRange: e.target.value })
-                  }
+                  value={formData.priceRange}
+                  onChange={e => setFormData({ ...formData, priceRange: e.target.value })}
                 >
-                  {dormitories.map((cost, index) => (
-                    <option key={index} value={cost}>
+                  <option value="" disabled>Выберите стоимость</option>
+                  {dormitories.map((cost, idx) => (
+                    <option key={idx} value={cost}>
                       {cost} тг
                     </option>
                   ))}

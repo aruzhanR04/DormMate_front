@@ -12,8 +12,7 @@ const AdminDormitoriesPage = () => {
         <h1>Работа с общежитиями</h1>
         <div className="actions-list">
           <button onClick={() => navigate('/admin/dormitories/add')}>Добавить общежитие</button>
-          <button onClick={() => navigate('/admin/dormitories/operations')}>Изменение</button>
-          <button onClick={() => navigate('/admin/dormitories/delete')}>Удаление</button>
+          <button onClick={() => navigate('/admin/dormitories/operations')}>Операции</button>
         </div>
       </div>
     </div>

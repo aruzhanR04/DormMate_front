@@ -23,10 +23,14 @@ import AdminSelectStudentsPage from './components/admin/AdminSelectStudentsPage'
 import AdminStudentAddPage from './components/admin/AdminStudentAddPage';
 import AdminStudentViewPage from './components/admin/AdminStudentViewPage';
 import AdminStudentEditPage from './components/admin/AdminStudentEditPage';
+import AdminOperations from './components/admin/AdminOperations';
+import AdminViewPage from './components/admin/AdminViewPage';
+import AdminEditPage from './components/admin/AdminEditPage';
 import AdminRoute from './components/admin/AdminRoute';
 
 import AdminCreatePage from './components/admin/AdminCreatePage';
 import EvidenceCategoriesPage from './components/admin/EvidenceCategoriesPage';
+import EvidenceEditPage from './components/admin/EvidenceCategoriesEditPage';
 
 import Home from './pages/main/Home';
 import UsefulInfoPage from './pages/main/UsefulInfoPage';
@@ -44,6 +48,8 @@ import EditApplication from './pages/application/EditApplication';
 import DormitoryDetail from './pages/dormitories/Dormitory1';
 import Dormitory2 from './pages/dormitories/Dormitory2';
 import Dormitory3 from './pages/dormitories/Dormitory3';
+
+
 
 const DormAdd = () => <div>Добавление общежития</div>;
 const DormUpdate = () => <div>Изменение общежития</div>;
@@ -207,7 +213,18 @@ function App() {
             path="/admin/applications/export"
             element={<AdminRoute isAuthenticated={isAuthenticated} userRole={userRole}><AppExport /></AdminRoute>}
           />
-
+          <Route
+            path="/admin/admins"
+            element={<AdminRoute isAuthenticated={isAuthenticated} userRole={userRole}><AdminOperations /></AdminRoute>}
+          />
+          <Route
+            path="/admin/admins/list"
+            element={<AdminRoute isAuthenticated={isAuthenticated} userRole={userRole}><AdminViewPage /></AdminRoute>}
+          />
+          <Route
+            path="/admin/admins/edit/:id"
+            element={<AdminRoute isAuthenticated={isAuthenticated} userRole={userRole}><AdminEditPage /></AdminRoute>}
+          />
           <Route
             path="/admin/admins/add"
             element={<AdminRoute isAuthenticated={isAuthenticated} userRole={userRole}><AdminCreatePage /></AdminRoute>}
@@ -215,6 +232,10 @@ function App() {
           <Route
             path="/admin/evidence-types"
             element={<AdminRoute isAuthenticated={isAuthenticated} userRole={userRole}><EvidenceCategoriesPage /></AdminRoute>}
+          />
+          <Route
+            path="/admin/evidence-types/edit/:id"
+            element={<AdminRoute isAuthenticated={isAuthenticated} userRole={userRole}><EvidenceEditPage /></AdminRoute>}
           />
         </Routes>
 

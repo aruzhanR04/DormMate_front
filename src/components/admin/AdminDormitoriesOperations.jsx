@@ -24,6 +24,20 @@ const AdminDormitoriesOperations = () => {
     }
   };
 
+  const handleDeleteDormitory = async (dormId) => {
+    const confirmed = window.confirm('Вы уверены, что хотите удалить это общежитие?');
+    if (!confirmed) return;
+
+    try {
+      await api.delete(`/dorms/${dormId}/`);
+      setMessage({ type: 'success', text: 'Общежитие успешно удалено' });
+      fetchDormitories(); // обновляем список
+    } catch (error) {
+      console.error('Ошибка при удалении общежития:', error);
+      setMessage({ type: 'error', text: 'Ошибка при удалении общежития' });
+    }
+  };
+
   useEffect(() => {
     fetchDormitories();
   }, []);
@@ -33,12 +47,9 @@ const AdminDormitoriesOperations = () => {
       <AdminSidebar />
       <div className="content-area">
         <h1>Общежития</h1>
-        {/* <div className="actions-list">
-          <button onClick={() => navigate('/admin/dormitories/add')}>Добавить общежитие</button>
-          <button onClick={() => navigate('/admin/dormitories/update')}>Изменение</button>
-          <button onClick={() => navigate('/admin/dormitories/delete')}>Удаление</button>
-        </div> */}
+
         {message && <div className={`message ${message.type}`}>{message.text}</div>}
+
         <div className="dormitories-table-container">
           <table className="dormitories-table">
             <thead>
@@ -63,8 +74,24 @@ const AdminDormitoriesOperations = () => {
                     <td>{dorm.rooms_for_four}</td>
                     <td>{dorm.cost}</td>
                     <td>
-                      <img src={wicon} alt="Просмотр" className="action-icon" onClick={() => navigate(`/admin/dormitories/view-one/${dorm.id}`)} />
-                      <img src={cicon} alt="Изменение" className="action-icon" onClick={() => navigate(`/admin/dormitories/change/${dorm.id}`)} />
+                      <img
+                        src={wicon}
+                        alt="Просмотр"
+                        className="action-icon"
+                        onClick={() => navigate(`/admin/dormitories/view-one/${dorm.id}`)}
+                      />
+                      <img
+                        src={cicon}
+                        alt="Изменение"
+                        className="action-icon"
+                        onClick={() => navigate(`/admin/dormitories/change/${dorm.id}`)}
+                      />
+                      <button
+                      className="operation-icon delete-icon"
+                      onClick={() => handleDeleteDormitory(dorm.id)}
+                      >
+                      🗑️
+                    </button>
                     </td>
                   </tr>
                 ))

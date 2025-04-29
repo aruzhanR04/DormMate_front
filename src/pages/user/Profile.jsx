@@ -19,6 +19,13 @@ const UserDashboard = () => {
     const [passwordMessage, setPasswordMessage] = useState('');
 
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isEditWarningOpen, setIsEditWarningOpen] = useState(false);
+    const [allowEdit, setAllowEdit] = useState(null);
+    const [loadingSettings, setLoadingSettings] = useState(true);
+
+    const [avatarFile, setAvatarFile] = useState(null);
+    const [avatarUploadMessage, setAvatarUploadMessage] = useState('');
+
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -28,7 +35,7 @@ const UserDashboard = () => {
                 setProfile(response.data);
                 setLoadingProfile(false);
             } catch (err) {
-                setProfileError('Failed to load profile data');
+                setProfileError('Не удалось загрузить данные профиля');
                 setLoadingProfile(false);
             }
         };
@@ -45,6 +52,20 @@ const UserDashboard = () => {
             }
         };
         fetchApplicationStatus();
+    }, []);
+
+    useEffect(() => {
+        const fetchGlobalSettings = async () => {
+            try {
+                const response = await api.get('/global-settings/');
+                setAllowEdit(response.data.allow_application_edit);
+            } catch (error) {
+                console.error('Ошибка при получении настроек:', error);
+            } finally {
+                setLoadingSettings(false);
+            }
+        };
+        fetchGlobalSettings();
     }, []);
 
     const handleFileChange = (e) => {
@@ -101,9 +122,46 @@ const UserDashboard = () => {
         }
     };
 
+    const handleEditApplicationClick = () => {
+        if (loadingSettings) return;
+
+        if (allowEdit) {
+            navigate('/edit-application');
+        } else {
+            window.alert('Редактирование заявок отключено. Пожалуйста, свяжитесь с администрацией.');
+        }
+    };
+
+    // --- Работа с аватаром ---
+    const handleAvatarChange = (e) => {
+        setAvatarFile(e.target.files[0]);
+    };
+
+    const handleAvatarUpload = async () => {
+        if (!avatarFile) {
+            setAvatarUploadMessage('Пожалуйста, выберите изображение.');
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append('avatar', avatarFile);
+
+        try {
+            const response = await api.post('/upload-avatar/', formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+            });
+            setAvatarUploadMessage('Аватар успешно обновлен.');
+            setProfile(prev => ({ ...prev, avatar: response.data.avatar }));
+        } catch (err) {
+            console.error(err);
+            setAvatarUploadMessage('Ошибка при загрузке аватара.');
+        }
+    };
+
     return (
         <div className="dashboard-container">
-            {}
             <div className="profile-section">
                 <h2>Профиль</h2>
                 {loadingProfile ? (
@@ -113,7 +171,26 @@ const UserDashboard = () => {
                 ) : (
                     profile && (
                         <div className="profile-info">
-                            {}
+
+                            {/* Блок аватара */}
+                            <div className="profile-avatar-block">
+                                {profile.avatar ? (
+                                    <img 
+                                        src={profile.avatar} 
+                                        alt="Аватар" 
+                                        className="profile-avatar"
+                                        style={{ width: '150px', height: '150px', objectFit: 'cover', borderRadius: '50%', marginBottom: '10px' }}
+                                    />
+                                ) : (
+                                    <div style={{ width: '150px', height: '150px', borderRadius: '50%', backgroundColor: '#ddd', marginBottom: '10px' }}>
+                                        Нет аватара
+                                    </div>
+                                )}
+                                <input type="file" onChange={handleAvatarChange} accept="image/*" />
+                                <button onClick={handleAvatarUpload} className="upload-button">Обновить аватар</button>
+                                {avatarUploadMessage && <p className="upload-message">{avatarUploadMessage}</p>}
+                            </div>
+
                             <div className="profile-field">
                                 <span className="label">Имя:</span>
                                 <span className="value">{profile.first_name}</span>
@@ -126,8 +203,6 @@ const UserDashboard = () => {
                                 <span className="label">Email:</span>
                                 <span className="value">{profile.email}</span>
                             </div>
-    
-                            {}
                             <div className="profile-field">
                                 <span className="label">ID студента:</span>
                                 <span className="value">{profile.s}</span>
@@ -136,13 +211,12 @@ const UserDashboard = () => {
                                 <span className="label">Телефон:</span>
                                 <span className="value">{profile.phone}</span>
                             </div>
-    
-                            {}
+
                             <button onClick={() => setIsModalOpen(true)} className="edit-password-button">
                                 Изменить Пароль
                             </button>
                             <button
-                                onClick={() => navigate('/edit-application')}
+                                onClick={handleEditApplicationClick}
                                 className="edit-password-button"
                                 style={{ background: '#c32939', marginTop: '10px' }}
                             >
@@ -152,13 +226,12 @@ const UserDashboard = () => {
                     )
                 )}
             </div>
-    
-            {}
+
             <div className="status-section">
                 <h2>Статус Заявки</h2>
                 {statusError && <p className="error">{statusError}</p>}
                 {status && <p className="status">{status}</p>}
-    
+
                 {status === 'Ваша заявка одобрена, внесите оплату и прикрепите сюда чек.' && (
                     <div className="upload-section">
                         <h3>Загрузите скриншот оплаты</h3>
@@ -168,19 +241,13 @@ const UserDashboard = () => {
                     </div>
                 )}
             </div>
-    
-            {}
+
+            {/* Модалка изменения пароля */}
             {isModalOpen && <div className="overlay" onClick={() => setIsModalOpen(false)}></div>}
-    
-            {}
             {isModalOpen && (
                 <div className="password-modal">
-                    {}
-                    <button onClick={() => setIsModalOpen(false)} className="close-modal">
-                        &times;
-                    </button>
-    
-                    {}
+                    <button onClick={() => setIsModalOpen(false)} className="close-modal">&times;</button>
+
                     <input
                         type="password"
                         placeholder="Старый пароль"
@@ -202,15 +269,26 @@ const UserDashboard = () => {
                         onChange={(e) => setConfirmPassword(e.target.value)}
                         className="password-input"
                     />
-    
-                    {}
                     <button onClick={handleChangePassword} className="change-password-button">
                         Изменить Пароль
                     </button>
-    
-                    {}
+
                     {passwordMessage && <p className="password-message">{passwordMessage}</p>}
                 </div>
+            )}
+
+            {/* Модалка запрета на редактирование */}
+            {isEditWarningOpen && (
+                <>
+                    <div className="overlay" onClick={() => setIsEditWarningOpen(false)}></div>
+                    <div className="warning-modal">
+                        <h3>Редактирование заявок отключено</h3>
+                        <p>В данный момент редактирование заявок недоступно. Пожалуйста, свяжитесь с администрацией.</p>
+                        <button onClick={() => setIsEditWarningOpen(false)} className="close-modal-button">
+                            Понятно
+                        </button>
+                    </div>
+                </>
             )}
         </div>
     );

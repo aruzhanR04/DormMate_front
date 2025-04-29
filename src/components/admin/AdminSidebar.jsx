@@ -19,8 +19,8 @@ const AdminSidebar = () => {
           <li onClick={() => navigate('/admin/applications')}>
             <img src={aicon} alt="Заявки" className="nav-icon" /> <span>Заявки</span>
           </li>
-          <li onClick={() => navigate('/admin/admins/add')}>
-            <img src={aicon} alt="Админы" className="nav-icon" /> <span>Добавить админа</span>
+          <li onClick={() => navigate('/admin/admins')}>
+            <img src={aicon} alt="Админы" className="nav-icon" /> <span>Администраторы</span>
           </li>
           <li onClick={() => navigate('/admin/evidence-types')}>
             <img src={aicon} alt="Справки" className="nav-icon" /> <span>Категории справок</span>

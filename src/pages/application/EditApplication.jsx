@@ -5,20 +5,64 @@ import '../../styles/Application.css';
 
 const EditApplication = () => {
   const [formData, setFormData] = useState({
-    priceRange: '',
-    documents: {},
+    firstName:   '',
+    lastName:    '',
+    course:      '',
+    gender:      '',
+    birthDate:   '',
+    parentPhone: '',
+    entResult:   '',
+    priceRange:  '',
+    documents:   {},  // новые File или { name, url, existing: true }
   });
+  const [removedDocs, setRemovedDocs] = useState([]);        // коды удалённых старых файлов
   const [evidenceTypes, setEvidenceTypes] = useState([]);
-  const [isModalOpen, setModalOpen] = useState(false);
+  const [costOptions,    setCostOptions]    = useState([]);
+  const [isModalOpen,    setModalOpen]      = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
-    const fetchApplication = async () => {
+    const fetchData = async () => {
       try {
-        const response = await api.get('/application_status/');
-        setFormData(prev => ({ ...prev, priceRange: response.data.dormitory_cost || '' }));
+        // 1) получить заявку и студента
+        const [applicationRes, studentRes] = await Promise.all([
+          api.get('/application/'),
+          api.get('/studentdetail/'),
+        ]);
+        const app = applicationRes.data;
+
+        // 2) основные поля
+        setFormData(prev => ({
+          ...prev,
+          firstName:   studentRes.data.first_name    || '',
+          lastName:    studentRes.data.last_name     || '',
+          course:      studentRes.data.course        || '',
+          gender:      studentRes.data.gender        || '',
+          birthDate:   studentRes.data.birth_date    || '',
+          parentPhone: studentRes.data.parent_phone  || '',
+          entResult:   app.ent_result                || '',
+          priceRange:  app.dormitory_cost            || '',
+        }));
+
+        // 3) предзагрузка старых справок
+        const evidenceRes = await api.get('/application/evidences/');
+        const existingDocs = {};
+        evidenceRes.data.forEach(ev => {
+          if (!ev.file) return;
+          const code = ev.code;
+          const url  = ev.file;
+          const name = ev.name || url.split('/').pop();
+          existingDocs[code] = { name, url, existing: true };
+        });
+        setFormData(prev => ({
+          ...prev,
+          documents: {
+            ...existingDocs,
+            ...prev.documents
+          }
+        }));
       } catch (error) {
-        console.error('Ошибка при получении заявки:', error);
+        console.error('Ошибка при получении данных заявки или студента:', error);
       }
     };
 
@@ -34,44 +78,75 @@ const EditApplication = () => {
       }
     };
 
-    fetchApplication();
+    const fetchCosts = async () => {
+      try {
+        const response = await api.get('/dorms/costs/');
+        setCostOptions(Array.isArray(response.data) ? response.data : []);
+      } catch (error) {
+        console.error('Ошибка при загрузке цен:', error);
+      }
+    };
+
+    fetchCosts();
+    fetchData();
     fetchEvidenceTypes();
   }, []);
 
-  const handleChange = (e) => {
-    const { name, files } = e.target;
-    if (files && files.length) {
-      setFormData((prev) => ({
+  const handleChange = e => {
+    const field = e.target.name;
+    if (e.target.files && e.target.files.length) {
+      const file = e.target.files[0];
+      setFormData(prev => ({
         ...prev,
-        documents: { ...prev.documents, [name]: files[0] },
+        documents: {
+          ...prev.documents,
+          [field]: file
+        }
+      }));
+    } else {
+      const value = e.target.value;
+      setFormData(prev => ({
+        ...prev,
+        [field]: value
       }));
     }
   };
 
-  const handleRemoveFile = (code) => {
+  const handleRemoveFile = code => {
     setFormData(prev => {
-      const updatedDocs = { ...prev.documents };
-      delete updatedDocs[code];
-      return { ...prev, documents: updatedDocs };
+      const docs = { ...prev.documents };
+      const fo = docs[code];
+      delete docs[code];
+      // если удаляем старую справку — запоминаем её код
+      if (fo && fo.existing) {
+        setRemovedDocs(rd => [...rd, code]);
+      }
+      return { ...prev, documents: docs };
     });
   };
 
   const handleUpdate = async () => {
     try {
-      const formDataToSend = new FormData();
-      formDataToSend.append('dormitory_cost', formData.priceRange);
+      const payload = new FormData();
+      payload.append('dormitory_cost', formData.priceRange);
+      payload.append('ent_result',     formData.entResult);
 
-      Object.keys(formData.documents).forEach((key) => {
-        if (formData.documents[key]) {
-          formDataToSend.append(key, formData.documents[key]);
+      // новые файлы
+      Object.entries(formData.documents).forEach(([code, fo]) => {
+        if (fo instanceof File) {
+          payload.append(code, fo);
         }
       });
 
-      await api.put('/update_application/', formDataToSend, {
+      // список удалённых старых справок
+      if (removedDocs.length) {
+        payload.append('deleted_documents', JSON.stringify(removedDocs));
+      }
+
+      await api.patch('/student/application/', payload, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
-
-      navigate('/testpage');
+      navigate('/profile');
     } catch (error) {
       console.error('Ошибка при обновлении заявки:', error);
     }
@@ -82,20 +157,26 @@ const EditApplication = () => {
       <div className="modal-content">
         <button className="close-btn" onClick={() => setModalOpen(false)}>✖</button>
         <h3>Редактирование документов</h3>
-        {evidenceTypes.map((doc) => (
-          <div key={doc.code} className="file-upload-item">
-            <label className="file-label">{doc.label || doc.name}</label>
-            {formData.documents[doc.code] ? (
-              <div className="file-actions">
-                <span>{formData.documents[doc.code].name}</span>
-                <button type="button" onClick={() => handleRemoveFile(doc.code)}>Удалить</button>
+        {evidenceTypes.map(doc => {
+          const fo = formData.documents[doc.code];
+          return (
+            <div key={doc.code} className="file-upload-item">
+              <label className="file-label">{doc.label || doc.name}</label>
+              {fo ? (
+                <div className="file-actions">
+                  {fo.existing
+                    ? <a href={fo.url} target="_blank" rel="noopener noreferrer">{fo.name}</a>
+                    : <span>{fo.name}</span>
+                  }
+                  <button type="button" onClick={() => handleRemoveFile(doc.code)}>Удалить</button>
+                  <input type="file" name={doc.code} onChange={handleChange} />
+                </div>
+              ) : (
                 <input type="file" name={doc.code} onChange={handleChange} />
-              </div>
-            ) : (
-              <input type="file" name={doc.code} onChange={handleChange} />
-            )}
-          </div>
-        ))}
+              )}
+            </div>
+          );
+        })}
         <button className="upload-btn" onClick={() => setModalOpen(false)}>Закрыть</button>
       </div>
     </div>
@@ -106,28 +187,55 @@ const EditApplication = () => {
       <div className="application-container">
         <h2>Редактировать Заявку</h2>
 
-        <div className="input-group">
-          <label>Ценовой диапазон</label>
-          <div className="price-range-select" style={{ marginRight: '20px' }}>
-            <select
-              name="priceRange"
-              value={formData.priceRange}
-              onChange={(e) => setFormData({ ...formData, priceRange: e.target.value })}
-            >
+        <div className="form-grid">
+          <div className="input-group"><label>Имя</label><input type="text" value={formData.firstName} readOnly/></div>
+          <div className="input-group"><label>Фамилия</label><input type="text" value={formData.lastName} readOnly/></div>
+          <div className="input-group"><label>Курс</label><input type="text" value={formData.course} readOnly/></div>
+          <div className="input-group">
+            <label>Пол</label>
+            <input
+              type="text"
+              value={formData.gender === 'M' ? 'Мужской'
+                : formData.gender === 'F' ? 'Женский'
+                : ''}
+              readOnly
+            />
+          </div>
+          <div className="input-group"><label>Дата рождения</label><input type="text" value={formData.birthDate} readOnly/></div>
+          <div className="input-group">
+            <label>Телефон родителя</label>
+            <input type="text" name="parentPhone" value={formData.parentPhone} onChange={handleChange}/>
+          </div>
+          <div className="input-group">
+            <label>Результат ЕНТ</label>
+            <input type="number" name="entResult" value={formData.entResult} onChange={handleChange}/>
+            <small style={{ color: '#888' }}>
+              Загрузите ЕНТ сертификат в разделе "Загрузить документы", без этого сертификата ваш результат учитываться не будет
+            </small>
+          </div>
+          <div className="input-group">
+            <label>Ценовой диапазон</label>
+            <select name="priceRange" value={formData.priceRange} onChange={handleChange} className="price-range-select">
               <option value="">Выберите стоимость</option>
-              <option value="400000">400 000 тг</option>
-              <option value="800000">800 000 тг</option>
+              {costOptions.map(c => (
+                <option key={c} value={c}>{Number(c).toLocaleString('ru-RU')} ₸</option>
+              ))}
             </select>
           </div>
         </div>
-
 
         {Object.keys(formData.documents).length > 0 && (
           <div className="selected-files">
             <h4>Выбранные документы:</h4>
             <ul>
-              {Object.entries(formData.documents).map(([code, file]) => (
-                <li key={code}>{code}: {file.name} <button onClick={() => handleRemoveFile(code)}>Удалить</button></li>
+              {Object.entries(formData.documents).map(([code, fo]) => (
+                <li key={code}>
+                  {fo.existing
+                    ? <a href={fo.url} target="_blank" rel="noopener noreferrer">{fo.name}</a>
+                    : <span>{fo.name}</span>
+                  }{' '}
+                  <button onClick={() => handleRemoveFile(code)}>Удалить</button>
+                </li>
               ))}
             </ul>
           </div>

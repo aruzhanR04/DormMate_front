@@ -1,7 +1,7 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import api from '../../api';
-import AdminSidebar from "./AdminSidebar";
+import AdminSidebar from './AdminSidebar';
 import '../../styles/AdminFormShared.css';
 
 const roleOptions = [
@@ -10,51 +10,85 @@ const roleOptions = [
   { value: 'REQ',   label: 'Администратор по работе с заявками' },
 ];
 
-const AdminCreatePage = () => {
+const AdminEditPage = () => {
+  const { id } = useParams();
   const navigate = useNavigate();
+  const [admin, setAdmin] = useState(null);
   const [formData, setFormData] = useState({
-    s: "",
-    first_name: "",
-    last_name: "",
-    middle_name: "",
-    email: "",
-    phone_number: "",
-    birth_date: "",
-    gender: "",
-    role: "",
-    password: ""
+    s: '',
+    first_name: '',
+    last_name: '',
+    middle_name: '',
+    email: '',
+    phone_number: '',
+    birth_date: '',
+    role: '',
   });
-  const [errors, setErrors] = useState({});
+  const [message, setMessage] = useState('');
 
-  const handleChange = (e) => {
+  useEffect(() => {
+    const fetchAdmin = async () => {
+      try {
+        const res = await api.get(`/admins/${id}/`);
+        setAdmin(res.data);
+        setFormData({
+          s:           res.data.s           || '',
+          first_name:  res.data.first_name  || '',
+          last_name:   res.data.last_name   || '',
+          middle_name: res.data.middle_name || '',
+          email:       res.data.email       || '',
+          phone_number:res.data.phone_number|| '',
+          birth_date:  res.data.birth_date  || '',
+          role:        res.data.role        || '',
+        });
+      } catch (err) {
+        console.error('Ошибка при загрузке данных администратора:', err);
+        setMessage('Ошибка при загрузке данных администратора.');
+      }
+    };
+    fetchAdmin();
+  }, [id]);
+
+  const handleChange = e => {
     const { name, value } = e.target;
     setFormData(fd => ({ ...fd, [name]: value }));
   };
 
-  const handleSubmit = async (e) => {
+  const handleSave = async e => {
     e.preventDefault();
-    setErrors({});
     try {
-      const response = await api.post("/admins/", formData);
-      if (response.status === 201 || response.status === 200) {
-        navigate("/admin/admins");
-      }
-    } catch (error) {
-      if (error.response?.data) {
-        setErrors(error.response.data);
-      } else {
-        console.error(error);
-      }
+      await api.put(`/admins/${id}/`, formData);
+      setMessage('Данные успешно сохранены.');
+      navigate('/admin/admins');
+    } catch (err) {
+      console.error('Ошибка при сохранении данных администратора:', err);
+      setMessage('Ошибка при сохранении данных администратора.');
     }
   };
+
+  const handleCancel = () => {
+    navigate('/admin/admins');
+  };
+
+  if (!admin) {
+    return (
+      <div className="admin-page-container">
+        <AdminSidebar />
+        <div className="content-area">
+          <p>Загрузка данных...</p>
+          {message && <p className="error-message">{message}</p>}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="admin-page-container">
       <AdminSidebar />
       <div className="content-area">
         <div className="admin-form-container">
-          <h2>Добавить администратора</h2>
-          <form onSubmit={handleSubmit} className="form-container">
+          <h2>Редактирование администратора</h2>
+          <form className="form-container" onSubmit={handleSave}>
             <label>
               S:
               <input
@@ -62,11 +96,9 @@ const AdminCreatePage = () => {
                 name="s"
                 value={formData.s}
                 onChange={handleChange}
-                required
+                disabled
               />
-              {errors.s && <p className="error-message">{errors.s}</p>}
             </label>
-
             <label>
               Имя:
               <input
@@ -75,9 +107,7 @@ const AdminCreatePage = () => {
                 value={formData.first_name}
                 onChange={handleChange}
               />
-              {errors.first_name && <p className="error-message">{errors.first_name}</p>}
             </label>
-
             <label>
               Фамилия:
               <input
@@ -86,9 +116,7 @@ const AdminCreatePage = () => {
                 value={formData.last_name}
                 onChange={handleChange}
               />
-              {errors.last_name && <p className="error-message">{errors.last_name}</p>}
             </label>
-
             <label>
               Отчество:
               <input
@@ -97,9 +125,7 @@ const AdminCreatePage = () => {
                 value={formData.middle_name}
                 onChange={handleChange}
               />
-              {errors.middle_name && <p className="error-message">{errors.middle_name}</p>}
             </label>
-
             <label>
               Email:
               <input
@@ -107,11 +133,8 @@ const AdminCreatePage = () => {
                 name="email"
                 value={formData.email}
                 onChange={handleChange}
-                required
               />
-              {errors.email && <p className="error-message">{errors.email}</p>}
             </label>
-
             <label>
               Телефон:
               <input
@@ -120,9 +143,7 @@ const AdminCreatePage = () => {
                 value={formData.phone_number}
                 onChange={handleChange}
               />
-              {errors.phone_number && <p className="error-message">{errors.phone_number}</p>}
             </label>
-
             <label>
               Дата рождения:
               <input
@@ -131,30 +152,13 @@ const AdminCreatePage = () => {
                 value={formData.birth_date}
                 onChange={handleChange}
               />
-              {errors.birth_date && <p className="error-message">{errors.birth_date}</p>}
             </label>
-
-            <label>
-              Пол:
-              <select
-                name="gender"
-                value={formData.gender}
-                onChange={handleChange}
-              >
-                <option value="">Выберите...</option>
-                <option value="M">Мужской</option>
-                <option value="F">Женский</option>
-              </select>
-              {errors.gender && <p className="error-message">{errors.gender}</p>}
-            </label>
-
             <label>
               Роль:
               <select
                 name="role"
                 value={formData.role}
                 onChange={handleChange}
-                required
               >
                 <option value="">Выберите роль</option>
                 {roleOptions.map(opt => (
@@ -163,38 +167,34 @@ const AdminCreatePage = () => {
                   </option>
                 ))}
               </select>
-              {errors.role && <p className="error-message">{errors.role}</p>}
-            </label>
-
-            <label>
-              Пароль:
-              <input
-                type="password"
-                name="password"
-                value={formData.password}
-                onChange={handleChange}
-                required
-              />
-              {errors.password && <p className="error-message">{errors.password}</p>}
             </label>
 
             <div className="form-actions">
-              <button type="submit" className="save-button">
-                Добавить
-              </button>
               <button
                 type="button"
                 className="cancel-button"
-                onClick={() => navigate("/admin/admins")}
+                onClick={handleCancel}
               >
                 Отмена
               </button>
+              <button type="submit" className="save-button">
+                Сохранить
+              </button>
             </div>
           </form>
+          {message && (
+            <div
+              className={`message ${
+                message.toLowerCase().includes('ошибка') ? 'error' : 'success'
+              }`}
+            >
+              {message}
+            </div>
+          )}
         </div>
       </div>
     </div>
   );
 };
 
-export default AdminCreatePage;
+export default AdminEditPage;
