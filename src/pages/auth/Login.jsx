@@ -73,7 +73,7 @@ const Login = () => {
                     <div className="input-container">
                         <input
                             type="text"
-                            placeholder="Email"
+                            placeholder="Login"
                             value={login}
                             onChange={(e) => setLogin(e.target.value)}
                         />
