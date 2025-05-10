@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../../api';
 import '../../styles/UserDashboard.css';
+import cameraIcon from '../../assets/icons/camera.png';
 
 const UserDashboard = () => {
     const [profile, setProfile] = useState(null);
@@ -68,9 +69,7 @@ const UserDashboard = () => {
         fetchGlobalSettings();
     }, []);
 
-    const handleFileChange = (e) => {
-        setPaymentScreenshot(e.target.files[0]);
-    };
+    const handleFileChange = (e) => setPaymentScreenshot(e.target.files[0]);
 
     const handleUpload = async () => {
         if (!paymentScreenshot) {
@@ -83,12 +82,10 @@ const UserDashboard = () => {
 
         try {
             await api.post('/upload_payment_screenshot/', formData, {
-                headers: {
-                    'Content-Type': 'multipart/form-data',
-                },
+                headers: { 'Content-Type': 'multipart/form-data' },
             });
             setUploadMessage('Скриншот успешно загружен.');
-        } catch (err) {
+        } catch {
             setUploadMessage('Ошибка при загрузке файла. Пожалуйста, попробуйте снова.');
         }
     };
@@ -115,7 +112,6 @@ const UserDashboard = () => {
             setPasswordMessage(response.data.message || 'Пароль успешно изменен.');
             setIsModalOpen(false);
         } catch (err) {
-            console.error("Full error response:", err.response);
             setPasswordMessage(
                 err.response?.data?.error || 'Ошибка при изменении пароля. Пожалуйста, попробуйте снова.'
             );
@@ -124,18 +120,14 @@ const UserDashboard = () => {
 
     const handleEditApplicationClick = () => {
         if (loadingSettings) return;
-
         if (allowEdit) {
             navigate('/edit-application');
         } else {
-            window.alert('Редактирование заявок отключено. Пожалуйста, свяжитесь с администрацией.');
+            alert('Редактирование заявок отключено. Пожалуйста, свяжитесь с администрацией.');
         }
     };
 
-    // --- Работа с аватаром ---
-    const handleAvatarChange = (e) => {
-        setAvatarFile(e.target.files[0]);
-    };
+    const handleAvatarChange = (e) => setAvatarFile(e.target.files[0]);
 
     const handleAvatarUpload = async () => {
         if (!avatarFile) {
@@ -148,14 +140,11 @@ const UserDashboard = () => {
 
         try {
             const response = await api.post('/upload-avatar/', formData, {
-                headers: {
-                    'Content-Type': 'multipart/form-data',
-                },
+                headers: { 'Content-Type': 'multipart/form-data' },
             });
             setAvatarUploadMessage('Аватар успешно обновлен.');
-            setProfile(prev => ({ ...prev, avatar: response.data.avatar }));
-        } catch (err) {
-            console.error(err);
+            setProfile((prev) => ({ ...prev, avatar: response.data.avatar }));
+        } catch {
             setAvatarUploadMessage('Ошибка при загрузке аватара.');
         }
     };
@@ -171,56 +160,35 @@ const UserDashboard = () => {
                 ) : (
                     profile && (
                         <div className="profile-info">
-
-                            {/* Блок аватара */}
                             <div className="profile-avatar-block">
-                                {profile.avatar ? (
-                                    <img 
-                                        src={profile.avatar} 
-                                        alt="Аватар" 
+                                <div className="avatar-wrapper">
+                                    <img
+                                        src={profile.avatar || '/default-avatar.png'}
+                                        alt="Аватар"
                                         className="profile-avatar"
-                                        style={{ width: '150px', height: '150px', objectFit: 'cover', borderRadius: '50%', marginBottom: '10px' }}
                                     />
-                                ) : (
-                                    <div style={{ width: '150px', height: '150px', borderRadius: '50%', backgroundColor: '#ddd', marginBottom: '10px' }}>
-                                        Нет аватара
-                                    </div>
-                                )}
-                                <input type="file" onChange={handleAvatarChange} accept="image/*" />
-                                <button onClick={handleAvatarUpload} className="upload-button">Обновить аватар</button>
+                                    <label htmlFor="avatar-upload" className="avatar-overlay">
+                                        <img src={cameraIcon} alt="Редактировать" className="camera-icon" />
+                                    </label>
+                                    <input
+                                        id="avatar-upload"
+                                        type="file"
+                                        accept="image/*"
+                                        onChange={handleAvatarChange}
+                                        style={{ display: 'none' }}
+                                    />
+                                </div>
                                 {avatarUploadMessage && <p className="upload-message">{avatarUploadMessage}</p>}
                             </div>
 
-                            <div className="profile-field">
-                                <span className="label">Имя:</span>
-                                <span className="value">{profile.first_name}</span>
-                            </div>
-                            <div className="profile-field">
-                                <span className="label">Фамилия:</span>
-                                <span className="value">{profile.last_name}</span>
-                            </div>
-                            <div className="profile-field">
-                                <span className="label">Email:</span>
-                                <span className="value">{profile.email}</span>
-                            </div>
-                            <div className="profile-field">
-                                <span className="label">ID студента:</span>
-                                <span className="value">{profile.s}</span>
-                            </div>
-                            <div className="profile-field">
-                                <span className="label">Телефон:</span>
-                                <span className="value">{profile.phone}</span>
-                            </div>
+                            <div className="profile-field"><span className="label">Имя:</span><span className="value">{profile.first_name}</span></div>
+                            <div className="profile-field"><span className="label">Фамилия:</span><span className="value">{profile.last_name}</span></div>
+                            <div className="profile-field"><span className="label">Email:</span><span className="value">{profile.email}</span></div>
+                            <div className="profile-field"><span className="label">ID студента:</span><span className="value">{profile.s}</span></div>
+                            <div className="profile-field"><span className="label">Телефон:</span><span className="value">{profile.phone}</span></div>
 
                             <button onClick={() => setIsModalOpen(true)} className="edit-password-button">
                                 Изменить Пароль
-                            </button>
-                            <button
-                                onClick={handleEditApplicationClick}
-                                className="edit-password-button"
-                                style={{ background: '#c32939', marginTop: '10px' }}
-                            >
-                                Редактировать заявку
                             </button>
                         </div>
                     )
@@ -240,44 +208,34 @@ const UserDashboard = () => {
                         {uploadMessage && <p className="upload-message">{uploadMessage}</p>}
                     </div>
                 )}
+                 {/* 🔻 КНОПКА РЕДАКТИРОВАНИЯ ПОД СТАТУСОМ */}
+            <div className="edit-application-button-wrapper">
+                <button
+                    onClick={handleEditApplicationClick}
+                    className="edit-password-button"
+                    style={{ background: '#c32939' }}
+                >
+                    Редактировать заявку
+                </button>
             </div>
+            </div>
+
+           
 
             {/* Модалка изменения пароля */}
             {isModalOpen && <div className="overlay" onClick={() => setIsModalOpen(false)}></div>}
             {isModalOpen && (
                 <div className="password-modal">
                     <button onClick={() => setIsModalOpen(false)} className="close-modal">&times;</button>
-
-                    <input
-                        type="password"
-                        placeholder="Старый пароль"
-                        value={oldPassword}
-                        onChange={(e) => setOldPassword(e.target.value)}
-                        className="password-input"
-                    />
-                    <input
-                        type="password"
-                        placeholder="Новый пароль"
-                        value={newPassword}
-                        onChange={(e) => setNewPassword(e.target.value)}
-                        className="password-input"
-                    />
-                    <input
-                        type="password"
-                        placeholder="Подтвердите новый пароль"
-                        value={confirmPassword}
-                        onChange={(e) => setConfirmPassword(e.target.value)}
-                        className="password-input"
-                    />
-                    <button onClick={handleChangePassword} className="change-password-button">
-                        Изменить Пароль
-                    </button>
-
+                    <input type="password" placeholder="Старый пароль" value={oldPassword} onChange={(e) => setOldPassword(e.target.value)} className="password-input" />
+                    <input type="password" placeholder="Новый пароль" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} className="password-input" />
+                    <input type="password" placeholder="Подтвердите новый пароль" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} className="password-input" />
+                    <button onClick={handleChangePassword} className="change-password-button">Изменить Пароль</button>
                     {passwordMessage && <p className="password-message">{passwordMessage}</p>}
                 </div>
             )}
 
-            {/* Модалка запрета на редактирование */}
+            {/* Модалка запрета редактирования */}
             {isEditWarningOpen && (
                 <>
                     <div className="overlay" onClick={() => setIsEditWarningOpen(false)}></div>

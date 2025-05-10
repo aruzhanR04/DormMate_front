@@ -1,27 +1,25 @@
 @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
 .application-page {
-  font-family: 'Roboto', sans-serif;
+  font-family: 'Droid Sans', sans-serif;
   display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 100vh;
-  background: linear-gradient(to bottom, #fff, #f8dcdc);
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  min-height: 890px;
-  background: linear-gradient(to bottom, #ffffff 50%, #fce4e4 50%);
-  font-family: 'Droid Sans', sans-serif;
   width: 100%;
+  padding-top: 60px; /* 🔼 Поднимаем форму выше */
+  padding-bottom: 40px;
+  min-height: 100vh;
+  background: linear-gradient(to bottom, #ffffff 50%, #fce4e4 50%);
 }
+
 
 .application-container {
   display: flex;
-  width: 800px;
+  width: 1000px; /* увеличена ширина */
   background: #fff;
   border-radius: 12px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-  padding: 20px;
+  padding: 30px;
+  gap: 30px; /* расстояние между контактами и формой */
 }
 
 .contact-card {
@@ -72,14 +70,16 @@
 .form-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 20px;
+  gap: 30px 40px; /* увеличены расстояния между строками и колонками */
+  margin-bottom: 30px;
 }
 
 .input-group {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
 }
+
 
 .input-group label {
   color: #555;
@@ -88,14 +88,20 @@
 }
 
 .input-group input {
-  padding: 10px;
-  border: none;
-  border-bottom: 2px solid #ddd;
-  font-size: 14px;
-  background: transparent;
+  padding: 12px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 15px;
+  background: #fafafa;
   color: #333;
-  cursor: not-allowed;
+  cursor: initial;
 }
+.input-group input[readonly] {
+  background-color: #f1f1f1;
+  color: #666;
+}
+
+
 
 /* Стили для контейнера выбора ценового диапазона */
 .price-range-select {
@@ -241,6 +247,10 @@ input[type="file"] {
 .price-range-select::after {
   content: '▼';
   margin-right: 30px;
+}
+
+.form-section {
+  flex: 1;
 }
 
 @media (max-width: 768px) {

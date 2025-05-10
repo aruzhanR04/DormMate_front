@@ -63,6 +63,16 @@ const ApplicationStatus = () => {
                     {uploadMessage && <p>{uploadMessage}</p>}
                 </div>
             )}
+            <div className="application-edit-section">
+    <button
+        onClick={handleEditApplicationClick}
+        className="edit-password-button"
+        style={{ background: '#c32939', marginTop: '10px' }}
+    >
+        Редактировать заявку
+    </button>
+</div>
+
         </div>
     );
 };
