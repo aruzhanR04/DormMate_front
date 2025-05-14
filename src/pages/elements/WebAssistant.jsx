@@ -8,18 +8,24 @@ const WebAssistant = () => {
   const [userInput, setUserInput] = useState('');
   const [chatActive, setChatActive] = useState(true);
   const [error, setError] = useState(null);
+  const [isOperatorConnected, setIsOperatorConnected] = useState(false);
+
 
   const userType = localStorage.getItem('user_type') || 'student';
 
   const fetchMessages = async (cId) => {
     try {
-      const res = await api.get(`chats/${cId}/messages/`);
-      const data = Array.isArray(res.data) ? res.data : res.data.results || [];
-
+      const [msgRes, chatRes] = await Promise.all([
+        api.get(`chats/${cId}/messages/`),
+        api.get(`chats/${cId}/`) 
+      ]);
+  
+      const data = Array.isArray(msgRes.data) ? msgRes.data : msgRes.data.results || [];
+  
       const transformed = data.map((msg) => {
         const senderType = msg.sender_type;
         const isUser = senderType === userType;
-
+  
         let timeString = '';
         if (msg.timestamp) {
           const d = new Date(msg.timestamp);
@@ -27,7 +33,7 @@ const WebAssistant = () => {
             timeString = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
           }
         }
-
+  
         return {
           id: msg.id,
           text: msg.content,
@@ -35,8 +41,10 @@ const WebAssistant = () => {
           timestamp: timeString,
         };
       });
-
+  
       setMessages(transformed);
+      setIsOperatorConnected(chatRes.data.is_operator_connected);  // ✅ обновляем флаг
+  
     } catch (err) {
       console.error('Ошибка при загрузке сообщений:', err);
       if (err.response?.status === 404) {
@@ -46,11 +54,14 @@ const WebAssistant = () => {
       setError('Ошибка при загрузке сообщений.');
     }
   };
+  
 
   const handleSendMessage = async () => {
     if (!userInput.trim() || !chatActive) return;
     const text = userInput;
     setUserInput('');
+
+    const fallbackMessage = 'Ваш вопрос сложный! Оператор скоро подключится и поможет вам.';
 
     try {
       const searchRes = await api.get(`questions/?search=${encodeURIComponent(text)}`);
@@ -67,7 +78,7 @@ const WebAssistant = () => {
       await api.post(`chats/${currentChatId}/send/`, { text });
       fetchMessages(currentChatId);
 
-      if (autoAnswer) {
+      if (autoAnswer && !isOperatorConnected) {
         setMessages(prev => [
           ...prev,
           {
@@ -77,17 +88,29 @@ const WebAssistant = () => {
             timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
           }
         ]);
-      } else {
+      
+        if (autoAnswer === fallbackMessage) {
+          handleRequestOperator();
+        }
+      
+      } else if (!autoAnswer && !isOperatorConnected) {
         setMessages(prev => [
           ...prev,
           {
             id: Date.now() + 1,
-            text: 'Администратор подключается к чату...',
+            text: fallbackMessage,
             type: userType === 'student' ? 'admin' : 'user',
             timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
           }
         ]);
+        handleRequestOperator();
+      
+      } else {
+        // оператор подключён → не даём автоответ, просто обновляем сообщения
+        fetchMessages(currentChatId);
       }
+      
+      
 
     } catch (err) {
       console.error('Ошибка при отправке сообщения:', err);

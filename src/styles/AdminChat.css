@@ -28,50 +28,90 @@ box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.05);
 }
 
 .admin-chat-message {
+  display: flex;
+  flex-direction: column;
+  align-items: start;
+  /* padding: 6px 10px; */
+  border-radius: 10px;
+  /* box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05); */
+  font-size: 14px; 
+  line-height: 1.2;
+  word-break: break-word;
+  white-space: pre-wrap;
+  margin-bottom: 6px; 
+}
+
+
+.message-bubble{
   display: inline-block;
-  max-width: 70%;              /* Ограничиваем максимальную ширину */
-  padding: 12px 16px;
-  border-radius: 12px;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.08);
-  font-size: 15px;
-  line-height: 1.4;
-  word-break: normal;          /* Исправлено: теперь не будет ломать слова */
-  white-space: pre-wrap;       /* Сохраняет перенос строк и пробелы */
-  /* overflow-wrap: break-word;   Ломает слишком длинные слова */
-  margin-bottom: 10px;
+  /* padding: 6px 10px; */
+  border-radius: 10px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  font-size: 14px; 
+  line-height: 1.2;
+  word-break: break-word;
+  white-space: pre-wrap;
+  margin-bottom: 6px; 
 }
 
 .admin-chat-message.student {
   align-self: flex-start;
-  background-color: #f0c9c9;
-  color: #BF2A45;
+
 }
 
 .admin-chat-message.admin {
   align-self: flex-end;
+
+}
+
+
+.message-text{
+  text-align: left;
+  padding-left: 1vw;
+}
+
+
+
+.message-bubble.student {
+  background-color: #f0c9c9;
+  color: #BF2A45;
+  width: 40vw;
+  justify-content: start;
+  /* min-height: 10vh; */
+}
+
+.message-bubble.admin {
   background-color: #e7ffe7;
   color: #2A8F45;
+  width: 40vw;
+  /* min-height: 10vh;  */
 }
+
+
 
 .message-time {
 font-size: 11px;
 opacity: 0.6;
-margin-top: 5px;
+margin-left: 1vw;
+padding-bottom: 1vh;
+/* margin-top: 5px; */
 text-align: right;
+/* margin-top: -10vh; */
 }
 
 .admin-input-container {
 display: flex;
-flex-direction: column;
-align-items: center;
+flex-direction: row;
+/* align-items: center; */
 gap: 15px;
 margin-top: 20px;
 }
 
 .admin-input-container input[type="text"] {
-width: 80%;
+min-width: 70vw;
 padding: 14px;
 font-size: 16px;
+/* margin-left: 60vw; */
 background-color: #ffe5e5;
 border: none;
 border-radius: 25px;
@@ -102,7 +142,12 @@ display: flex;
 justify-content: center;
 }
 
-.admin-chat-actions .end-chat {
+
+.back-button{
+  margin-top: 2vh;
+}
+
+.admin-chat-actions .end-chat, .back-button {
 padding: 12px 24px;
 background-color: #BF2A45;
 color: white;
@@ -122,3 +167,5 @@ color: #BF2A45;
 text-align: center;
 margin-top: 10px;
 }
+
+

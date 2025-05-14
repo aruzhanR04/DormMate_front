@@ -7,9 +7,8 @@ import AdminSidebar from './AdminSidebar';
 const AdminApplicationsPage = () => {
   const navigate = useNavigate();
   const [message, setMessage] = useState('');
-  const [allowEdit, setAllowEdit] = useState(false); // <--- Новое состояние
+  const [allowEdit, setAllowEdit] = useState(false);
 
-  // Получаем текущее значение при загрузке страницы
   useEffect(() => {
     const fetchSettings = async () => {
       try {
@@ -22,7 +21,6 @@ const AdminApplicationsPage = () => {
     fetchSettings();
   }, []);
 
-  // Переключение настройки
   const handleToggleEdit = async () => {
     try {
       const response = await api.post('/global-settings/', {
@@ -38,7 +36,7 @@ const AdminApplicationsPage = () => {
 
   const handleExport = async () => {
     try {
-      const response = await api.get('/students/export', { responseType: 'blob' });
+      const response = await api.get('/export-students', { responseType: 'blob' });
       const url = window.URL.createObjectURL(new Blob([response.data]));
       const link = document.createElement('a');
       link.href = url;
@@ -52,11 +50,22 @@ const AdminApplicationsPage = () => {
     }
   };
 
+  const handlePartialReminder = async () => {
+    try {
+      await api.post('/reminder/partial-payment/');
+      alert('Все студенты уведомлены');
+    } catch (error) {
+      console.error('Ошибка при отправке напоминаний:', error);
+      alert('Не удалось отправить напоминания. Попробуйте позже.');
+    }
+  };
+
   return (
     <div className="admin-page-container">
       <AdminSidebar />
       <div className="content-area">
         <h1>Заявки</h1>
+
         <div className="actions-list">
           <button onClick={() => navigate('/admin/applications/select')}>
             Отобрать студентов для проживания
@@ -69,7 +78,6 @@ const AdminApplicationsPage = () => {
           </button>
         </div>
 
-        {/* Переключатель настройки */}
         <div style={{ marginTop: '20px' }}>
           <label>
             <input
@@ -81,7 +89,20 @@ const AdminApplicationsPage = () => {
           </label>
         </div>
 
-        {message && <div className={`message ${message.type}`}>{message.text}</div>}
+        {message && (
+          <div className={`message ${message.type}`} style={{ marginTop: '10px' }}>
+            {message.text}
+          </div>
+        )}
+
+        <div style={{ marginTop: '30px' }}>
+          <button
+            className="partial-reminder-btn"
+            onClick={handlePartialReminder}
+          >
+            Напомнить об оплате студентам, оплатившим половину стоимости
+          </button>
+        </div>
       </div>
     </div>
   );

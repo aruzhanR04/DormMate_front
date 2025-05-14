@@ -75,7 +75,7 @@ const AdminChat = ({ chatId, onClose, studentName }) => {
   return (
     <div className="admin-chat-container">
       <div className="admin-chat-header">
-        <button onClick={onClose}>⬅ Назад</button>
+        <button className='back-button' onClick={onClose}>⬅ Назад</button>
         {studentName && <h3>Чат со студентом: {studentName}</h3>}
       </div>
       <div className="admin-chat-box">
@@ -85,10 +85,11 @@ const AdminChat = ({ chatId, onClose, studentName }) => {
               key={msg.id}
               className={`admin-chat-message ${msg.isAdmin ? 'admin' : 'student'}`}
             >
-              <div className="message-bubble">
+              <div className={`message-bubble ${msg.isAdmin ? 'admin' : 'student'}`}>
                 <p className="message-text">{msg.content}</p>
-                <span className="message-time">{msg.time}</span>
+                
               </div>
+              <span className="message-time">{msg.time}</span>
             </div>
           ))
         ) : (

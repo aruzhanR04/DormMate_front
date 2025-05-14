@@ -21,12 +21,16 @@ const EvidenceCategoriesPage = () => {
   const [errors, setErrors] = useState({});
   const [message, setMessage] = useState("");
 
-  // Модалка для редактирования ключевых слов
   const [isKeywordModalOpen, setIsKeywordModalOpen] = useState(false);
   const [editingKeyword, setEditingKeyword] = useState(null);
   const [editedKeyword, setEditedKeyword] = useState("");
 
-  // загрузка данных
+
+  const [isAddKeywordModalOpen, setIsAddKeywordModalOpen] = useState(false);
+  const [newKeyword, setNewKeyword] = useState('');
+
+
+
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -44,13 +48,11 @@ const EvidenceCategoriesPage = () => {
     fetchData();
   }, []);
 
-  // Обработка обычных инпутов
   const handleChange = e => {
     const { name, value } = e.target;
     setFormData(fd => ({ ...fd, [name]: value }));
   };
 
-  // Обработка выбора ключевых слов
   const handleKeywordSelect = selectedOptions => {
     setFormData(fd => ({
       ...fd,
@@ -110,7 +112,6 @@ const EvidenceCategoriesPage = () => {
     }
   };
 
-  // Открыть модалку редактирования
   const openEditKeywordModal = (keyword) => {
     setEditingKeyword(keyword);
     setEditedKeyword(keyword.keyword);
@@ -132,7 +133,6 @@ const EvidenceCategoriesPage = () => {
     }
   };
 
-  // Опции для select
   const keywordOptions = keywords.map(k => ({
     value: k.id,
     label: k.keyword
@@ -151,6 +151,24 @@ const EvidenceCategoriesPage = () => {
       })
       .join(", ");
   };
+
+
+
+  const handleAddKeyword = async () => {
+    if (!newKeyword.trim()) return;
+  
+    try {
+      const response = await api.post('/keywords/', { keyword: newKeyword.trim() });
+      setKeywords(prev => [...prev, response.data]);
+      setMessage('Ключевое слово добавлено');
+      setNewKeyword('');
+      setIsAddKeywordModalOpen(false);
+    } catch (err) {
+      console.error("Ошибка при добавлении ключевого слова:", err);
+      setMessage("Не удалось добавить ключевое слово");
+    }
+  };
+  
 
   return (
     <div className="admin-page-container">
@@ -241,6 +259,16 @@ const EvidenceCategoriesPage = () => {
               ))}
             </tbody>
           </table>
+
+
+          <button
+            className="submit-btn"
+            style={{ marginBottom: '16px' }}
+            onClick={() => setIsAddKeywordModalOpen(true)}
+          >
+            ➕ Добавить ключевое слово
+          </button>
+
         </div>
 
         <div className="admin-form-container" style={{ marginTop: 40 }}>
@@ -320,8 +348,6 @@ const EvidenceCategoriesPage = () => {
             </button>
           </form>
         </div>
-
-        {/* МОДАЛКА редактирования ключевого слова */}
         {isKeywordModalOpen && (
           <div className="modal-overlay">
             <div className="modal-content">
@@ -343,6 +369,30 @@ const EvidenceCategoriesPage = () => {
             </div>
           </div>
         )}
+
+
+
+
+
+        {isAddKeywordModalOpen && (
+          <div className="modal-overlay">
+            <div className="modal-content">
+              <h3 className="text-xl font-bold mb-4">Добавить ключевое слово</h3>
+              <input
+                type="text"
+                value={newKeyword}
+                onChange={(e) => setNewKeyword(e.target.value)}
+                placeholder="Введите ключевое слово"
+                className="input"
+              />
+              <div className="modal-actions">
+                <button className="submit-btn" onClick={handleAddKeyword}>Сохранить</button>
+                <button className="cancel-btn" onClick={() => setIsAddKeywordModalOpen(false)}>Отмена</button>
+              </div>
+            </div>
+          </div>
+        )}
+
       </div>
     </div>
   );

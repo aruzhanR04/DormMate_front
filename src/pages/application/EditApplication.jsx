@@ -13,25 +13,26 @@ const EditApplication = () => {
     parentPhone: '',
     entResult:   '',
     priceRange:  '',
-    documents:   {},  // новые File или { name, url, existing: true }
+    documents:   {},
   });
-  const [removedDocs, setRemovedDocs] = useState([]);        // коды удалённых старых файлов
+  const [removedDocs, setRemovedDocs] = useState([]);
   const [evidenceTypes, setEvidenceTypes] = useState([]);
-  const [costOptions,    setCostOptions]    = useState([]);
-  const [isModalOpen,    setModalOpen]      = useState(false);
+  const [costOptions, setCostOptions] = useState([]);
+  const [isModalOpen, setModalOpen] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // 1) получить заявку и студента
-        const [applicationRes, studentRes] = await Promise.all([
+        const [applicationRes, studentRes, evidenceRes] = await Promise.all([
           api.get('/application/'),
           api.get('/studentdetail/'),
+          api.get('/application/evidences/'),
         ]);
         const app = applicationRes.data;
 
-        // 2) основные поля
+
+
         setFormData(prev => ({
           ...prev,
           firstName:   studentRes.data.first_name    || '',
@@ -39,20 +40,19 @@ const EditApplication = () => {
           course:      studentRes.data.course        || '',
           gender:      studentRes.data.gender        || '',
           birthDate:   studentRes.data.birth_date    || '',
-          parentPhone: studentRes.data.parent_phone  || '',
+          parentPhone: app.parent_phone              || '',
           entResult:   app.ent_result                || '',
           priceRange:  app.dormitory_cost            || '',
         }));
 
-        // 3) предзагрузка старых справок
-        const evidenceRes = await api.get('/application/evidences/');
         const existingDocs = {};
         evidenceRes.data.forEach(ev => {
           if (!ev.file) return;
-          const code = ev.code;
-          const url  = ev.file;
-          const name = ev.name || url.split('/').pop();
-          existingDocs[code] = { name, url, existing: true };
+          existingDocs[ev.code] = {
+            name:     ev.name || ev.file.split('/').pop(),
+            url:      ev.file,
+            existing: true
+          };
         });
         setFormData(prev => ({
           ...prev,
@@ -69,10 +69,7 @@ const EditApplication = () => {
     const fetchEvidenceTypes = async () => {
       try {
         const response = await api.get('/evidence-types/');
-        const types = Array.isArray(response.data)
-          ? response.data
-          : response.data.results || [];
-        setEvidenceTypes(types);
+        setEvidenceTypes(response.data.results || response.data || []);
       } catch (error) {
         console.error('Ошибка загрузки типов документов:', error);
       }
@@ -81,7 +78,7 @@ const EditApplication = () => {
     const fetchCosts = async () => {
       try {
         const response = await api.get('/dorms/costs/');
-        setCostOptions(Array.isArray(response.data) ? response.data : []);
+        setCostOptions(response.data || []);
       } catch (error) {
         console.error('Ошибка при загрузке цен:', error);
       }
@@ -93,32 +90,23 @@ const EditApplication = () => {
   }, []);
 
   const handleChange = e => {
-    const field = e.target.name;
-    if (e.target.files && e.target.files.length) {
-      const file = e.target.files[0];
+    const { name, value, files } = e.target;
+    if (files && files.length) {
       setFormData(prev => ({
         ...prev,
-        documents: {
-          ...prev.documents,
-          [field]: file
-        }
+        documents: { ...prev.documents, [name]: files[0] }
       }));
     } else {
-      const value = e.target.value;
-      setFormData(prev => ({
-        ...prev,
-        [field]: value
-      }));
+      setFormData(prev => ({ ...prev, [name]: value }));
     }
   };
 
   const handleRemoveFile = code => {
     setFormData(prev => {
       const docs = { ...prev.documents };
-      const fo = docs[code];
+      const removed = docs[code];
       delete docs[code];
-      // если удаляем старую справку — запоминаем её код
-      if (fo && fo.existing) {
+      if (removed?.existing) {
         setRemovedDocs(rd => [...rd, code]);
       }
       return { ...prev, documents: docs };
@@ -128,24 +116,23 @@ const EditApplication = () => {
   const handleUpdate = async () => {
     try {
       const payload = new FormData();
+      // отправляем все три поля
       payload.append('dormitory_cost', formData.priceRange);
       payload.append('ent_result',     formData.entResult);
+      payload.append('parent_phone',   formData.parentPhone);
 
-      // новые файлы
       Object.entries(formData.documents).forEach(([code, fo]) => {
         if (fo instanceof File) {
           payload.append(code, fo);
         }
       });
 
-      // список удалённых старых справок
       if (removedDocs.length) {
         payload.append('deleted_documents', JSON.stringify(removedDocs));
       }
 
-      await api.patch('/student/application/', payload, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      });
+      await api.patch('/student/application/', payload);
+
       navigate('/profile');
     } catch (error) {
       console.error('Ошибка при обновлении заявки:', error);
@@ -188,37 +175,68 @@ const EditApplication = () => {
         <h2>Редактировать Заявку</h2>
 
         <div className="form-grid">
-          <div className="input-group"><label>Имя</label><input type="text" value={formData.firstName} readOnly/></div>
-          <div className="input-group"><label>Фамилия</label><input type="text" value={formData.lastName} readOnly/></div>
-          <div className="input-group"><label>Курс</label><input type="text" value={formData.course} readOnly/></div>
+          <div className="input-group">
+            <label>Имя</label>
+            <input type="text" value={formData.firstName} readOnly />
+          </div>
+          <div className="input-group">
+            <label>Фамилия</label>
+            <input type="text" value={formData.lastName} readOnly />
+          </div>
+          <div className="input-group">
+            <label>Курс</label>
+            <input type="text" value={formData.course} readOnly />
+          </div>
           <div className="input-group">
             <label>Пол</label>
             <input
               type="text"
-              value={formData.gender === 'M' ? 'Мужской'
+              value={
+                formData.gender === 'M' ? 'Мужской'
                 : formData.gender === 'F' ? 'Женский'
-                : ''}
+                : ''
+              }
               readOnly
             />
           </div>
-          <div className="input-group"><label>Дата рождения</label><input type="text" value={formData.birthDate} readOnly/></div>
+          <div className="input-group">
+            <label>Дата рождения</label>
+            <input type="text" value={formData.birthDate} readOnly />
+          </div>
           <div className="input-group">
             <label>Телефон родителя</label>
-            <input type="text" name="parentPhone" value={formData.parentPhone} onChange={handleChange}/>
+            <input
+              type="text"
+              name="parentPhone"
+              value={formData.parentPhone}
+              onChange={handleChange}
+            />
           </div>
           <div className="input-group">
             <label>Результат ЕНТ</label>
-            <input type="number" name="entResult" value={formData.entResult} onChange={handleChange}/>
+            <input
+              type="number"
+              name="entResult"
+              value={formData.entResult}
+              onChange={handleChange}
+            />
             <small style={{ color: '#888' }}>
               Загрузите ЕНТ сертификат в разделе "Загрузить документы", без этого сертификата ваш результат учитываться не будет
             </small>
           </div>
           <div className="input-group">
             <label>Ценовой диапазон</label>
-            <select name="priceRange" value={formData.priceRange} onChange={handleChange} className="price-range-select">
+            <select
+              name="priceRange"
+              value={formData.priceRange}
+              onChange={handleChange}
+              className="price-range-select"
+            >
               <option value="">Выберите стоимость</option>
               {costOptions.map(c => (
-                <option key={c} value={c}>{Number(c).toLocaleString('ru-RU')} ₸</option>
+                <option key={c} value={c}>
+                  {Number(c).toLocaleString('ru-RU')} ₸
+                </option>
               ))}
             </select>
           </div>
@@ -242,8 +260,12 @@ const EditApplication = () => {
         )}
 
         <div className="button-group">
-          <button className="upload-btn" onClick={() => setModalOpen(true)}>Изменить документы</button>
-          <button className="upload-btn" onClick={handleUpdate}>Сохранить изменения</button>
+          <button className="upload-btn" onClick={() => setModalOpen(true)}>
+            Изменить документы
+          </button>
+          <button className="upload-btn" onClick={handleUpdate}>
+            Сохранить изменения
+          </button>
         </div>
       </div>
 

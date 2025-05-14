@@ -135,25 +135,27 @@ const ApplicationPage = () => {
         <button className="close-btn" onClick={() => setModalOpen(false)}>✖</button>
         <h3>Загрузка документов</h3>
         <div className="file-upload">
-          {evidenceTypes.map(doc => {
-            const file = formData.documents[doc.code];
-            return (
-              <div key={doc.code} className="file-upload-item">
-                <label className="file-label">{doc.label || doc.name}</label>
-                {file ? (
-                  <div className="file-actions">
-                    <span>{file.name}</span>
-                    <button type="button" onClick={() => handleRemoveFile(doc.code)}>
-                      Удалить
-                    </button>
+          {evidenceTypes
+            .filter(doc => doc.data_type === 'file')
+            .map(doc => {
+              const file = formData.documents[doc.code];
+              return (
+                <div key={doc.code} className="file-upload-item">
+                  <label className="file-label">{doc.label || doc.name}</label>
+                  {file ? (
+                    <div className="file-actions">
+                      <span>{file.name}</span>
+                      <button type="button" onClick={() => handleRemoveFile(doc.code)}>
+                        Удалить
+                      </button>
+                      <input type="file" name={doc.code} onChange={handleChange} />
+                    </div>
+                  ) : (
                     <input type="file" name={doc.code} onChange={handleChange} />
-                  </div>
-                ) : (
-                  <input type="file" name={doc.code} onChange={handleChange} />
-                )}
-              </div>
-            );
-          })}
+                  )}
+                </div>
+              );
+            })}
         </div>
         <button className="upload-btn" onClick={() => setModalOpen(false)}>
           Закрыть
@@ -161,6 +163,7 @@ const ApplicationPage = () => {
       </div>
     </div>
   );
+  
 
   // список выбранных файлов
   const renderSelectedFiles = () => {
@@ -229,19 +232,22 @@ const ApplicationPage = () => {
                 placeholder="Введите номер родителей"
               />
             </div>
-            <div className="input-group">
-              <label>Результат ЕНТ</label>
-              <input
-                type="number"
-                min="0"
-                max="140"
-                value={formData.entResult}
-                onChange={e => setFormData({ ...formData, entResult: e.target.value })}
-              />
-              <small style={{ color: 'gray', fontSize: '0.85em' }}>
-                Загрузите ЕНТ сертификат в разделе "Загрузить документы", без этого сертификата ваш результат учитываться не будет
-              </small>
-            </div>
+            {formData.course === '1' && (
+              <div className="input-group">
+                <label>Результат ЕНТ</label>
+                <input
+                  type="number"
+                  min="0"
+                  max="140"
+                  value={formData.entResult}
+                  onChange={e => setFormData({ ...formData, entResult: e.target.value })}
+                />
+                <small style={{ color: 'gray', fontSize: '0.85em' }}>
+                  Загрузите ЕНТ сертификат в разделе "Загрузить документы", без этого сертификата ваш результат учитываться не будет
+                </small>
+              </div>
+            )}
+
             <div className="input-group">
               <label>Ценовой диапазон</label>
               <div className="price-range-select">

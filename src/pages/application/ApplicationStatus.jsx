@@ -1,8 +1,15 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';  
 import api from '../../api';
 import '../../styles/styles.css';
 
 const ApplicationStatus = () => {
+    const navigate = useNavigate();              
+
+    const handleEditApplicationClick = () => {
+        navigate('/edit-application');
+    };
+
     const [status, setStatus] = useState('');
     const [error, setError] = useState('');
     const [paymentScreenshot, setPaymentScreenshot] = useState(null);
@@ -36,11 +43,7 @@ const ApplicationStatus = () => {
         formData.append('payment_screenshot', paymentScreenshot);
 
         try {
-            const response = await api.post('/upload_payment_screenshot/', formData, {
-                headers: {
-                    'Content-Type': 'multipart/form-data',
-                },
-            });
+            await api.post('/upload_payment_screenshot/', formData);
             setUploadMessage('Скриншот успешно загружен.');
         } catch (err) {
             console.error('Ошибка загрузки скриншота:', err);
@@ -63,16 +66,16 @@ const ApplicationStatus = () => {
                     {uploadMessage && <p>{uploadMessage}</p>}
                 </div>
             )}
-            <div className="application-edit-section">
-    <button
-        onClick={handleEditApplicationClick}
-        className="edit-password-button"
-        style={{ background: '#c32939', marginTop: '10px' }}
-    >
-        Редактировать заявку
-    </button>
-</div>
 
+            <div className="application-edit-section" style={{ marginTop: '10px' }}>
+                <button
+                    onClick={handleEditApplicationClick}  // <-- теперь определена
+                    className="edit-password-button"
+                    style={{ background: '#c32939' }}
+                >
+                    Редактировать заявку
+                </button>
+            </div>
         </div>
     );
 };
