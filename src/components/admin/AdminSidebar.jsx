@@ -1,33 +1,56 @@
-import React from 'react';
-import { useNavigate } from 'react-router-dom';
-import sicon from '../../assets/icons/sicon2.png';
-import dicon from '../../assets/icons/dicon2.png';
-import aicon from '../../assets/icons/aicon2.png';
-import '../../styles/AdminSidebar.css';
+import React from "react";
+import { useNavigate, useLocation } from "react-router-dom";
+import "../../styles/AdminSidebar.css";
+
+import adminDashboard from "../../assets/icons/adminDashboard.svg";
+import adminStudent from "../../assets/icons/adminStudent.svg";
+import adminDormitories from "../../assets/icons/adminDormitories.svg";
+import adminApplications from "../../assets/icons/adminApplications.svg";
+import adminChats from "../../assets/icons//adminApplications.svg";
+import adminAdmin from "../../assets/icons/adminAdmin.svg";
+import adminEvidence from "../../assets/icons/adminEvidence.svg";
+
+const menuItems = [
+  { path: "/admin", label: "Панель", icon: adminDashboard },
+  { path: "/admin/students", label: "Студенты", icon: adminStudent },
+  { path: "/admin/dormitories", label: "Общежития", icon: adminDormitories },
+  { path: "/admin/applications", label: "Заявки", icon: adminApplications },
+  { path: "/admin/chats", label: "Чаты", icon: adminChats },
+  { path: "/admin/admins", label: "Администраторы", icon: adminAdmin },
+  { path: "/admin/evidence-types", label: "Категории справок", icon: adminEvidence },
+];
 
 const AdminSidebar = () => {
-    const navigate = useNavigate();
-    return (
-      <nav className="sidebar">
-        <ul>
-          <li onClick={() => navigate('/admin/students')}>
-            <img src={sicon} alt="Студенты" className="nav-icon" /> <span>Студенты</span>
-          </li>
-          <li onClick={() => navigate('/admin/dormitories')}>
-            <img src={dicon} alt="Общежития" className="nav-icon" /> <span>Общежития</span>
-          </li>
-          <li onClick={() => navigate('/admin/applications')}>
-            <img src={aicon} alt="Заявки" className="nav-icon" /> <span>Заявки</span>
-          </li>
-          <li onClick={() => navigate('/admin/admins')}>
-            <img src={aicon} alt="Админы" className="nav-icon" /> <span>Администраторы</span>
-          </li>
-          <li onClick={() => navigate('/admin/evidence-types')}>
-            <img src={aicon} alt="Справки" className="nav-icon" /> <span>Категории справок</span>
-          </li>
-        </ul>
-      </nav>
-    );
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  return (
+    <nav className="sidebar">
+      <ul>
+        {menuItems.map((item) => {
+          const isActive = location.pathname === item.path;
+          return (
+            <li
+              key={item.path}
+              className={isActive ? "active" : ""}
+              onClick={() => navigate(item.path)}
+              tabIndex={0}
+              onKeyDown={e => e.key === "Enter" && navigate(item.path)}
+            >
+              <span className="sidebar-marker" />
+              <img
+                src={item.icon}
+                alt={item.label}
+                className="nav-icon"
+                draggable={false}
+              />
+              <span className="sidebar-label">{item.label}</span>
+            </li>
+          );
+        })}
+      </ul>
+    </nav>
+  );
 };
 
 export default AdminSidebar;

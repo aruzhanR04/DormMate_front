@@ -12,18 +12,18 @@ import Footer from './components/common/footer';
 import AdminPanel from './components/admin/AdminPanel';
 import AdminStudentsPage from './components/admin/AdminStudentsPage';
 import AdminDormitoriesPage from './components/admin/AdminDormitoriesPage';
-import AdminDormitoriesOperations from './components/admin/AdminDormitoriesOperations';
-import AdminDormitoryAddPage from './components/admin/AdminDormitoryAddPage';
-import AdminDormitoryViewPage from './components/admin/AdminDormitoryViewPage';
-import AdminDormitoryEditPage from './components/admin/AdminDormitoryEditPage';
+// import AdminDormitoriesOperations from './components/admin/AdminDormitoriesOperations';
+// import AdminDormitoryAddPage from './components/admin/AdminDormitoryAddModal';
+// import AdminDormitoryViewPage from './components/admin/AdminDormitoryViewModal';
+// import AdminDormitoryEditPage from './components/admin/AdminDormitoryEditModal';
 import AdminApplicationsPage from './components/admin/AdminApplicationsPage';
 import ApplicationDetailPage from './components/admin/ApplicationDetailPage';
 import StudentRoomDistributionPage from './components/admin/StudentRoomDistributionPage';
-import AdminStudentsWorkPage from './components/admin/AdminStudentsWorkPage';
+// import AdminStudentsWorkPage from './components/admin/AdminStudentsWorkPage';
 import AdminSelectStudentsPage from './components/admin/AdminSelectStudentsPage';
-import AdminStudentAddPage from './components/admin/AdminStudentAddPage';
-import AdminStudentViewPage from './components/admin/AdminStudentViewPage';
-import AdminStudentEditPage from './components/admin/AdminStudentEditPage';
+// import AdminStudentAddPage from './components/admin/AdminStudentAddModal';
+// import AdminStudentViewPage from './components/admin/AdminStudentViewModal';
+// import AdminStudentEditPage from './components/admin/AdminStudentEditModal';
 import AdminOperations from './components/admin/AdminOperations';
 import AdminViewPage from './components/admin/AdminViewPage';
 import AdminEditPage from './components/admin/AdminEditPage';
@@ -47,18 +47,17 @@ import WebAssistant from './pages/elements/WebAssistant';
 import EditApplication from './pages/application/EditApplication';
 
 import DormitoryDetail from './pages/dormitories/Dormitory1';
-import Dormitory2 from './pages/dormitories/Dormitory2';
-import Dormitory3 from './pages/dormitories/Dormitory3';
+// import Dormitory2 from './pages/dormitories/Dormitory2';
+// import Dormitory3 from './pages/dormitories/Dormitory3';
 
 const DormAdd = () => <div>Добавление общежития</div>;
 const DormUpdate = () => <div>Изменение общежития</div>;
 const DormDelete = () => <div>Удаление общежития</div>;
 const AppExport = () => <div>Выгрузка заселенных студентов</div>;
 
-// --- FooterWrapper для условного отображения футера ---
+
 function FooterWrapper() {
   const location = useLocation();
-  // Футер скрывается если url начинается с /admin
   if (location.pathname.startsWith("/admin")) {
     return null;
   }
@@ -148,8 +147,8 @@ function App() {
             element={<PrivateRoute isAuthenticated={isAuthenticated}><Logout onLogout={handleLogout} /></PrivateRoute>}
           />
           <Route path="/dormitory/:id" element={<DormitoryDetail />} />
-          <Route path="/dormitory2" element={<Dormitory2 />} />
-          <Route path="/dormitory3" element={<Dormitory3 />} />
+          {/* <Route path="/dormitory2" element={<Dormitory2 />} />
+          <Route path="/dormitory3" element={<Dormitory3 />} /> */}
 
           {/* === Админ маршруты === */}
           <Route
@@ -161,40 +160,8 @@ function App() {
             element={<AdminRoute isAuthenticated={isAuthenticated} userRole={userRole}><AdminStudentsPage /></AdminRoute>}
           />
           <Route
-            path="/admin/students/work"
-            element={<AdminRoute isAuthenticated={isAuthenticated} userRole={userRole}><AdminStudentsWorkPage /></AdminRoute>}
-          />
-          <Route
-            path="/admin/students/add"
-            element={<AdminRoute isAuthenticated={isAuthenticated} userRole={userRole}><AdminStudentAddPage /></AdminRoute>}
-          />
-          <Route
-            path="/admin/students/view-one/:id"
-            element={<AdminRoute isAuthenticated={isAuthenticated} userRole={userRole}><AdminStudentViewPage /></AdminRoute>}
-          />
-          <Route
-            path="/admin/students/edit/:id"
-            element={<AdminRoute isAuthenticated={isAuthenticated} userRole={userRole}><AdminStudentEditPage /></AdminRoute>}
-          />
-          <Route
             path="/admin/dormitories"
             element={<AdminRoute isAuthenticated={isAuthenticated} userRole={userRole}><AdminDormitoriesPage /></AdminRoute>}
-          />
-          <Route
-            path="/admin/dormitories/operations"
-            element={<AdminRoute isAuthenticated={isAuthenticated} userRole={userRole}><AdminDormitoriesOperations /></AdminRoute>}
-          />
-          <Route
-            path="/admin/dormitories/add"
-            element={<AdminRoute isAuthenticated={isAuthenticated} userRole={userRole}><AdminDormitoryAddPage /></AdminRoute>}
-          />
-          <Route
-            path="/admin/dormitories/view-one/:id"
-            element={<AdminRoute isAuthenticated={isAuthenticated} userRole={userRole}><AdminDormitoryViewPage /></AdminRoute>}
-          />
-          <Route
-            path="/admin/dormitories/change/:id"
-            element={<AdminRoute isAuthenticated={isAuthenticated} userRole={userRole}><AdminDormitoryEditPage /></AdminRoute>}
           />
           <Route
             path="/admin/applications"
