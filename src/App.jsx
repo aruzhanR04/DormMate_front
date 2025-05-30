@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes, useLocation } from 'react-router-dom';
 import api from './api';
 import './tailwind.css';
 
@@ -7,6 +7,7 @@ import Navbar from './components/common/Navbar';
 import PrivateRoute from './components/common/PrivateRoute';
 import Logout from './components/common/Logout';
 import ChatIcon from './components/chat/ChatIcon';
+import Footer from './components/common/footer';
 
 import AdminPanel from './components/admin/AdminPanel';
 import AdminStudentsPage from './components/admin/AdminStudentsPage';
@@ -49,12 +50,20 @@ import DormitoryDetail from './pages/dormitories/Dormitory1';
 import Dormitory2 from './pages/dormitories/Dormitory2';
 import Dormitory3 from './pages/dormitories/Dormitory3';
 
-
-
 const DormAdd = () => <div>Добавление общежития</div>;
 const DormUpdate = () => <div>Изменение общежития</div>;
 const DormDelete = () => <div>Удаление общежития</div>;
 const AppExport = () => <div>Выгрузка заселенных студентов</div>;
+
+// --- FooterWrapper для условного отображения футера ---
+function FooterWrapper() {
+  const location = useLocation();
+  // Футер скрывается если url начинается с /admin
+  if (location.pathname.startsWith("/admin")) {
+    return null;
+  }
+  return <Footer />;
+}
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -70,7 +79,6 @@ function App() {
           if (response.data) {
             setIsAuthenticated(true);
             setUserRole(response.data.user_type);
-            console.log(response.data);
           }
         } catch (error) {
           setIsAuthenticated(false);
@@ -97,7 +105,6 @@ function App() {
     <Router>
       <div>
         <Navbar isAuthenticated={isAuthenticated} userRole={userRole} onLogout={handleLogout} />
-
         <Routes>
           <Route path="/login" element={<Login onLogin={handleLogin} />} />
           <Route path="/" element={<Home />} />
@@ -238,6 +245,8 @@ function App() {
             element={<AdminRoute isAuthenticated={isAuthenticated} userRole={userRole}><EvidenceEditPage /></AdminRoute>}
           />
         </Routes>
+
+        <FooterWrapper />
 
         {isAuthenticated && userRole === 'student' && (
           <>

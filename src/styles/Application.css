@@ -1,289 +1,270 @@
-@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
 .application-page {
-  font-family: 'Droid Sans', sans-serif;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  width: 100%;
-  padding-top: 60px; /* 🔼 Поднимаем форму выше */
-  padding-bottom: 40px;
   min-height: 100vh;
-  background: linear-gradient(to bottom, #ffffff 50%, #fce4e4 50%);
-}
-
-
-.application-container {
+  width: 100vw;
   display: flex;
-  width: 1000px; /* увеличена ширина */
+  align-items: center;
+  justify-content: center;
   background: #fff;
-  border-radius: 12px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-  padding: 30px;
-  gap: 30px; /* расстояние между контактами и формой */
+  font-family: 'Figtree', 'Roboto', sans-serif;
+  position: relative;
 }
 
-.contact-card {
-  background: #e04848; 
-  padding: 20px;
-  border-radius: 15px; 
-  color: white; 
-  text-align: center;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-  max-width: 300px; 
-  margin: 0 auto; 
+.application-box {
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+  padding: 44px 40px 36px 40px;
+  width: 540px;
+  max-width: 96vw;
+  margin: 0 auto;
+  position: relative;
+  z-index: 1;
 }
 
-.contact-card h3 {
-  color: white; 
-  font-size: 22px;
+.app-title {
+  font-size: 38px;
   font-weight: 700;
-  margin-bottom: 15px;
-}
-
-.contact-card p {
-  color: white; 
-  font-size: 16px;
-  margin: 8px 0;
-  line-height: 1.5;
-}
-
-.contact-info p {
-  color: white;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-}
-
-.contact-info p:nth-child(1),
-.contact-info p:nth-child(2) {
-  font-weight: 600; 
-}
-
-.contact-info p:nth-child(3) {
-  color: #ffdada; 
-}
-.contact-section h3 {
+  color: #363636;
   margin-bottom: 10px;
-}
-
-.form-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 30px 40px; /* увеличены расстояния между строками и колонками */
-  margin-bottom: 30px;
-}
-
-.input-group {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-
-.input-group label {
-  color: #555;
-  font-size: 16px;
-  font-weight: 500;
-}
-
-.input-group input {
-  padding: 12px;
-  border: 1px solid #ccc;
-  border-radius: 6px;
-  font-size: 15px;
-  background: #fafafa;
-  color: #333;
-  cursor: initial;
-}
-.input-group input[readonly] {
-  background-color: #f1f1f1;
-  color: #666;
-}
-
-
-
-/* Стили для контейнера выбора ценового диапазона */
-.price-range-select {
-  position: relative;
-  width: 100%;
-  max-width: 300px;
-}
-
-.price-range-select select {
-  width: 100%;
-  padding: 8px 0; 
-  border: none;
-  background: transparent; 
-  font-size: 16px; 
-  color: #333; 
-  appearance: none; 
-  cursor: pointer;
-  outline: none; 
-}
-
-/* Кастомная стрелочка */
-.price-range-select::after {
-  content: '▼';
-  position: absolute;
-  top: 50%;
-  right: 0;
-  transform: translateY(-50%);
-  font-size: 12px;
-  color: #555;
-  pointer-events: none; 
-}
-
-/* Стили для отображения выбранной цены */
-.selected-price {
-  margin-top: 10px;
-  font-size: 14px;
-  color: #555;
-}
-
-.selected-price strong {
-  color: #e04848;
-  font-weight: 600;
-}
-/* Modal Styles */
-.modal {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.6);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  backdrop-filter: blur(5px); 
-}
-
-.modal-content {
-  background: #f9f9f9; 
-  padding: 30px;
-  border-radius: 15px;
-  width: 450px; 
   text-align: center;
-  position: relative;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+  letter-spacing: 0.2px;
 }
 
-.close-btn {
-  position: absolute;
-  top: 15px;
-  right: 20px;
+.app-desc {
+  color: #444;
+  font-size: 17px;
+  margin-bottom: 30px;
+  text-align: center;
+  font-weight: 400;
+  line-height: 1.25;
+  letter-spacing: 0.01em;
+  max-width: 90%;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.app-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.app-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 22px 28px;
+  margin-bottom: 0;
+}
+
+.input-block {
+  display: flex;
+  flex-direction: column;
+}
+
+.input-block label {
+  font-weight: 500;
+  color: #222;
+  margin-bottom: 4px;
+  font-size: 15px;
+  line-height: 1;
+  letter-spacing: 0.01em;
+  text-align: left;
+}
+
+.input-block input,
+.input-block select {
+  border: 1.2px solid #d5d5d5;
+  border-radius: 7px;
+  padding: 12px 11px;
+  font-size: 16px;
+  background: #fafafa;
+  color: #222;
+  transition: border 0.23s;
+  font-family: inherit;
+  box-sizing: border-box;
+}
+
+.input-block input:focus,
+.input-block select:focus {
+  outline: none;
+  border: 1.6px solid #c32939;
+}
+
+.upload-btn, .submit-btn {
+  width: 100%;
+  margin-top: 18px;
+  padding: 14px;
+  font-size: 18px;
+  font-weight: 700;
   border: none;
-  background: none;
-  font-size: 24px;
+  border-radius: 8px;
+  background: #c32939;
+  color: #fff;
   cursor: pointer;
-  color: #666; 
-}
-
-h3 {
-  margin-bottom: 20px;
-  color: #444; 
-  font-size: 22px; 
-  font-weight: 600; 
-}
-
-.file-upload {
-  display: flex;
-  flex-direction: column;
-  gap: 15px; 
-  max-height: 350px; 
-  overflow-y: auto;
-  padding: 10px;
-}
-
-.file-label {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  font-size: 16px; 
-  color: #555;
-  font-weight: 500; 
-}
-
-input[type="file"] {
-  margin-top: 8px;
-  font-size: 14px;
-  padding: 8px;
-  border: 1px solid #ddd; 
-  border-radius: 5px;
-  background: #fff;
-  cursor: pointer;
+  transition: background 0.2s;
 }
 
 .upload-btn {
-  width: 100%;
-  padding: 12px;
-  margin-top: 20px;
-  background: #e04848 ;
-  color: white;
+  margin-bottom: 10px;
+}
+
+.upload-btn:hover, .submit-btn:hover {
+  background: #a6212e;
+}
+
+
+.modal.application-modal {
+  position: fixed;
+  z-index: 1001;
+  inset: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.modal.application-modal::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.36);
+  z-index: 0;
+}
+
+.application-modal-content {
+  background: #fff;
+  border-radius: 14px;
+  padding: 36px 35px 30px 35px;
+  width: 540px;
+  max-width: 98vw;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+  text-align: center;
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+}
+
+.application-modal .close-btn {
+  position: absolute;
+  right: 22px;
+  top: 22px;
+  background: none;
   border: none;
-  border-radius: 8px;
-  font-size: 18px; 
+  font-size: 22px;
   cursor: pointer;
-  transition: background 0.3s;
+  color: #999;
+  z-index: 3;
 }
 
-.upload-btn:hover {
-  background: #c43737; 
+.modal-title {
+  font-size: 23px;
+  font-weight: 700;
+  margin-bottom: 12px;
+  letter-spacing: 0.02em;
 }
 
-.price-range-select select {
-  width: 100%;
+.modal-subtext {
+  font-size: 17px;
+  color: #555;
+  margin-bottom: 18px;
+  line-height: 1.45;
+  font-weight: 400;
+}
+
+.docs-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px 28px;
+  margin-bottom: 24px;
+  max-height: 290px;
+  overflow-y: auto;
+}
+
+.doc-upload-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.file-label {
+  text-align: left;
+  font-weight: 600;
+  font-size: 15px;
+  margin-bottom: 7px;
+}
+
+input[type="file"] {
+  margin-bottom: 2px;
+  font-size: 14px;
   padding: 8px 0;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  background: #fff;
+}
+
+.file-name {
+  font-size: 14px;
+  color: #555;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 3px;
+}
+
+.remove-file-btn {
   border: none;
   background: transparent;
+  color: #e04848;
   font-size: 16px;
-  color: #333;
-  appearance: none;
   cursor: pointer;
-  outline: none;
-  margin-right: 55px;
-}
-.price-range-select::after {
-  content: '▼';
-  margin-right: 30px;
 }
 
-.form-section {
-  flex: 1;
+.modal-btns {
+  display: flex;
+  gap: 13px;
+  justify-content: flex-end;
+  margin-top: 18px;
 }
 
-@media (max-width: 768px) {
-  .application-container {
-    flex-direction: column; 
-    width: 90%; 
-    padding: 15px;
-  }
+.modal-cancel-btn, .modal-add-btn {
+  border: none;
+  font-weight: 700;
+  padding: 11px 27px;
+  border-radius: 7px;
+  font-size: 17px;
+  cursor: pointer;
+}
 
-  .contact-card {
-    max-width: 100%; 
-    padding: 15px; 
-  }
+.modal-cancel-btn {
+  background: #eee;
+  color: #222;
+}
 
-  .form-grid {
-    grid-template-columns: 1fr; 
-    gap: 15px;
-  }
+.modal-add-btn {
+  background: #c32939;
+  color: #fff;
+}
 
-  .input-group input {
-    font-size: 16px; 
-  }
+.modal-add-btn:hover {
+  background: #a6212e;
+}
 
-  .price-range-select {
-    max-width: 100%; 
+@media (max-width: 900px) {
+  .application-box, .application-modal-content {
+    width: 99vw;
+    max-width: 99vw;
+    padding: 14px 3vw 17px 3vw;
   }
+  .app-title { font-size: 28px; }
+  .app-desc { font-size: 15px; }
+  .app-form-grid { grid-template-columns: 1fr; gap: 12px; }
+  .docs-grid { grid-template-columns: 1fr; gap: 10px; }
+}
 
-  .modal-content {
-    width: 90%; 
-    padding: 20px;
-  }
-
-  .file-upload {
-    max-height: 250px; 
+@media (max-width: 480px) {
+  .app-title { font-size: 20px; }
+  .app-desc { font-size: 13px; }
+  .application-box, .application-modal-content {
+    padding: 10px 4vw 10px 4vw;
   }
 }

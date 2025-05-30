@@ -1,136 +1,149 @@
-/* Общий контейнер */
-.login-container {
+.login-row {
+    min-height: 100vh;
+    width: 100vw;
     display: flex;
-    height: 100vh;
-  }
-  
-  /* Левая часть с изображением */
-  .login-left {
-    flex: 1;
-    background: url('../assets/images/login.png') no-repeat center center/cover;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
     align-items: center;
-    color: white;
-    text-align: center;
-    padding: 20px;
-  }
-  
-  .login-left h1 {
-    font-size: 2rem;
-    font-weight: bold;
-  }
-  
-  .login-left h2 {
-    color: #fff;
-  }
-  
-  /* Правая часть с формой */
-  .login-right {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
     justify-content: center;
-    align-items: center;
     background: #fff;
-  }
-  
-  form {
-    width: 320px;
+    font-family: 'Figtree', 'Roboto', sans-serif;
+    box-sizing: border-box;
+}
+
+.login-side {
+    flex: 0 0 340px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 220px;
+}
+
+.login-side img {
+    max-width: 230px;
+    width: 100%;
+    height: auto;
+    object-fit: contain;
+}
+
+.login-center {
+    flex: 1 1 380px;
     display: flex;
     flex-direction: column;
-  }
-  
-  /* Сообщение об ошибке */
-  .error {
-    color: red;
-    text-align: center;
-    margin-bottom: 10px;
-    font-size: 0.9rem;
-  }
-  
-  /* Контейнер для инпутов */
-  .input-container {
-    position: relative;
-    width: 100%;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 20px;
+    min-width: 340px;
+    max-width: 420px;
+}
+
+.login-title {
+    font-size: 40px;
+    font-weight: 700;
+    color: #444;
     margin-bottom: 15px;
-  }
-  
-  .input-container input {
+    text-align: center;
+}
+
+.login-subtitle {
+    font-size: 20px;
+    color: #555;
+    margin-bottom: 28px;
+    text-align: center;
+    line-height: 1.4;
+}
+
+.login-form {
     width: 100%;
-    padding: 12px;
-    padding-right: 45px; /* Оставляем место для иконки */
-    border: 1px solid #ccc;
+    max-width: 360px;
+    display: flex;
+    flex-direction: column;
+    gap: 17px;
+}
+
+.login-label {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 4px;
+    color: #444;
+}
+
+.login-input {
+    width: 100%;
+    padding: 13px 16px;
+    border: 1.6px solid #e04848;
     border-radius: 8px;
-    font-size: 1rem;
+    font-size: 16px;
+    margin-bottom: 8px;
     box-sizing: border-box;
-  }
-  
-  /* Контейнер для пароля */
-  .password-container {
+    transition: border-color 0.2s;
+}
+
+.login-input:focus {
+    outline: none;
+    border-color: #c32939;
+}
+
+.login-password-field {
     position: relative;
-  }
-  
-  /* Кнопка просмотра пароля */
-  .password-toggle {
-    position: absolute;
-    right: 12px;
-    top: 5px; /* Фиксируем отступ сверху */
+    display: flex;
+    align-items: center;
+}
+
+.password-toggle {
     background: none;
     border: none;
-    cursor: pointer;
+    position: absolute;
+    right: 14px;
+    top: 50%;
+    transform: translateY(-50%);
     padding: 0;
-    width: 36px; /* Увеличенная зона клика */
-    height: 36px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-  
-  .password-toggle img {
-    width: 20px;
-    height: 20px;
-  }
-  
-  
-  /* Кнопка входа */
-  .login-btn {
-    width: 100%;
-    padding: 12px;
+    cursor: pointer;
+}
+
+.password-toggle img {
+    width: 24px;
+    height: 24px;
+    opacity: 0.7;
+}
+
+.login-btn {
+    background: #c32939;
+    color: #fff;
+    font-size: 18px;
+    font-weight: 700;
+    padding: 12px 0;
     border: none;
     border-radius: 8px;
-    background: #ff5a5a;
-    color: white;
-    font-size: 1.2rem;
     cursor: pointer;
-    transition: background 0.3s ease;
-  }
-  
-  .login-btn:hover {
-    background: #e04848;
-  }
-  @media (max-width: 768px) {
-    .login-container {
-      flex-direction: column;
-      height: auto;
+    transition: background 0.2s;
+    margin-top: 12px;
+}
+
+.login-btn:hover {
+    background: #a6212e;
+}
+
+.error {
+    color: #c32939;
+    font-size: 15px;
+    margin-bottom: 8px;
+    text-align: left;
+}
+
+/* Адаптивность */
+@media (max-width: 1100px) {
+    .login-row {
+        flex-direction: column;
+        justify-content: flex-start;
+        min-height: 100vh;
+        gap: 0;
     }
-  
-    .login-left {
-      width: auto;
-      height: 200px; /* Уменьшаем высоту */
-      background-size: cover;
-      background-position: left center;
+    .login-side {
+        display: none;
     }
-  
-    .login-right {
-      width: auto;
-      padding: 20px;
+    .login-center {
+        min-width: 0;
+        max-width: 94vw;
+        width: 100%;
+        padding: 35px 0;
     }
-  
-    form {
-      width: 90%;
-      max-width: 320px;
-    }
-  }
-  
+}

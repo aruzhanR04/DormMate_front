@@ -3,7 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import api from '../../api';
 import '../../styles/Login.css';
 import eyeIcon from '../../assets/icons/Eye.svg';
-import eyeOffIcon from '../../assets/icons/Eye off.svg';
+import eyeOffIcon from '../../assets/icons/Eyeoff.svg';
+import LoginPic1 from '../../assets/images/LoginPic1.png';
+import LoginPic2 from '../../assets/images/LoginPic2.png';
 
 const Login = () => {
     const [login, setLogin] = useState('');
@@ -19,15 +21,11 @@ const Login = () => {
         }
     }, [navigate]);
 
-    const togglePasswordVisibility = () => {
-        setShowPassword(!showPassword);
-    };
+    const togglePasswordVisibility = () => setShowPassword(!showPassword);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-
         const isLogin = login.startsWith('F') || login.startsWith('S');
-
         const loginData = {
             [isLogin ? 's' : 'phone_number']: login,
             password,
@@ -35,17 +33,13 @@ const Login = () => {
 
         try {
             const response = await api.post('custom_token/', loginData);
-
             if (response.status === 200) {
                 const { access, refresh } = response.data;
                 localStorage.setItem('access', access);
                 localStorage.setItem('refresh', refresh);
-
                 const userTypeResponse = await api.get('usertype/');
                 const { user_type } = userTypeResponse.data;
-
                 localStorage.setItem('isAdmin', user_type === 'admin');
-
                 navigate(user_type === 'admin' ? '/admin' : '/profile');
                 window.location.reload();
             }
@@ -56,49 +50,56 @@ const Login = () => {
     };
 
     return (
-        <div className="login-container">
-            {}
-            <div className="login-left">
-                <h1>NARXOZ UNIVERSITY</h1>
-                <h2>Dorm Mate</h2>
-                <h2>Lorem ipsum dejavu. Nikamy ne gavari svoi parol&!</h2>
+        <div className="login-row">
+            <div className="login-side login-side--left">
+                <img src={LoginPic1} alt="Персонаж слева" />
             </div>
-
-            {}
-            <div className="login-right">
-                <form onSubmit={handleSubmit}>
+            <div className="login-center">
+                <h1 className="login-title">Вход в систему</h1>
+                <p className="login-subtitle">
+                    Введите свои учетные данные для<br />доступа к системе
+                </p>
+                <form className="login-form" onSubmit={handleSubmit}>
                     {error && <p className="error">{error}</p>}
+                    <label htmlFor="login" className="login-label">Логин</label>
+                    <input
+                        id="login"
+                        className="login-input"
+                        type="text"
+                        placeholder="Введите ваш логин или номер телефона"
+                        value={login}
+                        onChange={(e) => setLogin(e.target.value)}
+                        autoComplete="username"
+                    />
 
-                    {}
-                    <div className="input-container">
+                    <label htmlFor="password" className="login-label">Пароль</label>
+                    <div className="login-password-field">
                         <input
-                            type="text"
-                            placeholder="Login"
-                            value={login}
-                            onChange={(e) => setLogin(e.target.value)}
-                        />
-                    </div>
-
-                    {}
-                    <div className="input-container password-container">
-                        <input
+                            id="password"
+                            className="login-input"
                             type={showPassword ? 'text' : 'password'}
-                            placeholder="Password"
+                            placeholder="Введите ваш пароль"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
+                            autoComplete="current-password"
                         />
                         <button
                             type="button"
                             className="password-toggle"
                             onClick={togglePasswordVisibility}
+                            tabIndex={-1}
                         >
                             <img src={showPassword ? eyeOffIcon : eyeIcon} alt="toggle password" />
                         </button>
                     </div>
 
-                    {}
-                    <button type="submit" className="login-btn">Login</button>
+                    <button type="submit" className="login-btn">
+                        Войти
+                    </button>
                 </form>
+            </div>
+            <div className="login-side login-side--right">
+                <img src={LoginPic2} alt="Персонаж справа" />
             </div>
         </div>
     );
