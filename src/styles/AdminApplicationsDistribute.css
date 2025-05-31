@@ -1,0 +1,342 @@
+.header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: 24px;
+}
+
+.actions-list-distribute {
+  display: flex;
+  gap: 12px;
+  align-items: flex-end;
+}
+
+.actions-list-distribute-btn {
+  font-size: 15px;
+  padding: 10px 28px;
+  font-weight: 600;
+  border-radius: 8px;
+  border: 2px solid #d50032;
+  background: #fff;
+  color: #d50032;
+  cursor: pointer;
+  transition: background 0.18s, color 0.18s, border-color 0.18s;
+}
+
+.actions-list-distribute-btn.active {
+  border: 2.5px solid #d50032;
+  background: #fff;
+  color: #d50032;
+}
+
+.actions-list-distribute-btn.selected {
+  background: #d50032 !important;
+  color: #fff !important;
+  border: 2.5px solid #d50032 !important;
+}
+
+.actions-list-distribute-btn.save {
+  border: 2.5px solid #353535;
+  background: #353535;
+  color: #fff;
+}
+
+.admin-applications-page-flex {
+  display: flex;
+  gap: 28px;
+}
+.approved-requests-block {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 14px rgba(0,0,0,0.06);
+  padding: 18px 18px 22px 18px;
+  min-width: 320px;
+  max-width: 340px;
+  flex: 0 0 340px;
+  height: 610px;
+  display: flex;
+  flex-direction: column;
+}
+.approved-requests-title-row {
+  font-weight: 700;
+  font-size: 20px;
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.approved-requests-search-row {
+  margin-bottom: 10px;
+  margin-top: 7px;
+}
+.approved-requests-list {
+  overflow-y: auto;
+  flex: 1;
+  min-height: 0;
+}
+.approved-requests-item {
+  border-radius: 8px;
+  margin-bottom: 9px;
+  padding: 13px 10px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+  background: #fffafa;
+  border: 1.5px solid #f4bbbb;
+}
+.approved-requests-item.approved {
+  border: 1.5px solid #bde8c7;
+  background: #f4fff7;
+}
+.approved-requests-item .fio {
+  font-weight: 600;
+  font-size: 15px;
+}
+.approved-requests-item .extra {
+  font-size: 14px;
+  color: #616161;
+  margin-top: 3px;
+}
+.search-filter-row {
+  display: flex;
+  align-items: center;
+  position: relative;
+  max-width: 210px;
+  gap: 6px;
+}
+
+.search-input {
+  border: 1.7px solid #bdbdbd;
+  border-radius: 8px;
+  padding: 10px 36px 10px 13px;
+  font-size: 15px;
+  width: 120px;
+  background: #fff;
+  outline: none;
+  color: #222;
+  font-family: inherit;
+  transition: border-color 0.2s;
+  position: relative;
+  z-index: 1;
+}
+.search-input:focus {
+  border-color: #d50032;
+}
+.search-icon {
+   width: 35px;
+  height: 35px;
+  position: absolute;
+  left: 230px;
+  top: 50%;
+  transform: translateY(-50%);
+  opacity: 0.9;
+  pointer-events: none;
+  z-index: 2;
+  margin-left: 0;
+}
+
+.filter-icon-btn {
+  background: none;
+  border: none;
+  margin-left: 4px;
+  padding: 0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  height: 28px;
+}
+.filter-icon-btn img {
+  width: 35px;
+  height: 35px;
+  opacity: 0.9;
+}
+
+.filter-dropdown {
+  position: absolute;
+  top: 110%;
+  left: 0;
+  background: #fff;
+  border-radius: 18px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.10);
+  min-width: 185px;
+  max-width: 200px;
+  padding: 14px 14px 14px 14px;
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.filter-checkbox-row {
+  display: flex;
+  align-items: center;
+  font-size: 1.18rem;
+  font-weight: 500;
+  color: #4d4d4d;
+  margin-bottom: 2px;
+  gap: 6px;
+}
+.filter-checkbox-row input[type="checkbox"] {
+  width: 22px;
+  height: 22px;
+  accent-color: #484848;
+  border: 2.5px solid #484848;
+  border-radius: 7px;
+  margin-right: 7px;
+}
+.filter-arrow {
+  font-size: 1.2rem;
+  margin-left: 10px;
+  color: #484848;
+  pointer-events: none;
+  user-select: none;
+}
+
+.rooms-block {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 14px rgba(0,0,0,0.06);
+  padding: 18px 16px 18px 16px;
+  flex: 1;
+  min-width: 400px;
+  display: flex;
+  flex-direction: column;
+}
+.rooms-block-title-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 13px;
+}
+.rooms-block-title {
+  font-weight: 700;
+  font-size: 19px;
+  flex: 1;
+}
+.rooms-block-title .chevron {
+  font-size: 15px;
+  margin-left: 4px;
+  color: #6a6a6a;
+}
+.rooms-block-refresh {
+  font-size: 18px;
+  color: #d2d2d2;
+  cursor: pointer;
+  margin-left: 9px;
+}
+.floors-row {
+  display: flex;
+  gap: 7px;
+  margin-bottom: 13px;
+}
+.floor-btn {
+  padding: 5px 18px;
+  border-radius: 8px;
+  border: 2px solid #ececec;
+  background: #fff;
+  color: #555;
+  font-weight: 600;
+  font-size: 15px;
+  transition: all 0.13s;
+  cursor: pointer;
+}
+.floor-btn.selected {
+  border: 2px solid #d50032;
+  background: #fdecee;
+  color: #d50032;
+}
+.rooms-row {
+  display: flex;
+  gap: 18px;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  min-height: 350px;
+}
+.room-card {
+  border-radius: 12px;
+  background: #f8f8f8;
+  border: 1.5px solid #e0e0e0;
+  width: 170px;
+  min-height: 120px;
+  margin-bottom: 10px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.03);
+  padding: 11px 10px 14px 12px;
+  display: flex;
+  flex-direction: column;
+}
+.room-card .room-header {
+  font-weight: 600;
+  margin-bottom: 1px;
+}
+.room-card .room-capacity {
+  color: #969696;
+  font-size: 15px;
+  font-weight: 400;
+}
+.room-card .room-free {
+  font-size: 14px;
+  color: #767676;
+  margin-bottom: 2px;
+}
+.room-card .student-list {
+  font-size: 15px;
+  margin-left: 2px;
+  color: #242424;
+}
+.room-card .settle-btn {
+  margin-top: 11px;
+  background: #d50032;
+  color: #fff;
+  font-weight: 600;
+  border-radius: 8px;
+  font-size: 15px;
+  border: none;
+  padding: 7px 0;
+  cursor: pointer;
+  opacity: 1;
+  transition: background .17s;
+}
+.room-card .settle-btn[disabled] {
+  background: #999;
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+/* Добавь это в AdminApplicationsDistribute.css */
+
+.bottom-actions-row {
+  display: flex;
+  gap: 18px;
+  margin-top: 28px;
+  justify-content: flex-end;
+}
+
+.bottom-actions-row .orders-btn {
+  font-weight: 600;
+  padding: 14px 32px;
+  border-radius: 9px;
+  font-size: 17px;
+  border: 2px solid #353535;
+  background: #353535;
+  color: #fff;
+  cursor: pointer;
+  transition: background .16s;
+}
+
+.bottom-actions-row .actions-list-distribute-btn.active,
+.bottom-actions-row .actions-list-distribute-btn.selected {
+  background: #d50032;
+  color: #fff;
+  border-color: #d50032;
+}
+.bottom-actions-row button {
+  font-weight: 600;
+  padding: 14px 32px;
+  border-radius: 9px;
+  font-size: 17px;
+  border: 2px solid #353535;
+  background: #353535;
+  color: #fff;
+  cursor: pointer;
+  transition: background .16s;
+}
+.bottom-actions-row button:last-child {
+  border: 2px solid #d50032;
+  background: #d50032;
+}
