@@ -1,13 +1,14 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import '../../styles/Navbar.css';
 import logo from '../../assets/icons/logo.png';
 import bellIcon from '../../assets/icons/bell.png';
-import notificationSound from '../../assets/audio/notification.mp3'; 
+import notificationSound from '../../assets/audio/notification.mp3';
 import api from '../../api';
 
-const Navbar = ({ isAuthenticated, userRole }) => {
+const Navbar = ({ isAuthenticated, userRole, userName }) => {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
 
   // ---------------- STUDENT NOTIFICATIONS -----------------
   const [studentNotifications, setStudentNotifications] = useState([]);
@@ -19,9 +20,9 @@ const Navbar = ({ isAuthenticated, userRole }) => {
   // ---------------- ADMIN NOTIFICATIONS -----------------
   const [adminNotifications, setAdminNotifications] = useState([]);
   const [isAdminNotifOpen, setIsAdminNotifOpen] = useState(false);
-  const [hasNewAdminNotification] = useState(false); // админ не хочет звук/точку
 
-  // Инициируем аудио только один раз
+  const navigate = useNavigate();
+
   useEffect(() => {
     if (userRole === 'student') {
       audioRef.current = new Audio(notificationSound);
@@ -29,7 +30,7 @@ const Navbar = ({ isAuthenticated, userRole }) => {
     }
   }, [userRole]);
 
-  // STUDENT: подгрузка уведомлений каждые 10 сек
+
   useEffect(() => {
     if (isAuthenticated && userRole === 'student') {
       fetchStudentNotifications();
@@ -38,7 +39,6 @@ const Navbar = ({ isAuthenticated, userRole }) => {
     }
   }, [isAuthenticated, userRole]);
 
-  // ADMIN: подгрузка уведомлений каждые 10 сек
   useEffect(() => {
     if (isAuthenticated && userRole === 'admin') {
       fetchAdminNotifications();
@@ -47,179 +47,191 @@ const Navbar = ({ isAuthenticated, userRole }) => {
     }
   }, [isAuthenticated, userRole]);
 
-  // ---------------- STUDENT: FETCH & SOUND ----------------
   const fetchStudentNotifications = async () => {
     try {
       const res = await api.get('notifications/');
       const data = Array.isArray(res.data) ? res.data : [];
       setStudentNotifications(data);
 
-      // Сравниваем количество
       if (data.length > prevStudentCountRef.current && data.length > 0) {
         setHasNewStudentNotification(true);
-        // Проигрываем звук
         try {
           if (audioRef.current) {
             audioRef.current.currentTime = 0;
             audioRef.current.play();
           }
-        } catch (err) {
-          console.log('Не удалось воспроизвести аудио:', err);
-        }
+        } catch {}
       }
       prevStudentCountRef.current = data.length;
     } catch (error) {
-      console.error('Ошибка при загрузке студенческих уведомлений:', error);
+      console.error('Ошибка загрузки уведомлений студента:', error);
     }
   };
 
-  // ---------------- ADMIN: FETCH (без звука) ----------------
   const fetchAdminNotifications = async () => {
     try {
-      // Допустим у нас эндпоинт /notifications/admin/
       const res = await api.get('notifications/admin/');
       const data = Array.isArray(res.data) ? res.data : [];
       setAdminNotifications(data);
     } catch (error) {
-      console.error('Ошибка при загрузке админских уведомлений:', error);
+      console.error('Ошибка загрузки уведомлений админа:', error);
     }
   };
 
-  // ---------------- STUDENT: пометить уведомление прочитанным ----------------
   const markStudentNotificationRead = async (id) => {
     try {
       await api.post('notifications/', { notification_ids: [id] });
-      setStudentNotifications(prev => prev.filter(n => n.id !== id));
+      setStudentNotifications((prev) => prev.filter((n) => n.id !== id));
     } catch (error) {
-      console.error('Ошибка при отметке уведомления:', error);
+      console.error('Ошибка отметки уведомления:', error);
     }
   };
 
-  // ---------------- ADMIN: пометить уведомление прочитанным ----------------
   const markAdminNotificationRead = async (id) => {
     try {
       await api.post('notifications/admin/', { notification_ids: [id] });
-      setAdminNotifications(prev => prev.filter(n => n.id !== id));
+      setAdminNotifications((prev) => prev.filter((n) => n.id !== id));
     } catch (error) {
-      console.error('Ошибка при отметке уведомления (admin):', error);
+      console.error('Ошибка отметки уведомления (админ):', error);
     }
   };
 
-  // ---------------- STUDENT: открыть/закрыть окно уведомлений ----------------
   const toggleStudentNotifications = () => {
-    setIsStudentNotifOpen(!isStudentNotifOpen);
-    // Если открываем окно — сбрасываем индикатор
-    if (!isStudentNotifOpen) {
-      setHasNewStudentNotification(false);
-    }
+    setIsStudentNotifOpen((prev) => !prev);
+    if (!isStudentNotifOpen) setHasNewStudentNotification(false);
   };
 
-  // ---------------- ADMIN: открыть/закрыть окно уведомлений ----------------
   const toggleAdminNotifications = () => {
-    setIsAdminNotifOpen(!isAdminNotifOpen);
+    setIsAdminNotifOpen((prev) => !prev);
   };
 
-  // ---------------- MENU BURGER ----------------
-  const toggleMenu = () => {
-    setMenuOpen(!menuOpen);
+  const toggleMenu = () => setMenuOpen((prev) => !prev);
+  const toggleProfileDropdown = () => setProfileDropdownOpen((prev) => !prev);
+  const handleLogout = () => navigate('/logout');
+
+  const getInitials = () => {
+    if (!userName) return '';
+    const parts = userName.trim().split(' ');
+    if (parts.length === 1) return parts[0].charAt(0).toUpperCase();
+    return (parts[0].charAt(0) + parts[1].charAt(0)).toUpperCase();
   };
 
   return (
     <nav className="navbar">
-      <div className="logo">
-        <Link to="/">
-          <img src={logo} alt="Logo" />
+      <div className="navbar-left">
+        <Link to="/" className="logo-link">
+          <img src={logo} alt="Narxoz University" className="logo" />
         </Link>
       </div>
-      <button className="menu-toggle" onClick={toggleMenu}>
-        ☰
-      </button>
 
-      <ul className={`nav-list ${menuOpen ? 'open' : ''}`}>
-        <li className="nav-item">
-          <Link to="/">Home</Link>
-        </li>
-        {isAuthenticated ? (
-          <>
-            {userRole === 'student' && (
-              <>
-                <li className="nav-item">
-                  <Link to="/profile">Profile</Link>
-                </li>
-                <li className="nav-item">
-                  <Link to="/create-application">Подать заявку</Link>
-                </li>
-              </>
-            )}
-            {userRole === 'admin' && (
-              <li className="nav-item">
-                <Link to="/admin">Admin Panel</Link>
-              </li>
-            )}
-            <li className="nav-item">
-              <Link to="/logout">Logout</Link>
+      <div className="navbar-right">
+        <ul className={`nav-list ${menuOpen ? 'open' : ''}`}>
+          <li>
+            <Link to="/" className="nav-btn-link">Главная</Link>
+          </li>
+          {isAuthenticated && userRole === 'student' && (
+            <li>
+              <Link to="/create-application" className="nav-btn-link">Подать заявку</Link>
             </li>
-          </>
-        ) : (
-          <li className="nav-item">
-            <Link to="/login">Login</Link>
-          </li>
-        )}
+          )}
+        </ul>
 
-        {/* Колокольчик для студента (со звуком) */}
         {isAuthenticated && userRole === 'student' && (
-          <li className="nav-item">
-            <div className="notification-bell" onClick={toggleStudentNotifications}>
-              <img src={bellIcon} alt="Уведомления" className="bell-icon" />
+          <div className="notification-wrapper">
+            <button
+              className="notification-bell"
+              onClick={toggleStudentNotifications}
+              aria-label="Уведомления"
+              type="button"
+            >
+              <img src={bellIcon} alt="Уведомления" />
               {hasNewStudentNotification && <span className="notification-dot" />}
-            </div>
-          </li>
+            </button>
+            {isStudentNotifOpen && (
+              <div className="notifications-popup">
+                <h4>Уведомления</h4>
+                {studentNotifications.length === 0 ? (
+                  <p className="no-notifications">Нет уведомлений</p>
+                ) : (
+                  studentNotifications.map((n) => (
+                    <div key={n.id} className="notification-item">
+                      <p>{n.message}</p>
+                      <button onClick={() => markStudentNotificationRead(n.id)} className="notif-button">Скрыть</button>
+                    </div>
+                  ))
+                )}
+              </div>
+            )}
+          </div>
         )}
 
-        {/* Колокольчик для админа (без звука) */}
         {isAuthenticated && userRole === 'admin' && (
-          <li className="nav-item">
-            <div className="notification-bell" onClick={toggleAdminNotifications}>
-              <img src={bellIcon} alt="Admin Notifications" className="bell-icon" />
-              {/* admin не нужен sound/ dot, но можешь добавить при желании */}
-            </div>
-          </li>
+          <div className="notification-wrapper">
+            <button
+              className="notification-bell"
+              onClick={toggleAdminNotifications}
+              aria-label="Уведомления администратора"
+              type="button"
+            >
+              <img src={bellIcon} alt="Уведомления" />
+            </button>
+            {isAdminNotifOpen && (
+              <div className="notifications-popup">
+                <h4>Уведомления (Админ)</h4>
+                {adminNotifications.length === 0 ? (
+                  <p className="no-notifications">Нет уведомлений</p>
+                ) : (
+                  adminNotifications.map((n) => (
+                    <div key={n.id} className="notification-item">
+                      <p>{n.message}</p>
+                      <button onClick={() => markAdminNotificationRead(n.id)} className="notif-button">Скрыть</button>
+                    </div>
+                  ))
+                )}
+              </div>
+            )}
+          </div>
         )}
-      </ul>
 
-      {/* Модалка уведомлений для студента */}
-      {isStudentNotifOpen && (
-        <div className="notifications-popup">
-          <h4>Уведомления</h4>
-          {studentNotifications.length === 0 ? (
-            <p className="no-notifications">Нет уведомлений</p>
-          ) : (
-            studentNotifications.map(n => (
-              <div key={n.id} className="notification-item">
-                <p>{n.message}</p>
-                <button onClick={() => markStudentNotificationRead(n.id)}>Скрыть</button>
+        {isAuthenticated ? (
+          <div className="profile-menu-wrapper">
+            <button
+              className="profile-avatar"
+              onClick={toggleProfileDropdown}
+              aria-label="Меню пользователя"
+              type="button"
+            >
+              {getInitials() || 'ИФ'}
+            </button>
+            <button
+              className="profile-name-btn"
+              onClick={toggleProfileDropdown}
+              type="button"
+            >
+              {userName || 'Имя Фамилия'}
+            </button>
+            {profileDropdownOpen && (
+              <div className="profile-dropdown">
+                <div className="profile-name">{userName || 'Имя Фамилия'}</div>
+                <ul>
+                  <li>
+                    <Link to="/profile" onClick={() => setProfileDropdownOpen(false)}>Профиль</Link>
+                  </li>
+                  <li>
+                    <button type="button" onClick={handleLogout} className="logout-btn">Выйти</button>
+                  </li>
+                </ul>
               </div>
-            ))
-          )}
-        </div>
-      )}
+            )}
+          </div>
+        ) : (
+          <Link to="/login" className="btn-login">Войти</Link>
+        )}
 
-      {/* Модалка уведомлений для админа */}
-      {isAdminNotifOpen && (
-        <div className="notifications-popup">
-          <h4>Уведомления (Админ)</h4>
-          {adminNotifications.length === 0 ? (
-            <p className="no-notifications">Нет уведомлений</p>
-          ) : (
-            adminNotifications.map(n => (
-              <div key={n.id} className="notification-item">
-                <p>{n.message}</p>
-                <button onClick={() => markAdminNotificationRead(n.id)}>Скрыть</button>
-              </div>
-            ))
-          )}
-        </div>
-      )}
+        <button className="menu-toggle" onClick={toggleMenu} aria-label="Открыть меню">
+          ☰
+        </button>
+      </div>
     </nav>
   );
 };

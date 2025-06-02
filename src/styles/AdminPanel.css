@@ -8,7 +8,6 @@
   flex: 1;
   padding: 0 40px;
 }
-
 .admin-title {
   font-size: 2rem;
   font-weight: 900;
@@ -32,6 +31,31 @@
   align-items: center;
   position: relative;
 }
+.admin-header-row {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  margin-top: 30px;
+  margin-bottom: 0;
+}
+
+.admin-chat-btn {
+  padding: 11px 28px;
+  font-size: 1.05rem;
+  font-weight: 700;
+  border-radius: 8px;
+  border: 1.7px solid #c32939;
+  background: #d50032;;
+  color: #fff;
+  cursor: pointer;
+  transition: background 0.18s, color 0.18s;
+}
+
+.admin-chat-btn:hover {
+  background: #9a0124;;
+  color: #fff;
+}
+
 .admin-card-icon {
   width: 40px;
   height: 40px;

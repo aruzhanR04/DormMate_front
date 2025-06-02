@@ -1,116 +1,154 @@
-import React, { useState, useEffect } from 'react';
-import api from '../../api';
-import '../../styles/AdminChat.css';
+import React, { useState, useEffect } from "react";
+import api from "../../api";
+import AdminSidebar from "./AdminSidebar";
+import "../../styles/AdminChat.css";
+import searchIcon from "../../assets/icons/Search.svg";
 
-const AdminChat = ({ chatId, onClose, studentName }) => {
+const AdminChatPage = () => {
+  const [chats, setChats] = useState([]);
+  const [activeChatId, setActiveChatId] = useState(null);
+  const [activeChatStudent, setActiveChatStudent] = useState(null);
+  const [search, setSearch] = useState("");
   const [messages, setMessages] = useState([]);
-  const [reply, setReply] = useState('');
-  const [error, setError] = useState(null);
-  const userType = localStorage.getItem('user_type');
-
-  const loadMessages = async () => {
-    try {
-      const res = await api.get(`chats/${chatId}/messages/`);
-      const data = Array.isArray(res.data.results) ? res.data.results : res.data;
-
-      const transformed = data.map(msg => {
-        const timeString = msg.timestamp ? new Date(msg.timestamp).toLocaleTimeString([], {
-          hour: '2-digit',
-          minute: '2-digit'
-        }) : '';
-
-        return {
-          id: msg.id,
-          content: msg.content,
-          senderType: msg.sender_type,
-          isAdmin: msg.sender_type === 'admin',
-          time: timeString,
-        };
-      });
-
-      setMessages(transformed);
-    } catch (err) {
-      console.error('Ошибка при загрузке сообщений:', err);
-      setError('Не удалось загрузить сообщения.');
-    }
-  };
+  const [input, setInput] = useState("");
 
   useEffect(() => {
-    if (chatId) {
-      loadMessages();
-      const interval = setInterval(loadMessages, 5000);
-      return () => clearInterval(interval);
-    }
-  }, [chatId]);
+    const fetchChats = async () => {
+      try {
+        const res = await api.get("/chats/");
+        const data = Array.isArray(res.data.results) ? res.data.results : res.data;
+        setChats(data);
+      } catch (err) {
+        setChats([]);
+      }
+    };
+    fetchChats();
+  }, []);
 
-  const handleSendReply = async (e) => {
+  useEffect(() => {
+    if (!activeChatId) return;
+    const fetchMessages = async () => {
+      try {
+        const res = await api.get(`/chats/${activeChatId}/messages/`);
+        const data = Array.isArray(res.data.results) ? res.data.results : res.data;
+        setMessages(data);
+      } catch {
+        setMessages([]);
+      }
+    };
+    fetchMessages();
+    const interval = setInterval(fetchMessages, 4000);
+    return () => clearInterval(interval);
+  }, [activeChatId]);
+
+  const filteredChats = chats.filter(chat =>
+    `${chat.student.last_name} ${chat.student.first_name} ${chat.student.s}`
+      .toLowerCase().includes(search.toLowerCase())
+  );
+
+  const handleSend = async (e) => {
     e.preventDefault();
-    if (!reply.trim()) return;
+    if (!input.trim() || !activeChatId) return;
     try {
-      await api.post(`/chats/${chatId}/send/`, { text: reply });
-      setReply('');
-      await loadMessages();
-    } catch (err) {
-      console.error('Ошибка при отправке сообщения:', err);
-      setError('Ошибка при отправке сообщения.');
-    }
+      await api.post(`/chats/${activeChatId}/send/`, { text: input });
+      setInput("");
+      const res = await api.get(`/chats/${activeChatId}/messages/`);
+      const data = Array.isArray(res.data.results) ? res.data.results : res.data;
+      setMessages(data);
+    } catch {}
   };
 
-  const handleEndChat = async () => {
-    try {
-      await api.post(`chats/${chatId}/end/`);
-      setMessages([{
-        id: 'end',
-        senderType: 'system',
-        content: 'Чат завершен. До свидания!',
-        isAdmin: true,
-        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      }]);
-    } catch (err) {
-      console.error('Ошибка при завершении чата:', err);
-      setError('Ошибка при завершении чата.');
-    }
+  const handleSelectChat = (chat) => {
+    setActiveChatId(chat.id);
+    setActiveChatStudent(chat.student);
   };
 
   return (
-    <div className="admin-chat-container">
-      <div className="admin-chat-header">
-        <button className='back-button' onClick={onClose}>⬅ Назад</button>
-        {studentName && <h3>Чат со студентом: {studentName}</h3>}
-      </div>
-      <div className="admin-chat-box">
-        {messages.length > 0 ? (
-          messages.map(msg => (
+    <div className="admin-chat-page">
+           <AdminSidebar />
+      <div className="admin-chat-content">
+      <div className="admin-chat-list">
+        <div className="chat-list-header">Студенты</div>
+        <div className="chat-list-search-row">
+          <input
+            type="text"
+            className="chat-list-search"
+            placeholder="Поиск..."
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+          />
+          <img src={searchIcon} alt="" className="chat-list-search-icon" />
+        </div>
+        <div className="chat-list-scroll">
+          {filteredChats.length ? filteredChats.map(chat => (
             <div
-              key={msg.id}
-              className={`admin-chat-message ${msg.isAdmin ? 'admin' : 'student'}`}
+              key={chat.id}
+              className={
+                "chat-list-item" +
+                (activeChatId === chat.id ? " chat-list-item-active" : "") +
+                (chat.has_new_messages ? " chat-list-item-unread" : "")
+              }
+              onClick={() => handleSelectChat(chat)}
             >
-              <div className={`message-bubble ${msg.isAdmin ? 'admin' : 'student'}`}>
-                <p className="message-text">{msg.content}</p>
-                
+              <div className="chat-list-item-title">
+                {chat.student.last_name} {chat.student.first_name} {chat.student.middle_name}
               </div>
-              <span className="message-time">{msg.time}</span>
+              <div className="chat-list-item-sub">{chat.student.s}</div>
             </div>
-          ))
+          )) : (
+            <div className="chat-list-empty">Нет чатов</div>
+          )}
+        </div>
+      </div>
+
+      <div className="admin-chat-main">
+        {activeChatStudent ? (
+          <>
+            <div className="chat-main-header">
+              Студент {activeChatStudent.s}
+            </div>
+            <div className="chat-main-messages">
+              {messages.length ? messages.map(msg => (
+                <div
+                  key={msg.id}
+                  className={
+                    "chat-message " +
+                    (msg.sender_type === "student"
+                      ? "chat-message-student"
+                      : "chat-message-admin")
+                  }
+                >
+                  <div className="chat-message-text">{msg.content}</div>
+                  <div className="chat-message-time">{new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
+                </div>
+              )) : (
+                <div className="chat-main-empty">Нет сообщений</div>
+              )}
+            </div>
+            <form className="chat-main-input-row" onSubmit={handleSend}>
+              <input
+                className="chat-main-input"
+                placeholder="Введите ваше сообщение..."
+                value={input}
+                onChange={e => setInput(e.target.value)}
+                autoComplete="off"
+              />
+              <button className="chat-main-send-btn" type="submit" tabIndex={-1}>
+                <svg width={32} height={32} viewBox="0 0 32 32" fill="none">
+                  <path d="M8 24L24 16L8 8V14L20 16L8 18V24Z" fill="#BF2A45" />
+                </svg>
+              </button>
+            </form>
+          </>
         ) : (
-          <p className="loading">Загрузка сообщений...</p>
+          <div className="chat-main-empty-center">
+            Выберите студента для переписки
+          </div>
         )}
       </div>
-      <form onSubmit={handleSendReply} className="admin-input-container">
-        <input
-          type="text"
-          placeholder="Введите сообщение..."
-          value={reply}
-          onChange={(e) => setReply(e.target.value)}
-        />
-        <button type="submit">Отправить</button>
-      </form>
-      <div className="admin-chat-actions">
-        <button onClick={handleEndChat} className="end-chat">Завершить чат</button>
       </div>
-      {error && <p className="admin-error">{error}</p>}
     </div>
   );
 };
 
-export default AdminChat;
+export default AdminChatPage;

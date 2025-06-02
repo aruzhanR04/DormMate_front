@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState} from "react";
+import { useNavigate } from "react-router-dom";
 import AdminSidebar from "./AdminSidebar";
 import "../../styles/AdminPanel.css";
 import studentIcon from "../../assets/icons/adminStudent.svg";
@@ -47,11 +48,21 @@ const mockActions = [
 const AdminPanel = () => {
   const [stats, setStats] = useState(mockStats);
   const [actions, setActions] = useState(mockActions);
+  const navigate = useNavigate();
 
   return (
     <div className="admin-layout">
       <AdminSidebar />
       <div className="admin-main">
+        <div className="admin-header-row">
+          <div style={{ flex: 1 }}></div>
+          <button
+            className="admin-chat-btn"
+            onClick={() => navigate("/admin/chats")}
+          >
+            Чаты
+          </button>
+        </div>
         <h2 className="admin-title">Админ панель</h2>
         <div className="admin-dashboard-cards">
           <div className="admin-card">

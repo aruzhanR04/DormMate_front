@@ -6,7 +6,6 @@ import faqImage from "../../assets/images/faq.png";
 import Footer from "../../components/common/footer.jsx";
 import defaultDormImg from "../../assets/images/banner.png";
 
-// SVG-иконки
 import DormCardIconCanteen from "../../assets/icons/DormCardIconCanteen.svg";
 import DormCardIconBed from "../../assets/icons/DormCardIconBed.svg";
 import DormCardIconLaundry from "../../assets/icons/DormCardIconLaundry.svg";

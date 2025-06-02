@@ -18,6 +18,7 @@ import StudentRoomDistributionPage from './components/admin/StudentRoomDistribut
 import AdminSelectStudentsPage from './components/admin/AdminSelectStudentsPage';
 import AdminListPage from './components/admin/AdminListPage';
 import AdminRoute from './components/admin/AdminRoute';
+import AdminChatPage from './components/admin/AdminChat';
 
 import EvidenceCategoriesPage from './components/admin/EvidenceCategoriesPage';
 import EvidenceEditPage from './components/admin/EvidenceCategoriesEditPage';
@@ -186,9 +187,13 @@ function App() {
             element={<AdminRoute isAuthenticated={isAuthenticated} userRole={userRole}><EvidenceEditPage /></AdminRoute>}
           />
           <Route
-  path="/admin/evidence-types/keywords"
-  element={<AdminRoute isAuthenticated={isAuthenticated} userRole={userRole}><EvidenceKeywordsPage /></AdminRoute>}
-/>
+            path="/admin/evidence-types/keywords"
+            element={<AdminRoute isAuthenticated={isAuthenticated} userRole={userRole}><EvidenceKeywordsPage /></AdminRoute>}
+          />
+          <Route
+            path="/admin/chats"
+            element={<AdminRoute isAuthenticated={isAuthenticated} userRole={userRole}><AdminChatPage /></AdminRoute>}
+          />
         </Routes>
 
         <FooterWrapper />

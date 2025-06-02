@@ -1,18 +1,81 @@
 .navbar {
-  font-family: "figtree", sans-serif;
-  background-color: white;
-  padding: 10px 20px;
+  font-family: 'figtree', sans-serif;
+  background-color: #fff;
+  padding: 0 20px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  border-radius: 10px;
+  height: 60px;
+  box-shadow: none;
+  border-bottom: 1px solid #eaeaea;
   position: relative;
-  z-index: 10;
+  z-index: 1000;
 }
+
+.navbar-left {
+  display: flex;
+  align-items: center;
+}
+
+.logo {
+  width: 130px;
+  object-fit: contain;
+}
+
+.navbar-right {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  position: relative;
+}
+
+/* Меню навигации */
+.nav-list {
+  list-style: none;
+  display: flex;
+  gap: 15px;
+  margin: 0;
+  padding: 0;
+  align-items: center;
+}
+
+.nav-list li {
+  display: flex;
+  align-items: center;
+}
+
+.nav-btn-link {
+  color: #4D4D4D;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 16px;
+  padding: 8px 16px;
+  border: none; 
+  border-radius: 0;
+  background: none;
+  cursor: pointer;
+  transition: color 0.3s ease;
+}
+
+.nav-btn-link:hover,
+.nav-btn-link:focus {
+  color: #BF2A45;
+  text-decoration: none;
+  outline: none;
+}
+
+
+.notification-wrapper {
+  position: relative;
+}
+
 .notification-bell {
   position: relative;
+  border: none;
+  background: transparent;
   cursor: pointer;
+  padding: 0;
+  outline: none;
 }
 
 .notification-bell img {
@@ -22,175 +85,206 @@
 
 .notification-dot {
   position: absolute;
-  top: 0;
-  right: 0;
+  top: 1px;
+  right: 1px;
   width: 8px;
   height: 8px;
-  background-color: red;
+  background-color: #BF2A45;
   border-radius: 50%;
+  border: 1.5px solid white;
 }
 
-.logo img {
-  width: 130px;
+.notifications-popup {
+  position: absolute;
+  top: 50px;
+  right: 0;
+  width: 300px;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+  padding: 12px;
+  font-size: 14px;
+  z-index: 10000;
 }
 
-.nav-list {
-  list-style: none;
+.notifications-popup h4 {
+  margin-top: 0;
+  margin-bottom: 10px;
+  font-weight: 600;
+  color: #4D4D4D;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 8px;
+}
+
+.notification-item {
+  border-bottom: 1px solid #eee;
+  padding: 8px 0;
   display: flex;
-  gap: 15px;
+  justify-content: space-between;
+  align-items: center;
 }
 
-.nav-item a {
+.notification-item:last-child {
+  border-bottom: none;
+}
+
+.notification-item p {
+  margin: 0;
+  color: #4D4D4D;
+  flex: 1;
+}
+
+.notif-button {
+  background: #f6f6f6;
+  border: 1px solid #ccc;
+  padding: 4px 8px;
+  font-size: 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-left: 8px;
+}
+
+.notif-button:hover {
+  background: #eaeaea;
+}
+
+.no-notifications {
+  text-align: center;
+  color: #999;
+  padding: 20px 0;
+}
+
+.profile-menu-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  position: relative;
+}
+
+.profile-avatar {
+  background-color: #BF2A45;
+  color: white;
+  border: none;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  font-weight: 600;
+  font-size: 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  user-select: none;
+  padding: 0;
+  outline: none;
+}
+
+.profile-name-btn {
+  background: none;
+  border: none;
+  color: #4D4D4D;
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 16px;
+  padding: 0;
+  user-select: none;
+  outline: none;
+}
+
+.profile-name-btn:hover,
+.profile-name-btn:focus {
   color: #BF2A45;
-  text-decoration: none;
-  font-weight: bold;
-  padding: 10px 15px;
-  transition: background-color 0.3s ease;
-  border-radius: 20px;
+  text-decoration: underline;
 }
 
-.nav-item a:hover {
-  background-color: #f0f0f0; 
+.profile-dropdown {
+  position: absolute;
+  top: 50px;
+  right: 0;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+  width: 180px;
+  z-index: 10000;
+  font-size: 14px;
+  color: #333;
+}
+
+.profile-dropdown .profile-name {
+  padding: 12px 15px;
+  border-bottom: 1px solid #eee;
+  font-weight: 600;
+}
+
+.profile-dropdown ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.profile-dropdown ul li {
+  padding: 10px 15px;
+}
+
+.profile-dropdown ul li a,
+.profile-dropdown ul li button {
+  color: #333;
+  text-decoration: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+  width: 100%;
+  text-align: left;
+  font-size: 14px;
+}
+
+.profile-dropdown ul li a:hover,
+.profile-dropdown ul li button:hover {
+  background-color: #f5f5f5;
 }
 
 .menu-toggle {
   display: none;
-  font-size: 24px;
+  font-size: 26px;
   background: none;
   border: none;
   cursor: pointer;
   color: #BF2A45;
-
+  padding: 0 8px;
 }
 
 .menu-toggle:hover {
   background-color: #f0f0f0;
+  border-radius: 6px;
 }
+
 
 @media (max-width: 768px) {
   .nav-list {
-    display: none;
-    flex-direction: column;
-    gap: 0;
     position: absolute;
     top: 60px;
     right: 0;
+    left: 0;
     background-color: white;
-    width: 100%;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    border-radius: 0 0 10px 10px;
-    z-index: 10;
+    flex-direction: column;
+    gap: 0;
+    border-top: 1px solid #eaeaea;
+    display: none;
+    padding: 0;
+    margin: 0;
+    z-index: 1000;
   }
 
   .nav-list.open {
     display: flex;
   }
 
+  .nav-list li {
+    padding: 10px 20px;
+    border-bottom: 1px solid #eaeaea;
+  }
+
   .menu-toggle {
     display: block;
   }
-
-  .nav-item {
-    text-align: center;
-    padding: 10px 0;
-  }
 }
-.notifications-popup {
-  position: absolute;
-  top: 70px;
-  right: 20px;
-  width: 280px;
-  background: #fff;
-  border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-  padding: 12px;
-  z-index: 9999;
-  /* Можно слегка уменьшить общий шрифт в самом контейнере */
-  font-size: 0.875rem; /* ~14px */
-}
-
-.notifications-popup h4 {
-  margin: 0 0 10px;
-  font-size: 0.95rem; /* заголовок чуть крупнее */
-  color: #333;
-}
-
-.notification-item {
-  border: 1px solid #eee;
-  border-radius: 5px;
-  padding: 8px;
-  margin-bottom: 8px;
-  /* Уведем еще чуть-чуть шрифт */
-  font-size: 0.85rem; /* ~13px */
-}
-
-.notification-item button {
-  background: #f6f6f6;
-  border: 1px solid #ccc;
-  padding: 4px 8px;
-  font-size: 0.75rem; /* кнопка еще мельче */
-  border-radius: 4px;
-  cursor: pointer;
-  margin-top: 5px;
-}
-
-.admin-notifications-popup {
-  position: absolute;
-  top: 60px;
-  right: 20px;
-  width: 300px;
-  background: #fff;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-  padding: 12px;
-  z-index: 9999;
-  font-family: 'Segoe UI', Tahoma, sans-serif;
-}
-
-.admin-notifications-popup h4 {
-  margin-top: 0;
-  font-size: 1rem;
-  margin-bottom: 8px;
-  color: #333;
-  text-align: center;
-}
-
-.no-notifications {
-  font-size: 0.9rem;
-  color: #666;
-  text-align: center;
-}
-
-.admin-notification-item {
-  border: 1px solid #eee;
-  border-radius: 5px;
-  padding: 8px;
-  margin-bottom: 8px;
-  background: #fafafa;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.notif-message {
-  margin: 0;
-  font-size: 0.9rem;
-  color: #333;
-}
-
-.notif-button {
-  align-self: flex-end;
-  background: #f3f3f3;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  padding: 4px 10px;
-  font-size: 0.8rem;
-  cursor: pointer;
-  transition: background 0.2s ease;
-}
-
-.notif-button:hover {
-  background: #e7e7e7;
-}
-
