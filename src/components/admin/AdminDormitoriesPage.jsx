@@ -5,6 +5,7 @@ import '../../styles/AdminActions.css';
 import viewIcon from '../../assets/icons/viewIcon.svg';
 import editIcon from '../../assets/icons/editIcon.svg';
 import deleteIcon from '../../assets/icons/deleteIcon.svg';
+import searchIcon from '../../assets/icons/Search.svg';
 import AdminDormitoryAddModal from './AdminDormitoryAddModal';
 import AdminDormitoryEditModal from './AdminDormitoryEditModal';
 import AdminDormitoryViewModal from './AdminDormitoryViewModal';
@@ -15,6 +16,7 @@ const AdminDormitoriesPage = () => {
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(null);
   const [showViewModal, setShowViewModal] = useState(null); 
+  const [search, setSearch] = useState(''); 
 
   const fetchDormitories = async () => {
     try {
@@ -44,6 +46,14 @@ const AdminDormitoriesPage = () => {
     fetchDormitories();
   }, []);
 
+  // Фильтрация по поиску
+  const filteredDormitories = dormitories.filter(
+    d =>
+      `${d.name} ${d.cost} ${d.total_places}`
+        .toLowerCase()
+        .includes(search.toLowerCase())
+  );
+
   return (
     <div className="admin-page-container">
       <AdminSidebar />
@@ -55,6 +65,18 @@ const AdminDormitoriesPage = () => {
           </div>
         </div>
         {message && <div className={`message ${message.type}`}>{message.text}</div>}
+
+        <div className="search-row">
+          <input
+            type="text"
+            className="search-input"
+            placeholder="Поиск..."
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+          />
+          <img src={searchIcon} alt="Search" className="search-icon" />
+        </div>
+
         <div className="students-table-container">
           <table className="students-table">
             <thead>
@@ -69,8 +91,8 @@ const AdminDormitoriesPage = () => {
               </tr>
             </thead>
             <tbody>
-              {Array.isArray(dormitories) && dormitories.length > 0 ? (
-                dormitories.map(dorm => (
+              {Array.isArray(filteredDormitories) && filteredDormitories.length > 0 ? (
+                filteredDormitories.map(dorm => (
                   <tr key={dorm.id}>
                     <td>{dorm.name}</td>
                     <td>{dorm.total_places}</td>

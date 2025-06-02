@@ -12,26 +12,16 @@ import Footer from './components/common/footer';
 import AdminPanel from './components/admin/AdminPanel';
 import AdminStudentsPage from './components/admin/AdminStudentsPage';
 import AdminDormitoriesPage from './components/admin/AdminDormitoriesPage';
-// import AdminDormitoriesOperations from './components/admin/AdminDormitoriesOperations';
-// import AdminDormitoryAddPage from './components/admin/AdminDormitoryAddModal';
-// import AdminDormitoryViewPage from './components/admin/AdminDormitoryViewModal';
-// import AdminDormitoryEditPage from './components/admin/AdminDormitoryEditModal';
 import AdminApplicationsPage from './components/admin/AdminApplicationsPage';
 import ApplicationDetailPage from './components/admin/ApplicationDetailPage';
 import StudentRoomDistributionPage from './components/admin/StudentRoomDistributionPage';
-// import AdminStudentsWorkPage from './components/admin/AdminStudentsWorkPage';
 import AdminSelectStudentsPage from './components/admin/AdminSelectStudentsPage';
-// import AdminStudentAddPage from './components/admin/AdminStudentAddModal';
-// import AdminStudentViewPage from './components/admin/AdminStudentViewModal';
-// import AdminStudentEditPage from './components/admin/AdminStudentEditModal';
-import AdminOperations from './components/admin/AdminOperations';
-import AdminViewPage from './components/admin/AdminViewPage';
-import AdminEditPage from './components/admin/AdminEditPage';
+import AdminListPage from './components/admin/AdminListPage';
 import AdminRoute from './components/admin/AdminRoute';
 
-import AdminCreatePage from './components/admin/AdminCreatePage';
 import EvidenceCategoriesPage from './components/admin/EvidenceCategoriesPage';
 import EvidenceEditPage from './components/admin/EvidenceCategoriesEditPage';
+import EvidenceKeywordsPage from './components/admin/EvidenceKeywordsPage';
 
 import Home from './pages/main/Home';
 import UsefulInfoPage from './pages/main/UsefulInfoPage';
@@ -47,8 +37,6 @@ import WebAssistant from './pages/elements/WebAssistant';
 import EditApplication from './pages/application/EditApplication';
 
 import DormitoryDetail from './pages/dormitories/Dormitory1';
-// import Dormitory2 from './pages/dormitories/Dormitory2';
-// import Dormitory3 from './pages/dormitories/Dormitory3';
 
 const DormAdd = () => <div>Добавление общежития</div>;
 const DormUpdate = () => <div>Изменение общежития</div>;
@@ -147,8 +135,6 @@ function App() {
             element={<PrivateRoute isAuthenticated={isAuthenticated}><Logout onLogout={handleLogout} /></PrivateRoute>}
           />
           <Route path="/dormitory/:id" element={<DormitoryDetail />} />
-          {/* <Route path="/dormitory2" element={<Dormitory2 />} />
-          <Route path="/dormitory3" element={<Dormitory3 />} /> */}
 
           {/* === Админ маршруты === */}
           <Route
@@ -189,19 +175,7 @@ function App() {
           />
           <Route
             path="/admin/admins"
-            element={<AdminRoute isAuthenticated={isAuthenticated} userRole={userRole}><AdminOperations /></AdminRoute>}
-          />
-          <Route
-            path="/admin/admins/list"
-            element={<AdminRoute isAuthenticated={isAuthenticated} userRole={userRole}><AdminViewPage /></AdminRoute>}
-          />
-          <Route
-            path="/admin/admins/edit/:id"
-            element={<AdminRoute isAuthenticated={isAuthenticated} userRole={userRole}><AdminEditPage /></AdminRoute>}
-          />
-          <Route
-            path="/admin/admins/add"
-            element={<AdminRoute isAuthenticated={isAuthenticated} userRole={userRole}><AdminCreatePage /></AdminRoute>}
+            element={<AdminRoute isAuthenticated={isAuthenticated} userRole={userRole}><AdminListPage /></AdminRoute>}
           />
           <Route
             path="/admin/evidence-types"
@@ -211,6 +185,10 @@ function App() {
             path="/admin/evidence-types/edit/:id"
             element={<AdminRoute isAuthenticated={isAuthenticated} userRole={userRole}><EvidenceEditPage /></AdminRoute>}
           />
+          <Route
+  path="/admin/evidence-types/keywords"
+  element={<AdminRoute isAuthenticated={isAuthenticated} userRole={userRole}><EvidenceKeywordsPage /></AdminRoute>}
+/>
         </Routes>
 
         <FooterWrapper />

@@ -6,7 +6,6 @@ import adminDashboard from "../../assets/icons/adminDashboard.svg";
 import adminStudent from "../../assets/icons/adminStudent.svg";
 import adminDormitories from "../../assets/icons/adminDormitories.svg";
 import adminApplications from "../../assets/icons/adminApplications.svg";
-import adminChats from "../../assets/icons//adminApplications.svg";
 import adminAdmin from "../../assets/icons/adminAdmin.svg";
 import adminEvidence from "../../assets/icons/adminEvidence.svg";
 
@@ -15,7 +14,6 @@ const menuItems = [
   { path: "/admin/students", label: "Студенты", icon: adminStudent },
   { path: "/admin/dormitories", label: "Общежития", icon: adminDormitories },
   { path: "/admin/applications", label: "Заявки", icon: adminApplications },
-  { path: "/admin/chats", label: "Чаты", icon: adminChats },
   { path: "/admin/admins", label: "Администраторы", icon: adminAdmin },
   { path: "/admin/evidence-types", label: "Категории справок", icon: adminEvidence },
 ];

@@ -193,14 +193,13 @@
 
 .modal {
   position: fixed;
-  z-index: 1000;
+  z-index: 1002;
   inset: 0;
   display: flex;
   justify-content: center;
   align-items: center;
   background: rgba(0,0,0,0.28);
 }
-
 .modal-content {
   background: #fff;
   border-radius: 20px;
@@ -293,19 +292,19 @@
   display: inline-block;
 }
 
-/* --- Поиск --- */
 .search-row {
   display: flex;
   align-items: center;
   margin-bottom: 18px;
   margin-top: 8px;
   max-width: 350px;
+  position: relative;
 }
 
 .search-input {
   border: 1.7px solid #bdbdbd;
   border-radius: 8px;
-  padding: 10px 44px 10px 16px;
+  padding: 10px 44px 10px 16px; 
   font-size: 16px;
   width: 240px;
   background: #fff;
@@ -322,21 +321,21 @@
 .search-icon {
   width: 28px;
   height: 28px;
-  margin-left: -38px;
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
   opacity: 0.83;
   pointer-events: none;
-  position: relative;
   z-index: 2;
   display: flex;
   align-items: center;
 }
 
-
-.modal-actions {
+.modal-form {
   display: flex;
-  justify-content: flex-end;
-  gap: 12px;
-  margin-top: 17px;
+  flex-direction: column;
+  gap: 18px;
 }
 .modal-btn {
   padding: 9px 26px;
@@ -347,6 +346,19 @@
   cursor: pointer;
   transition: background 0.2s, color 0.2s, transform 0.2s;
 }
+.modal-input {
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: 8px;
+  border: 1.5px solid #e1e1e1;
+  margin-top: 7px;
+  font-size: 16px;
+  background: #fafafa;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.modal-input:focus { border-color: #d50032; }
+
 .cancel-btn {
   background: #535353;
   color: #fff;
@@ -361,6 +373,116 @@
 .save-btn:hover {
   background: #b40028;
 }
+
+.simple-modal-overlay {
+  position: fixed;
+  z-index: 1100;
+  inset: 0;
+  background: rgba(0,0,0,0.22);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.simple-modal-content {
+  background: #fff;
+  border-radius: 18px;
+  box-shadow: 0 8px 38px rgba(0,0,0,0.12);
+  min-width: 350px;
+  max-width: 95vw;
+  padding: 36px 38px 30px 38px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.simple-modal-close {
+  position: absolute;
+  top: 17px;
+  right: 22px;
+  background: none;
+  border: none;
+  font-size: 26px;
+  color: #bbb;
+  cursor: pointer;
+  transition: color 0.18s;
+}
+.simple-modal-close:hover { color: #d50032; }
+
+.simple-modal-content h2 {
+  font-size: 22px;
+  font-weight: 700;
+  margin-bottom: 14px;
+  color: #232323;
+}
+
+.simple-modal-form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.simple-modal-form label {
+  display: flex;
+  flex-direction: column;
+  font-weight: 500;
+  font-size: 15px;
+  color: #1c1c1c;
+}
+
+.simple-modal-input,
+.simple-modal-form input,
+.simple-modal-form select,
+.simple-modal-form textarea {
+  margin-top: 7px;
+  padding: 12px 14px;
+  border-radius: 8px;
+  border: 1.5px solid #e1e1e1;
+  background: #fafafa;
+  font-size: 16px;
+  outline: none;
+  width: 100%;
+  transition: border-color 0.2s;
+  box-sizing: border-box;
+}
+.simple-modal-input:focus,
+.simple-modal-form input:focus,
+.simple-modal-form select:focus,
+.simple-modal-form textarea:focus {
+  border-color: #d50032;
+}
+
+.simple-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 14px;
+  margin-top: 8px;
+}
+.simple-modal-btn {
+  padding: 10px 26px;
+  font-size: 16px;
+  border-radius: 8px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+.simple-modal-btn.cancel {
+  background: #535353;
+  color: #fff;
+}
+.simple-modal-btn.cancel:hover {
+  background: #222;
+}
+.simple-modal-btn.save {
+  background: #d50032;
+  color: #fff;
+}
+.simple-modal-btn.save:hover {
+  background: #a6212e;
+}
+
 
 .application-card {
   cursor: pointer;

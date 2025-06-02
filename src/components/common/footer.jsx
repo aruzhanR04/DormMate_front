@@ -18,7 +18,7 @@ const Footer = () => {
           <h4>Контакты</h4>
           <p>ул. Жандосова 55, Ауэзовский район <br></br>Алматы, Казахстан, 050035</p>
           <p>
-            <a href="mailto:dormmate@narxoz.kz">sem@narxoz.kz</a>
+            <a href="mailto:dormmate@narxoz.kz">dorm@narxoz.kz</a>
           </p>
           <p>
             <a href="tel:+77271234567">+7 (747) 364 88 99</a>
