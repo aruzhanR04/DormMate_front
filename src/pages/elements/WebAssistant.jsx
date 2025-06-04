@@ -99,21 +99,21 @@ const WebAssistant = () => {
   };
 
   const handleRequestOperator = async () => {
-    if (!chatId || !chatActive) return;
-    try {
-      await api.post('notifications/request-admin/', { chat_id: chatId });
-      setMessages(prev => [
-        ...prev,
-        {
-          id: Date.now() + 2,
-          text: 'Оператор вызван. Ожидайте...',
-          type: userType === 'student' ? 'admin' : 'user',
-          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-        }
-      ]);
-    } catch (err) {
-      setError('Не удалось вызвать оператора.');
-    }
+    // if (!chatId || !chatActive) return;
+    // try {
+    //   await api.post('notifications/request-admin/', { chat_id: chatId });
+    //   setMessages(prev => [
+    //     ...prev,
+    //     {
+    //       id: Date.now() + 2,
+    //       text: 'Оператор вызван. Ожидайте...',
+    //       type: userType === 'student' ? 'admin' : 'user',
+    //       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    //     }
+    //   ]);
+    // } catch (err) {
+    //   setError('Не удалось вызвать оператора.');
+    // }
   };
 
   const handleEndChat = async () => {

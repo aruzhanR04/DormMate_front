@@ -6,6 +6,7 @@ import faqImage from "../../assets/images/faq.png";
 import Footer from "../../components/common/footer.jsx";
 import defaultDormImg from "../../assets/images/banner.png";
 
+// SVG-иконки
 import DormCardIconCanteen from "../../assets/icons/DormCardIconCanteen.svg";
 import DormCardIconBed from "../../assets/icons/DormCardIconBed.svg";
 import DormCardIconLaundry from "../../assets/icons/DormCardIconLaundry.svg";
@@ -58,7 +59,7 @@ const Home = () => {
               <p>{dorm.description || "Общежитие нового типа с удобствами."}</p>
               <div className="dorm-icons">
                 <span>
-                  <img src={DormCardIconBed} alt="Места" /> 150 мест
+                  <img src={DormCardIconBed} alt="Места" /> {dorm.total_places}
                 </span>
                 <span>
                   <img src={DormCardIconCanteen} alt="Столовая" /> Столовая

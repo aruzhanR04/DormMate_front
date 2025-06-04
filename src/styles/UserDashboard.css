@@ -41,6 +41,24 @@
     user-select: none;
 }
 
+
+.avatar-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.4);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    cursor: pointer;
+}
+
 /* Инфо по левому краю */
 .profile-main-info-block {
     display: flex;
@@ -161,6 +179,25 @@
 
 /* Модалки и адаптивность — не меняем */
 .profile-modal-overlay { /* ... */ }
+
+
+
+.profile-modal-overlay {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    z-index: 1000; 
+    width: 90%;
+    max-width: 400px;
+}
+
+
+
 .profile-modal { /* ... */ }
 
 @media (max-width: 900px) {
@@ -178,4 +215,14 @@
 @media (max-width: 500px) {
     .profile-page-main { padding: 8px 3vw 0 3vw;}
     .profile-main-block { flex-direction: column; align-items: flex-start;}
+}
+
+
+.link-like-text{
+    text-decoration: underline;
+}
+
+
+.link-like-text:hover{
+    cursor: pointer;
 }

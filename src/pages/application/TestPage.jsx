@@ -62,7 +62,7 @@ const TestPage = () => {
       setThankYouMessage(true);
 
       setTimeout(() => {
-        navigate('/application-status');
+        navigate('/profile');
       }, 3000);
     } catch (error) {
       setError('Ошибка при отправке теста');
@@ -76,7 +76,7 @@ const TestPage = () => {
 
   if (loading) return <div className="loading-indicator">Загрузка вопросов<span className="loading-dots"></span></div>;
   if (error) return <div style={{ color: 'red' }}>Ошибка: {error}</div>;
-  if (thankYouMessage) return <div className="loading-indicator">Спасибо! Вы будете перенаправлены на страницу статуса заявки<span className="loading-dots"></span></div>;
+  if (thankYouMessage) return <div className="loading-indicator">Спасибо! Вы будете перенаправлены на страницу профиля<span className="loading-dots"></span></div>;
 
   const currentQuestion = questions[currentQuestionIndex];
   const questionText = currentQuestion ? currentQuestion.question : "Вопрос не найден";

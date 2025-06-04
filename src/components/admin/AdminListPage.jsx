@@ -9,6 +9,7 @@ import searchIcon from '../../assets/icons/Search.svg';
 import AdminCreateModal from './AdminCreateModal';
 import AdminViewModal from './AdminViewModal';
 import AdminEditModal from './AdminEditModal';
+import AdminAdminDeleteModal from './AdminAdminDeleteModal';
 
 const ITEMS_PER_PAGE = 10;
 

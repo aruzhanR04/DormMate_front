@@ -249,7 +249,9 @@
   color: #d50032;
 }
 .rooms-row {
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  row-gap: 10px;
   gap: 18px;
   flex-wrap: wrap;
   align-items: flex-start;
@@ -259,7 +261,7 @@
   border-radius: 12px;
   background: #f8f8f8;
   border: 1.5px solid #e0e0e0;
-  width: 170px;
+  width: 90%;
   min-height: 120px;
   margin-bottom: 10px;
   box-shadow: 0 1px 4px rgba(0,0,0,0.03);
@@ -267,6 +269,34 @@
   display: flex;
   flex-direction: column;
 }
+
+.xmark-icon{
+  margin-left: 1vw;
+
+}
+
+.operation-icon {
+  background: none;      /* убираем фон */
+  border: none;          /* убираем рамку */
+  padding: 0;            /* обнуляем внутренние отступы */
+  outline: none;         /* убираем outline при фокусе */
+  cursor: pointer;       /* курсор-стрелка */
+}
+.operation-icon:focus {
+  outline: none;         /* гарантированно отключаем рамку при фокусе */
+}
+
+.operation-icon img{
+  height: 2vw;
+  width: 2vw;
+  /* margin-left: 1vw; */
+}
+
+.student-item{
+  display: flex;
+  align-items: center;
+}
+
 .room-card .room-header {
   font-weight: 600;
   margin-bottom: 1px;
@@ -519,3 +549,15 @@
 }
 .sr-check { color: #219653; }
 .sr-cross { color: #d3191b; }
+
+
+
+.has-room{
+  background-color: #E8FFEE;
+  border-color: #208639;
+}
+
+.no-room{
+  background-color: #F2F2F2;
+  
+}

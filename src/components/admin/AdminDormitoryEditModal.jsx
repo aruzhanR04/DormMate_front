@@ -8,9 +8,6 @@ const AdminDormitoryEditModal = ({ dormId, onClose }) => {
     address: "",
     description: "",
     total_places: "",
-    rooms_for_two: "",
-    rooms_for_three: "",
-    rooms_for_four: "",
     cost: ""
   });
   const [existingImages, setExistingImages] = useState([]);
@@ -26,9 +23,6 @@ const AdminDormitoryEditModal = ({ dormId, onClose }) => {
           address: response.data.address || "",
           description: response.data.description || "",
           total_places: response.data.total_places || "",
-          rooms_for_two: response.data.rooms_for_two || "",
-          rooms_for_three: response.data.rooms_for_three || "",
-          rooms_for_four: response.data.rooms_for_four || "",
           cost: response.data.cost || ""
         });
         setExistingImages(response.data.images || []);
@@ -89,15 +83,6 @@ const AdminDormitoryEditModal = ({ dormId, onClose }) => {
           </label>
           <label>Количество мест:
             <input type="number" name="total_places" value={formData.total_places} onChange={handleChange} required />
-          </label>
-          <label>Комнат для 2:
-            <input type="number" name="rooms_for_two" value={formData.rooms_for_two} onChange={handleChange} required />
-          </label>
-          <label>Комнат для 3:
-            <input type="number" name="rooms_for_three" value={formData.rooms_for_three} onChange={handleChange} required />
-          </label>
-          <label>Комнат для 4:
-            <input type="number" name="rooms_for_four" value={formData.rooms_for_four} onChange={handleChange} required />
           </label>
           <label>Цена:
             <input type="number" name="cost" value={formData.cost} onChange={handleChange} required />

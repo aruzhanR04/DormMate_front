@@ -10,6 +10,7 @@ import searchIcon from "../../assets/icons/Search.svg";
 import AdminStudentViewModal from "./AdminStudentViewModal";
 import AdminStudentEditModal from "./AdminStudentEditModal";
 import AdminStudentAddModal from "./AdminStudentAddModal";
+import AdminStudentDeleteModal from "./AdminStudentDeleteModal";
 import "../../styles/AdminActions.css";
 
 const ITEMS_PER_PAGE = 4;
@@ -18,14 +19,15 @@ const AdminStudentsPage = () => {
   const [students, setStudents] = useState([]);
   const [message, setMessage] = useState('');
   const [excelModal, setExcelModal] = useState(false);
-  const [importStatus, setImportStatus] = useState('default'); // 'default', 'success'
+  const [importStatus, setImportStatus] = useState('default'); // 'default' | 'success'
+  const [selectedFile, setSelectedFile] = useState(null);
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
 
-  // Модалки
   const [addModalOpen, setAddModalOpen] = useState(false);
   const [editModalStudent, setEditModalStudent] = useState(null);
   const [viewModalStudent, setViewModalStudent] = useState(null);
+  const [deleteModal, setDeleteModal] = useState(null);
 
   const fileInputRef = useRef();
 
@@ -35,7 +37,7 @@ const AdminStudentsPage = () => {
 
   const fetchStudents = async () => {
     try {
-      const response = await api.get('/studentlist');
+      const response = await api.get('/students');
       const studentData = Array.isArray(response.data)
         ? response.data
         : (response.data.results ? response.data.results : Object.values(response.data));
@@ -57,31 +59,56 @@ const AdminStudentsPage = () => {
     page * ITEMS_PER_PAGE
   );
 
-  // Excel импорт
-  const handleFileChange = async (e) => {
-    const selectedFile = e.target.files[0];
-    if (selectedFile) {
-      const formData = new FormData();
-      formData.append('file', selectedFile);
-      try {
-        await api.post('/upload-excel/', formData);
-        setImportStatus('success');
-        setMessage({ type: 'success', text: 'Данные успешно загружены и обновлены' });
-        setTimeout(() => setExcelModal(false), 1000);
-        fetchStudents();
-      } catch (error) {
-        setMessage({ type: 'error', text: 'Ошибка при загрузке файла' });
-        setImportStatus('default');
-      }
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setSelectedFile(file);
+      setImportStatus('success');
+    } else {
+      setSelectedFile(null);
+      setImportStatus('default');
     }
   };
 
-  // --- Модалки ---
+  const handleUpload = async () => {
+    if (!selectedFile) {
+      setMessage({ type: 'error', text: 'Сначала выберите файл' });
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append('file', selectedFile);
+
+    try {
+      await api.post('/upload-excel/', formData);
+      setMessage({ type: 'success', text: 'Данные успешно загружены и обновлены' });
+      fetchStudents();
+      setTimeout(() => {
+        setExcelModal(false);
+        setSelectedFile(null);
+        setImportStatus('default');
+      }, 1000);
+    } catch (error) {
+      setMessage({ type: 'error', text: 'Ошибка при загрузке файла' });
+    }
+  };
+
+  const handleDeleteStudent = async (student) => {
+    try {
+      await api.delete(`/students/${student.id}/`);
+      handleRefresh();
+      setDeleteModal(null);
+    } catch (error) {
+      console.error("Ошибка при удалении студента:", error);
+    }
+  };
+
   const handleRefresh = () => {
     fetchStudents();
     setAddModalOpen(false);
     setEditModalStudent(null);
     setViewModalStudent(null);
+    setDeleteModal(null);
   };
 
   return (
@@ -91,9 +118,7 @@ const AdminStudentsPage = () => {
         <div className="header-row">
           <h1>Управление студентами</h1>
           <div className="actions-list">
-            <button onClick={() => setAddModalOpen(true)}>
-              Добавить студента
-            </button>
+            <button onClick={() => setAddModalOpen(true)}>Добавить студента</button>
             <button
               style={{ background: '#229f31', color: '#fff' }}
               onClick={() => setExcelModal(true)}
@@ -102,12 +127,13 @@ const AdminStudentsPage = () => {
             </button>
             <button
               style={{ background: '#1480e3', color: '#fff' }}
-              onClick={() => {/* экспорт логику сюда */}}
+              onClick={() => {/* логика экспорта */}}
             >
               Экспорт Excel
             </button>
           </div>
         </div>
+
         <div className="search-row">
           <input
             type="text"
@@ -118,6 +144,7 @@ const AdminStudentsPage = () => {
           />
           <img src={searchIcon} alt="Search" className="search-icon" />
         </div>
+
         <div className="students-table-container">
           <table className="students-table">
             <thead>
@@ -155,7 +182,7 @@ const AdminStudentsPage = () => {
                       <img src={editIcon} alt="Редактировать" className="operation-icon"
                         onClick={() => setEditModalStudent(student)} />
                       <img src={deleteIcon} alt="Удалить" className="operation-icon"
-                        onClick={() => {/* логика удаления */}} />
+                        onClick={() => setDeleteModal(student)} />
                     </td>
                   </tr>
                 ))
@@ -167,7 +194,7 @@ const AdminStudentsPage = () => {
             </tbody>
           </table>
         </div>
-        {/* Пагинация */}
+
         {totalPages > 1 && (
           <div className="pagination">
             {Array.from({ length: totalPages }).map((_, idx) => (
@@ -200,8 +227,15 @@ const AdminStudentsPage = () => {
           onClose={() => setViewModalStudent(null)}
         />
       )}
+      {deleteModal && (
+        <AdminStudentDeleteModal
+          student={deleteModal}
+          onClose={() => setDeleteModal(null)}
+          onConfirm={handleDeleteStudent}
+        />
+      )}
 
-      {/* Excel импорт (пример модалки, если нужна) */}
+      {/* Excel импорт */}
       {excelModal && (
         <div className="modal">
           <div className="modal-content">
@@ -213,8 +247,8 @@ const AdminStudentsPage = () => {
                 alt="Импорт Excel"
                 className="excel-upload-img"
               />
-              {importStatus === 'success'
-                ? <span className="excel-upload-success">Файл загружен</span>
+              {selectedFile
+                ? <span className="excel-upload-success">Файл выбран: {selectedFile.name}</span>
                 : <span className="excel-upload-default">Загрузите файл Excel</span>
               }
               <input
@@ -231,7 +265,8 @@ const AdminStudentsPage = () => {
             </div>
             <div className="excel-modal-fileinfo">
               <div className="fileinfo-title">Требования к файлу</div>
-              <div>Файл должен быть в формате XLSX или XLS<br />
+              <div>
+                Файл должен быть в формате XLSX или XLS<br />
                 Первая строка — заголовки столбцов<br />
                 <span className="fileinfo-fields">Обязательные поля: ФИО, Пол, Курс</span>
               </div>
@@ -241,7 +276,7 @@ const AdminStudentsPage = () => {
             </div>
             <div className="modal-actions">
               <button className="modal-btn cancel-btn" onClick={() => setExcelModal(false)}>Отмена</button>
-              <button className="modal-btn save-btn" onClick={() => fileInputRef.current?.click()}>Сохранить</button>
+              <button className="modal-btn save-btn" onClick={handleUpload}>Сохранить</button>
             </div>
           </div>
         </div>

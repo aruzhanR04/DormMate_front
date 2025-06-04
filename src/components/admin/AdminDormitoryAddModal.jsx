@@ -8,9 +8,6 @@ const AdminDormitoryAddModal = ({ onClose }) => {
     address: "",
     description: "",
     total_places: "",
-    rooms_for_two: "",
-    rooms_for_three: "",
-    rooms_for_four: "",
     cost: ""
   });
   const [images, setImages] = useState([]);
@@ -61,18 +58,6 @@ const AdminDormitoryAddModal = ({ onClose }) => {
           <label>
             Количество мест:
             <input type="number" name="total_places" value={formData.total_places} onChange={handleChange} required />
-          </label>
-          <label>
-            Комнат для 2:
-            <input type="number" name="rooms_for_two" value={formData.rooms_for_two} onChange={handleChange} required />
-          </label>
-          <label>
-            Комнат для 3:
-            <input type="number" name="rooms_for_three" value={formData.rooms_for_three} onChange={handleChange} required />
-          </label>
-          <label>
-            Комнат для 4:
-            <input type="number" name="rooms_for_four" value={formData.rooms_for_four} onChange={handleChange} required />
           </label>
           <label>
             Цена:

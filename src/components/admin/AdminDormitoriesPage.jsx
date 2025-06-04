@@ -5,22 +5,23 @@ import '../../styles/AdminActions.css';
 import viewIcon from '../../assets/icons/viewIcon.svg';
 import editIcon from '../../assets/icons/editIcon.svg';
 import deleteIcon from '../../assets/icons/deleteIcon.svg';
-import searchIcon from '../../assets/icons/Search.svg';
 import AdminDormitoryAddModal from './AdminDormitoryAddModal';
 import AdminDormitoryEditModal from './AdminDormitoryEditModal';
 import AdminDormitoryViewModal from './AdminDormitoryViewModal';
+import AdminDormitioriDeleteModal from './AdminDormitoryDeleteModal';
 
 const AdminDormitoriesPage = () => {
   const [dormitories, setDormitories] = useState([]);
   const [message, setMessage] = useState('');
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(null);
-  const [showViewModal, setShowViewModal] = useState(null); 
-  const [search, setSearch] = useState(''); 
+  const [showViewModal, setShowViewModal] = useState(null);
+  const [deleteModalDorm, setDeleteModalDorm] = useState(null)
+  const [roomsCount, setRoomsCount] = useState() 
 
   const fetchDormitories = async () => {
     try {
-      const response = await api.get('/dormlist');
+      const response = await api.get('/dorms');
       const dormData = Array.isArray(response.data)
         ? response.data
         : (response.data.results ? response.data.results : Object.values(response.data));
@@ -42,17 +43,48 @@ const AdminDormitoriesPage = () => {
     }
   };
 
+
+  const fetchRoomsCount = async () => {
+    try {
+      const response = await api.get('/dorms/count');
+      // Преобразуем массив в объект { [dormId]: { ...roomCounts } }
+      const roomDataByDorm = {};
+      response.data.dorms.forEach(dorm => {
+        roomDataByDorm[dorm.id] = dorm;
+      });
+      setRoomsCount(roomDataByDorm);
+    } catch (err) {
+      setMessage({ type: 'error', text: 'Не удалось загрузить статистику комнат' });
+    }
+  };
+
+
+
   useEffect(() => {
     fetchDormitories();
+    fetchRoomsCount()
   }, []);
 
-  // Фильтрация по поиску
-  const filteredDormitories = dormitories.filter(
-    d =>
-      `${d.name} ${d.cost} ${d.total_places}`
-        .toLowerCase()
-        .includes(search.toLowerCase())
-  );
+
+  const handleRefresh = () => {
+    fetchDormitories()
+    setShowAddModal(false)
+    setShowEditModal(null)
+    setShowViewModal(null)
+    setDeleteModalDorm(null)
+  }
+
+
+
+  const handleDeleteDorm = async (dorm) => {
+    try {
+      await api.delete(`/dorms/${dorm.id}/`)
+      handleRefresh() // обновить список
+      setDeleteModalDorm(null)
+    } catch (error) {
+      console.error("Ошибка при удалении студента:", error)
+    }
+  }
 
   return (
     <div className="admin-page-container">
@@ -65,18 +97,6 @@ const AdminDormitoriesPage = () => {
           </div>
         </div>
         {message && <div className={`message ${message.type}`}>{message.text}</div>}
-
-        <div className="search-row">
-          <input
-            type="text"
-            className="search-input"
-            placeholder="Поиск..."
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-          />
-          <img src={searchIcon} alt="Search" className="search-icon" />
-        </div>
-
         <div className="students-table-container">
           <table className="students-table">
             <thead>
@@ -91,14 +111,15 @@ const AdminDormitoriesPage = () => {
               </tr>
             </thead>
             <tbody>
-              {Array.isArray(filteredDormitories) && filteredDormitories.length > 0 ? (
-                filteredDormitories.map(dorm => (
+              {Array.isArray(dormitories) && dormitories.length > 0 ? (
+                dormitories.map(dorm => (
                   <tr key={dorm.id}>
                     <td>{dorm.name}</td>
                     <td>{dorm.total_places}</td>
-                    <td>{dorm.rooms_for_two}</td>
-                    <td>{dorm.rooms_for_three}</td>
-                    <td>{dorm.rooms_for_four}</td>
+                    <td>{roomsCount && roomsCount[dorm.id] ? roomsCount[dorm.id].rooms_for_2 : '-'}</td>
+                    <td>{roomsCount && roomsCount[dorm.id] ? roomsCount[dorm.id].rooms_for_3 : '-'}</td>
+                    <td>{roomsCount && roomsCount[dorm.id] ? roomsCount[dorm.id].rooms_for_4 : '-'}</td>
+
                     <td>{dorm.cost}</td>
                     <td>
                       <img
@@ -117,7 +138,7 @@ const AdminDormitoriesPage = () => {
                         src={deleteIcon}
                         alt="Удалить"
                         className="operation-icon"
-                        onClick={() => handleDeleteDormitory(dorm.id)}
+                        onClick={() => setDeleteModalDorm(dorm)}
                       />
                     </td>
                   </tr>
@@ -148,6 +169,13 @@ const AdminDormitoriesPage = () => {
             onClose={() => setShowViewModal(null)}
           />
         )}
+        {deleteModalDorm && (
+        <AdminDormitioriDeleteModal
+          dorm={deleteModalDorm}
+          onClose={() => setDeleteModalDorm(null)}
+          onConfirm={handleDeleteDorm}
+        />
+      )}
       </div>
     </div>
   );

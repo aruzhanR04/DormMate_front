@@ -17,6 +17,12 @@
   align-items: center;
 }
 
+.avatar-image{
+  width: 3.5vw;
+  height: 3.5vw;
+  border-radius: 100px;
+}
+
 .logo {
   width: 130px;
   object-fit: contain;

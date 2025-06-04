@@ -118,8 +118,8 @@ const AdminChatPage = () => {
                       : "chat-message-admin")
                   }
                 >
-                  <div className="chat-message-text">{msg.content}</div>
-                  <div className="chat-message-time">{new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
+                  <div className="cnt"><div className="chat-message-text">{msg.content}</div>
+                  <div className="chat-message-time">{new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div></div>
                 </div>
               )) : (
                 <div className="chat-main-empty">Нет сообщений</div>

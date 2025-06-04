@@ -49,18 +49,6 @@ const AdminDormitoryViewModal = ({ dormId, onClose }) => {
               <input type="text" value={dormData.total_places} disabled />
             </label>
             <label>
-              <strong>Комнат на 2:</strong>
-              <input type="text" value={dormData.rooms_for_two} disabled />
-            </label>
-            <label>
-              <strong>Комнат на 3:</strong>
-              <input type="text" value={dormData.rooms_for_three} disabled />
-            </label>
-            <label>
-              <strong>Комнат на 4:</strong>
-              <input type="text" value={dormData.rooms_for_four} disabled />
-            </label>
-            <label>
               <strong>Стоимость:</strong>
               <input type="text" value={dormData.cost} disabled />
             </label>

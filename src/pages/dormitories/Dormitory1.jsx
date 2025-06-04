@@ -142,7 +142,7 @@ const DormitoryDetail = () => {
 
       <div className="apply-section">
         <h2>Подайте заявку прямо сейчас</h2>
-        <button className="apply-btn" onClick={() => navigate("/application")}>
+        <button className="apply-btn" onClick={() => navigate("/create-application")}>
           Подать заявку
         </button>
       </div>
