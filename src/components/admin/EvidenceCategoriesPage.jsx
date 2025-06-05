@@ -1,3 +1,5 @@
+// src/components/admin/EvidenceCategoriesPage.jsx
+
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../../api";
@@ -8,13 +10,25 @@ import deleteIcon from "../../assets/icons/deleteIcon.svg";
 import "../../styles/AdminActions.css";
 import "../../styles/AdminFormShared.css";
 
+const ITEMS_PER_PAGE = 4; // Количество категорий на страницу
+
 const EvidenceCategoriesPage = () => {
   const navigate = useNavigate();
-  const [categories, setCategories] = useState([]);
-  const [keywords, setKeywords] = useState([]);
-  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [isViewModalOpen, setIsViewModalOpen] = useState(false);
+
+  // ------------------------------------------------------------------
+  // 1. Локальное состояние
+  // ------------------------------------------------------------------
+  const [categories, setCategories] = useState([]);   // текущая «порция» категорий
+  const [totalCount, setTotalCount] = useState(0);    // общее число категорий из count
+  const [page, setPage] = useState(1);                // текущая страница
+
+  const [keywords, setKeywords] = useState([]);       // все ключевые слова для селектора
+
+  // Модалки и формы
+  const [isAddModalOpen, setIsAddModalOpen]     = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen]   = useState(false);
+  const [isViewModalOpen, setIsViewModalOpen]   = useState(false);
+
   const [formData, setFormData] = useState({
     name: "",
     code: "",
@@ -26,34 +40,70 @@ const EvidenceCategoriesPage = () => {
   const [editData, setEditData] = useState({});
   const [viewData, setViewData] = useState({});
 
-  useEffect(() => {
-    fetchData();
-    fetchKeywords();
-  }, []);
-
-  const fetchData = async () => {
-    const res = await api.get("/evidence-types/");
-    setCategories(Array.isArray(res.data) ? res.data : res.data.results || []);
+  // ------------------------------------------------------------------
+  // 2. Функция fetchData: загружаем категории с параметрами пагинации
+  // ------------------------------------------------------------------
+  const fetchData = async (requestedPage = page) => {
+    try {
+      const params = {
+        page: requestedPage,
+        page_size: ITEMS_PER_PAGE,
+      };
+      const res = await api.get("/evidence-types/", { params });
+      const data = res.data;
+      setCategories(Array.isArray(data.results) ? data.results : []);
+      setTotalCount(typeof data.count === "number" ? data.count : 0);
+    } catch (err) {
+      console.error("Ошибка при загрузке категорий:", err);
+      setCategories([]);
+      setTotalCount(0);
+    }
   };
+
+  // ------------------------------------------------------------------
+  // 3. Функция fetchKeywords: загружаем все ключевые слова (без пагинации)
+  // ------------------------------------------------------------------
   const fetchKeywords = async () => {
-    const res = await api.get("/keywords/");
-    setKeywords(Array.isArray(res.data) ? res.data : res.data.results || []);
+    try {
+      const res = await api.get("/keywords/");
+      const data = Array.isArray(res.data)
+        ? res.data
+        : res.data.results || [];
+      setKeywords(data);
+    } catch (err) {
+      console.error("Ошибка при загрузке ключевых слов:", err);
+      setKeywords([]);
+    }
   };
 
+  // ------------------------------------------------------------------
+  // 4. useEffect: при монтировании и при изменении page — обновляем список
+  // ------------------------------------------------------------------
+  useEffect(() => {
+    fetchData(page);
+    fetchKeywords();
+  }, [page]);
+
+  // ------------------------------------------------------------------
+  // 5. Обработчики форм
+  // ------------------------------------------------------------------
   const handleFormChange = (e) => {
     const { name, value } = e.target;
     setFormData((f) => ({ ...f, [name]: value }));
   };
+
   const handleKeywordsChange = (e) => {
     setFormData((f) => ({
       ...f,
       keywords: Array.from(e.target.selectedOptions, (o) => o.value),
     }));
   };
+
   const handleEditChange = (e) => {
     const { name, value } = e.target;
     setEditData((f) => ({ ...f, [name]: value }));
   };
+
   const handleEditKeywords = (e) => {
     setEditData((f) => ({
       ...f,
@@ -61,39 +111,80 @@ const EvidenceCategoriesPage = () => {
     }));
   };
 
+  // ------------------------------------------------------------------
+  // 6. Добавить новую категорию
+  // ------------------------------------------------------------------
   const handleSubmit = async (e) => {
     e.preventDefault();
-    await api.post("/evidence-types/", formData);
-    setIsAddModalOpen(false);
-    fetchData();
-    setFormData({
-      name: "",
-      code: "",
-      data_type: "file",
-      priority: "",
-      auto_fill_field: "",
-      keywords: [],
-    });
-  };
+    try {
+      await api.post("/evidence-types/", formData);
+      setIsAddModalOpen(false);
+      setFormData({
+        name: "",
+        code: "",
+        data_type: "file",
+        priority: "",
+        auto_fill_field: "",
+        keywords: [],
+      });
 
-  const handleEditSubmit = async (e) => {
-    e.preventDefault();
-    await api.put(`/evidence-types/${editData.id}/`, editData);
-    setIsEditModalOpen(false);
-    fetchData();
-  };
-
-  const handleDelete = async (cat) => {
-    if (window.confirm("Удалить категорию?")) {
-      await api.delete(`/evidence-types/${cat.id}/`);
-      fetchData();
+      // Переключаемся на первую страницу или обновляем её
+      if (page !== 1) {
+        setPage(1);
+      } else {
+        fetchData(1);
+      }
+    } catch (err) {
+      console.error("Ошибка при добавлении категории:", err);
     }
   };
 
+  // ------------------------------------------------------------------
+  // 7. Редактировать категорию
+  // ------------------------------------------------------------------
+  const handleEditSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      await api.put(`/evidence-types/${editData.id}/`, editData);
+      setIsEditModalOpen(false);
+      fetchData(page);
+    } catch (err) {
+      console.error("Ошибка при редактировании категории:", err);
+    }
+  };
+
+  // ------------------------------------------------------------------
+  // 8. Удаление категории
+  // ------------------------------------------------------------------
+  const handleDelete = async (cat) => {
+    if (!window.confirm("Удалить категорию?")) return;
+    try {
+      await api.delete(`/evidence-types/${cat.id}/`);
+      const newTotal = totalCount - 1;
+      const newTotalPages = Math.ceil(newTotal / ITEMS_PER_PAGE);
+      if (page > newTotalPages && newTotalPages > 0) {
+        setPage(newTotalPages);
+      } else {
+        fetchData(page);
+      }
+    } catch (err) {
+      console.error("Ошибка при удалении категории:", err);
+    }
+  };
+
+  // ------------------------------------------------------------------
+  // 9. Подсчёт общего числа страниц
+  // ------------------------------------------------------------------
+  const totalPages = Math.ceil(totalCount / ITEMS_PER_PAGE);
+
+  // ------------------------------------------------------------------
+  // 10. JSX-разметка
+  // ------------------------------------------------------------------
   return (
     <div className="admin-page-container">
       <AdminSidebar />
       <div className="content-area">
+        {/* ===== Заголовок и кнопки ===== */}
         <div className="header-row">
           <h1>Категории справок</h1>
           <div className="actions-list">
@@ -105,6 +196,8 @@ const EvidenceCategoriesPage = () => {
             </button>
           </div>
         </div>
+
+        {/* ===== Таблица категорий ===== */}
         <div className="students-table-container">
           <table className="students-table">
             <thead>
@@ -120,62 +213,106 @@ const EvidenceCategoriesPage = () => {
               </tr>
             </thead>
             <tbody>
-              {categories.map((cat) => (
-                <tr key={cat.id}>
-                  <td>{cat.id}</td>
-                  <td>{cat.name}</td>
-                  <td>{cat.code}</td>
-                  <td>{cat.data_type === "file" ? "Файл" : "Integer"}</td>
-                  <td>{cat.priority}</td>
-                  <td>{cat.auto_fill_field || ""}</td>
-                  <td>
-                    {Array.isArray(cat.keywords)
-                      ? cat.keywords
-                          .map((id) => {
-                            const k = keywords.find((kw) => kw.id === id);
-                            return k ? k.keyword : id;
-                          })
-                          .join(", ")
-                      : ""}
-                  </td>
-                  <td>
-                    <img
-                      src={editIcon}
-                      alt="edit"
-                      className="operation-icon"
-                      onClick={() => {
-                        setEditData(cat);
-                        setIsEditModalOpen(true);
-                      }}
-                    />
-                    <img
-                      src={viewIcon}
-                      alt="view"
-                      className="operation-icon"
-                      onClick={() => {
-                        setViewData(cat);
-                        setIsViewModalOpen(true);
-                      }}
-                    />
-                    <img
-                      src={deleteIcon}
-                      alt="del"
-                      className="operation-icon"
-                      onClick={() => handleDelete(cat)}
-                    />
+              {categories.length > 0 ? (
+                categories.map((cat) => (
+                  <tr key={cat.id}>
+                    <td>{cat.id}</td>
+                    <td>{cat.name}</td>
+                    <td>{cat.code}</td>
+                    <td>{cat.data_type === "file" ? "Файл" : "Integer"}</td>
+                    <td>{cat.priority}</td>
+                    <td>{cat.auto_fill_field || "-"}</td>
+                    <td>
+                      {Array.isArray(cat.keywords)
+                        ? cat.keywords
+                            .map((id) => {
+                              const k = keywords.find((kw) => kw.id === id);
+                              return k ? k.keyword : id;
+                            })
+                            .join(", ")
+                        : ""}
+                    </td>
+                    <td>
+                      <img
+                        src={editIcon}
+                        alt="edit"
+                        className="operation-icon"
+                        onClick={() => {
+                          setEditData(cat);
+                          setIsEditModalOpen(true);
+                        }}
+                      />
+                      <img
+                        src={viewIcon}
+                        alt="view"
+                        className="operation-icon"
+                        onClick={() => {
+                          setViewData(cat);
+                          setIsViewModalOpen(true);
+                        }}
+                      />
+                      <img
+                        src={deleteIcon}
+                        alt="del"
+                        className="operation-icon"
+                        onClick={() => handleDelete(cat)}
+                      />
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td
+                    colSpan={8}
+                    style={{ textAlign: "center", color: "#888", padding: 20 }}
+                  >
+                    Нет данных для отображения.
                   </td>
                 </tr>
-              ))}
+              )}
             </tbody>
           </table>
-          <div className="pagination">
-            <button className="pagination-btn active">1</button>
-            <button className="pagination-btn">2</button>
-            <button className="pagination-btn">3</button>
-          </div>
+
+          {/* ===== Пагинация ===== */}
+          {totalPages > 1 && (
+            <div className="pagination">
+              {/* Prev */}
+              <button
+                className="pagination-btn"
+                disabled={page === 1}
+                onClick={() => setPage((p) => p - 1)}
+              >
+                &lt;
+              </button>
+
+              {/* Числа страниц */}
+              {Array.from({ length: totalPages }).map((_, idx) => {
+                const pageNum = idx + 1;
+                return (
+                  <button
+                    key={pageNum}
+                    className={`pagination-btn${page === pageNum ? " active" : ""}`}
+                    onClick={() => setPage(pageNum)}
+                  >
+                    {pageNum}
+                  </button>
+                );
+              })}
+
+              {/* Next */}
+              <button
+                className="pagination-btn"
+                disabled={page === totalPages}
+                onClick={() => setPage((p) => p + 1)}
+              >
+                &gt;
+              </button>
+            </div>
+          )}
         </div>
       </div>
-      {/* Модалка "Добавить" */}
+
+      {/* ===== Модалка «Добавить категорию» ===== */}
       {isAddModalOpen && (
         <div className="simple-modal-overlay">
           <div className="simple-modal-content">
@@ -269,7 +406,8 @@ const EvidenceCategoriesPage = () => {
           </div>
         </div>
       )}
-      {/* Модалка "Просмотр" */}
+
+      {/* ===== Модалка «Просмотр категории» ===== */}
       {isViewModalOpen && (
         <div className="simple-modal-overlay">
           <div className="simple-modal-content">
@@ -280,7 +418,14 @@ const EvidenceCategoriesPage = () => {
               ✕
             </button>
             <h2>Просмотр категории</h2>
-            <div style={{ display: "flex", flexDirection: "column", gap: 13, marginBottom: 24 }}>
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                gap: 13,
+                marginBottom: 24,
+              }}
+            >
               <div>
                 <b>ID:</b> {viewData.id}
               </div>
@@ -291,7 +436,8 @@ const EvidenceCategoriesPage = () => {
                 <b>Код:</b> {viewData.code}
               </div>
               <div>
-                <b>Тип данных:</b> {viewData.data_type === "file" ? "Файл" : "Integer"}
+                <b>Тип данных:</b>{" "}
+                {viewData.data_type === "file" ? "Файл" : "Integer"}
               </div>
               <div>
                 <b>Приоритет:</b> {viewData.priority}
@@ -322,7 +468,8 @@ const EvidenceCategoriesPage = () => {
           </div>
         </div>
       )}
-      {/* Модалка "Редактировать" */}
+
+      {/* ===== Модалка «Редактировать категорию» ===== */}
       {isEditModalOpen && (
         <div className="simple-modal-overlay">
           <div className="simple-modal-content">

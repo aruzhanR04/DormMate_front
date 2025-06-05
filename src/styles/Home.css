@@ -14,12 +14,16 @@ body, html, #root {
 
 /* Баннер растягиваем на всю ширину viewport */
 .banner {
-  width: 100vw; /* ширина равна ширине экрана */
-  height: 60vh;
+  width: 90vw; /* ширина равна ширине экрана */
+  height: 70vh;
   max-height: 600px;
   overflow: hidden;
   position: relative;
-  margin-left: calc(-50vw + 50%); /* выравниваем центр, если .home ограничен в ширине */
+  /* margin-left: calc(-50vw + 50%); */
+  display: flex;
+  margin-left: 5vw;
+  border-radius: 20px;
+  margin-top: 2vh;
 }
 
 .banner-img {
@@ -42,19 +46,48 @@ body, html, #root {
   margin-bottom: 40px;
 }
 .dorm-list {
-  display: flex;
-  justify-content: center;
-  flex-wrap: wrap;
-  gap: 25px;
+  display: grid;
+  gap: 25px;                                     /* расстояние между карточками */
+  grid-template-columns: repeat(3, 1fr);         /* по умолчанию 3 колонки */
+  justify-items: center;                         /* центрируем карточку внутри каждой ячейки */
+  padding: 0 20px;                               /* чтобы карточки не упирались в края экрана */
+  margin: 0 auto;                                /* центр общего блока */
+  max-width: 1400px;                             /* опционально — ограничение максимальной ширины контейнера */
 }
+
+/* --------------------------------- */
+/* 2.2. Карточки занимают всю ячейку  */
+/* --------------------------------- */
 .dorm-card {
   background: #fff;
   border-radius: 12px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   padding: 20px;
-  width: 290px;
+  width: 100%;       /* карточка растягивается на 100% ширины своей grid-ячейки */
+  box-sizing: border-box;
   text-align: left;
 }
+
+/* --------------------------------- */
+/* 2.3. Медиазапрос: две колонки      */
+/* --------------------------------- */
+@media (max-width: 950px) {
+  .dorm-list {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* --------------------------------- */
+/* 2.4. Медиазапрос: одна колонка     */
+/* --------------------------------- */
+@media (max-width: 560px) {
+  .dorm-list {
+    grid-template-columns: 1fr;
+  }
+}
+
+
+
 .dorm-card img.dorm-img {
   width: 100%;
   height: 160px;
@@ -197,3 +230,6 @@ body, html, #root {
     margin-bottom: 25px;
   }
 }
+
+
+

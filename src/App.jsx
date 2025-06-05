@@ -151,7 +151,7 @@ function App() {
             element={<AdminRoute isAuthenticated={isAuthenticated} userRole={userRole}><AdminDormitoriesPage /></AdminRoute>}
           />
           <Route
-            path="/admin/applications"
+            path="/admin/applications/distribute"
             element={<AdminRoute isAuthenticated={isAuthenticated} userRole={userRole}><AdminApplicationsPage /></AdminRoute>}
           />
           <Route
@@ -163,7 +163,7 @@ function App() {
             element={<AdminRoute isAuthenticated={isAuthenticated} userRole={userRole}><ApplicationDetailPage /></AdminRoute>}
           />
           <Route
-            path="/admin/applications/distribute"
+            path="/admin/applications"
             element={<AdminRoute isAuthenticated={isAuthenticated} userRole={userRole}><StudentRoomDistributionPage /></AdminRoute>}
           />
           <Route

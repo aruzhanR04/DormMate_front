@@ -1,3 +1,5 @@
+// src/components/UserDashboard.jsx
+
 "use client"
 
 import { useState, useEffect, useRef } from "react"
@@ -29,19 +31,22 @@ const UserDashboard = () => {
   const [confirmPassword, setConfirmPassword] = useState("")
   const [passwordMessage, setPasswordMessage] = useState("")
 
-  // --- Загрузка аватара ---
+  // --- Модалка изменения аватара ---
+  const [isAvatarModalOpen, setIsAvatarModalOpen] = useState(false)
+
+  // --- Состояния для загрузки аватара ---
   const [avatarFile, setAvatarFile] = useState(null)
   const [avatarUploadMessage, setAvatarUploadMessage] = useState("")
 
-  // --- Загрузка скриншота (платежа) ---
-  const [paymentScreenshot, setPaymentScreenshot] = useState(null) // Тут будет FormData-файл
-  const [uploadMessage, setUploadMessage] = useState("")
-  const [selectedFile, setSelectedFile] = useState(null)   // Для отображения имени
-  const [importStatus, setImportStatus] = useState("default") // 'default' или 'success'
-  const [excelModal, setExcelModal] = useState(false)
-
-  // Скрытый input внутри модалки
+  // Ссылка на скрытый <input type="file"> для аватара
   const fileInputRef = useRef(null)
+
+  // --- Загрузка скриншота (платежа) ---
+  const [paymentScreenshot, setPaymentScreenshot] = useState(null)
+  const [uploadMessage, setUploadMessage] = useState("")
+  const [selectedFile, setSelectedFile] = useState(null)
+  const [importStatus, setImportStatus] = useState("default")
+  const [excelModal, setExcelModal] = useState(false)
 
   // --- Загрузка профиля ---
   useEffect(() => {
@@ -90,18 +95,18 @@ const UserDashboard = () => {
     fetchGlobalSettings()
   }, [])
 
-  // --- Обработка выбора файла (сохраняем выбранный файл в selectedFile и paymentScreenshot) ---
+  // --- Обработка выбора файла для платежного скриншота ---
   const handleFileChange = (e) => {
     const file = e.target.files[0]
     if (file) {
-      setSelectedFile(file)           // для отображения имени в модалке
-      setPaymentScreenshot(file)      // для отправки FormData при «Отправить»
-      setImportStatus("success")      // иконка переключится на uploadActive
-      setUploadMessage("")            // сбросим сообщение об ошибке, если было
+      setSelectedFile(file)
+      setPaymentScreenshot(file)
+      setImportStatus("success")
+      setUploadMessage("")
     }
   }
 
-  // --- Отправка файла на бек (по клику «Отправить» в модалке) ---
+  // --- Отправка файла платежного скриншота ---
   const handleUpload = async () => {
     if (!paymentScreenshot) {
       setUploadMessage("Пожалуйста, выберите файл для загрузки")
@@ -114,10 +119,8 @@ const UserDashboard = () => {
         headers: { "Content-Type": "multipart/form-data" },
       })
       setUploadMessage("Скриншот успешно загружен.")
-      // Через секунду закрываем модалку, чтобы пользователь успел увидеть сообщение:
       setTimeout(() => {
         setExcelModal(false)
-        // После закрытия можно сбросить состояния, если нужно:
         setSelectedFile(null)
         setImportStatus("default")
       }, 1000)
@@ -146,7 +149,9 @@ const UserDashboard = () => {
       setPasswordMessage(response.data.message || "Пароль успешно изменён.")
       setTimeout(() => setIsPasswordModalOpen(false), 1200)
     } catch (err) {
-      setPasswordMessage(err.response?.data?.error || "Ошибка при изменении пароля. Попробуйте снова.")
+      setPasswordMessage(
+        err.response?.data?.error || "Ошибка при изменении пароля. Попробуйте снова."
+      )
     }
   }
 
@@ -160,7 +165,22 @@ const UserDashboard = () => {
     }
   }
 
-  // --- Загрузка аватара (осталось без изменений) ---
+  // --- Обработчик для открытия модалки управления аватаром ---
+  const handleAvatarClick = () => {
+    setIsAvatarModalOpen(true)
+  }
+
+  // --- Отправка нового аватара ---
+  const handleAvatarChange = (e) => {
+    const file = e.target.files[0]
+    if (file) {
+      setAvatarFile(file)
+      handleAvatarUpload(file)
+      setIsAvatarModalOpen(false)
+    }
+  }
+
+  // --- Загрузка аватара на сервер ---
   const handleAvatarUpload = async (file) => {
     if (!file) {
       setAvatarUploadMessage("Пожалуйста, выберите изображение.")
@@ -172,7 +192,7 @@ const UserDashboard = () => {
       await api.post("/upload-avatar/", formData, {
         headers: { "Content-Type": "multipart/form-data" },
       })
-      setAvatarUploadMessage("Аватар успешно обновлен.")
+      setAvatarUploadMessage("Аватар успешно обновлён.")
       setTimeout(async () => {
         const res = await api.get("/studentdetail/")
         setProfile(res.data)
@@ -182,17 +202,21 @@ const UserDashboard = () => {
     }
   }
 
-  const handleAvatarChange = (e) => {
-    const file = e.target.files[0]
-    if (file) {
-      setAvatarFile(file)
-      handleAvatarUpload(file)
+  // --- Удаление аватара (отправляем запрос на удаление) ---
+  const handleAvatarDelete = async () => {
+    try {
+      await api.delete("/upload-avatar/") // предположим, что на бэкенде есть этот эндпоинт
+      setAvatarUploadMessage("Аватар удалён.")
+      setProfile((prev) => ({ ...prev, avatar: null }))
+      setIsAvatarModalOpen(false)
+    } catch {
+      setAvatarUploadMessage("Ошибка при удалении аватара.")
     }
   }
 
-  // --- Триггер для инпута аватара ---
+  // --- Клик по кругу аватара открывает скрытый input ---
   const triggerFileInput = () => {
-    fileInputRef.current.click()
+    fileInputRef.current?.click()
   }
 
   return (
@@ -201,28 +225,33 @@ const UserDashboard = () => {
 
       {/* Блок с аватаром и личными данными */}
       <div className="profile-main-block">
-        <div className="profile-avatar-circle" style={{ position: "relative" }}>
+        <div
+          className="avatar-wrapper"
+          onMouseEnter={() => {}}
+          onMouseLeave={() => {}}
+        >
           <img
-            src={profile ? profile.avatar : "/default-avatar.png"}
+            src={profile && profile.avatar ? profile.avatar : "/default-avatar.png"}
             alt="Аватар"
             className="profile-avatar-circle"
-            onClick={triggerFileInput}
-            style={{ cursor: "pointer" }}
           />
-          <label htmlFor="avatar-upload" className="avatar-overlay">
+
+          {/* Полупрозрачный оверлей с иконкой камеры, появляется при наведении */}
+          <div className="avatar-overlay" onClick={handleAvatarClick}>
             <img
-              src={cameraIcon || "/placeholder.svg"}
-              alt="Редактировать"
+              src={cameraIcon}
+              alt="Изменить аватар"
               className="camera-icon"
             />
-          </label>
+          </div>
+
+          {/* Скрытый input для выбора файла */}
           <input
             ref={fileInputRef}
-            id="avatar-upload"
             type="file"
             accept="image/*"
-            onChange={handleAvatarChange}
             style={{ display: "none" }}
+            onChange={handleAvatarChange}
           />
         </div>
 
@@ -233,10 +262,12 @@ const UserDashboard = () => {
                 {profile.first_name} {profile.last_name}
               </span>
             ) : (
-              <p></p>
+              <span>Загрузка...</span>
             )}
           </div>
-          <div className="profile-main-id">{profile && <span>{profile.s}</span>}</div>
+          <div className="profile-main-id">
+            {profile && <span>{profile.s}</span>}
+          </div>
           <div className="profile-main-email">
             {profile && <span>{profile.email}</span>}
           </div>
@@ -248,6 +279,10 @@ const UserDashboard = () => {
           </button>
         </div>
       </div>
+
+      {avatarUploadMessage && (
+        <div className="avatar-upload-message">{avatarUploadMessage}</div>
+      )}
 
       <hr className="profile-hr" />
 
@@ -276,19 +311,19 @@ const UserDashboard = () => {
           )}
         </div>
 
-        {status === "Ваша заявка одобрена, внесите оплату и прикрепите сюда чек." && (
+        {status ===
+          "Ваша заявка одобрена, внесите оплату и прикрепите сюда чек." && (
           <>
             <div className="profile-status-desc">
               Внесите оплату и прикрепите скриншот
             </div>
             <div className="profile-status-actions">
-              <label
-                className="profile-upload-btn-label"
+              <button
+                className="profile-upload-btn"
                 onClick={() => setExcelModal(true)}
               >
-                <span className="profile-upload-btn">Загрузить скриншот</span>
-              </label>
-              <input type="file" onChange={handleFileChange} />
+                Загрузить скриншот
+              </button>
             </div>
           </>
         )}
@@ -306,10 +341,38 @@ const UserDashboard = () => {
         )}
       </div>
 
+      {/* Модалка управления аватаром */}
+      {isAvatarModalOpen && (
+        <div
+          className="modal-overlay"
+          onClick={() => setIsAvatarModalOpen(false)}
+        >
+          <div className="modal-content avatar-modal" onClick={(e) => e.stopPropagation()}>
+            <h2>Управление аватаром</h2>
+            <div className="avatar-modal-buttons">
+              <button className="modal-btn delete-btn" onClick={handleAvatarDelete}>
+                Удалить аватар
+              </button>
+              <button
+                className="modal-btn choose-btn"
+                onClick={() => {
+                  fileInputRef.current?.click()
+                }}
+              >
+                Выбрать новый
+              </button>
+            </div>
+            <button className="modal-close-btn" onClick={() => setIsAvatarModalOpen(false)}>
+              ✕
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Модалка для смены пароля */}
       {isPasswordModalOpen && (
         <div
-          className="profile-modal-overlay"
+          className="modal-overlay"
           onClick={() => setIsPasswordModalOpen(false)}
         >
           <div className="profile-modal" onClick={(e) => e.stopPropagation()}>
@@ -319,34 +382,34 @@ const UserDashboard = () => {
               placeholder="Старый пароль"
               value={oldPassword}
               onChange={(e) => setOldPassword(e.target.value)}
-              className="profile-modal-input"
+              className="simple-modal-input"
             />
             <input
               type="password"
               placeholder="Новый пароль"
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
-              className="profile-modal-input"
+              className="simple-modal-input"
             />
             <input
               type="password"
               placeholder="Подтвердите новый пароль"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
-              className="profile-modal-input"
+              className="simple-modal-input"
             />
             {passwordMessage && (
               <p className="profile-modal-message">{passwordMessage}</p>
             )}
             <div className="profile-modal-actions">
               <button
-                className="profile-modal-btn grey"
+                className="simple-modal-btn cancel"
                 onClick={() => setIsPasswordModalOpen(false)}
               >
                 Отмена
               </button>
               <button
-                className="profile-modal-btn red"
+                className="simple-modal-btn save"
                 onClick={handleChangePassword}
               >
                 Сохранить
@@ -359,7 +422,7 @@ const UserDashboard = () => {
       {/* Модалка-предупреждение (редактирование заявок) */}
       {isEditWarningOpen && (
         <div
-          className="profile-modal-overlay"
+          className="modal-overlay"
           onClick={() => setIsEditWarningOpen(false)}
         >
           <div className="profile-modal" onClick={(e) => e.stopPropagation()}>
@@ -380,38 +443,29 @@ const UserDashboard = () => {
 
       {/* ==== Модалка для загрузки чека об оплате ==== */}
       {excelModal && (
-        <div className="modal">
-          <div className="modal-content">
+        <div className="modal-overlay">
+          <div className="modal-content excel-modal-content">
             <button
               className="modal-close-btn"
-              onClick={() => setExcelModal(false)}
+              onClick={() => {
+                setExcelModal(false)
+                setSelectedFile(null)
+                setImportStatus("default")
+                setPaymentScreenshot(null)
+                setUploadMessage("")
+              }}
             >
               ✕
             </button>
             <h2>Загрузка чека об оплате</h2>
 
-            {/* Блок с иконкой и текстом: */}
-            <div
-              className="excel-upload-box"
-              style={{
-                border: "1px dashed #888",
-                padding: "20px",
-                textAlign: "center",
-                marginTop: 12,
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                gap: "12px",
-              }}
-            >
-              {/* Иконка переключается по importStatus */}
+            <div className="excel-upload-box">
               <img
                 src={importStatus === "success" ? uploadActive : uploadDefault}
                 alt="Импорт Excel"
                 className="excel-upload-img"
               />
 
-              {/* Имя файла или подсказка */}
               {selectedFile ? (
                 <span className="excel-upload-success">
                   Файл выбран: {selectedFile.name}
@@ -420,20 +474,13 @@ const UserDashboard = () => {
                 <span className="excel-upload-default">Файл не выбран</span>
               )}
 
-              {/* Кнопка, вызывающая скрытый input */}
               <button
                 className="modal-btn file-select-btn"
                 onClick={() => fileInputRef.current?.click()}
-                style={{
-                  marginTop: 8,
-                  display: "inline-block",
-                  padding: "6px 12px",
-                }}
               >
                 Выбрать файл
               </button>
 
-              {/* Скрытый input */}
               <input
                 type="file"
                 ref={fileInputRef}
@@ -443,33 +490,16 @@ const UserDashboard = () => {
               />
             </div>
 
-            <div
-              className="excel-modal-fileinfo"
-              style={{
-                marginTop: 16,
-                textAlign: "center",
-                fontSize: "14px",
-                color: "#555",
-              }}
-            >
+            <div className="excel-modal-fileinfo">
               <div className="fileinfo-title">Требования к файлу</div>
               <div>Файл должен быть в формате PDF</div>
             </div>
 
-            <div
-              className="modal-actions"
-              style={{
-                marginTop: 24,
-                display: "flex",
-                justifyContent: "center",
-                gap: 16,
-              }}
-            >
+            <div className="modal-actions">
               <button
                 className="modal-btn cancel-btn"
                 onClick={() => {
                   setExcelModal(false)
-                  // сбросим все состояния внутри модалки
                   setSelectedFile(null)
                   setImportStatus("default")
                   setPaymentScreenshot(null)
@@ -478,25 +508,13 @@ const UserDashboard = () => {
               >
                 Отмена
               </button>
-              <button
-                className="modal-btn save-btn"
-                onClick={handleUpload}
-              >
+              <button className="modal-btn save-btn" onClick={handleUpload}>
                 Отправить
               </button>
             </div>
 
             {uploadMessage && (
-              <p
-                style={{
-                  marginTop: 12,
-                  textAlign: "center",
-                  color:
-                    uploadMessage === "Скриншот успешно загружен."
-                      ? "green"
-                      : "red",
-                }}
-              >
+              <p className={`upload-message ${uploadMessage.includes("успешно") ? "success" : "error"}`}>
                 {uploadMessage}
               </p>
             )}

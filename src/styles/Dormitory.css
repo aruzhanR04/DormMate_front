@@ -22,9 +22,9 @@
   max-width: 650px;
 }
 
-.dorm-carousel {
+.dorm-carousel-wrapper {
   width: 100%;
-  height: 320px;
+  height: 70vh;
   background: #e8e8e8;
   border-radius: 16px;
   position: relative;
@@ -40,7 +40,7 @@
   height: 100%;
   object-fit: cover;
   border-radius: 16px;
-  max-height: 320px;
+  /* max-height: 320px; */
 }
 
 .carousel-arrow {
@@ -238,4 +238,54 @@
   .map-block {
     min-height: 180px;
   }
+}
+
+
+
+.apply-section h2{
+  text-align: left;
+}
+
+
+
+
+/* Карточка с удобствами */
+.dorm-info-card {
+  background-color: #ffffff;
+  border: 1px solid #e0e0e0;
+  border-radius: 12px;
+  padding: 16px;
+  /* Если нужно, можно задать ширину/макс. ширину */
+  /* max-width: 400px; */
+}
+
+.dorm-info-card h3 {
+  font-size: 20px;
+  margin: 0 0 12px;
+  color: #333333;
+}
+
+/* Контейнер для списка «пилл» */
+.amenities-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px; /* отступы между «пиллами» */
+}
+
+/* Каждая «пилла» (иконка + текст) */
+.amenity-item {
+  background-color: #f0f0f0;      /* светло-серый фон */
+  border-radius: 12px;            /* скруглённые углы */
+  padding: 6px 12px;              /* вертикальные/горизонтальные отступы */
+  display: inline-flex;           /* чтобы иконка и текст выстроились по центру */
+  align-items: center;
+  gap: 6px;                       /* отступ между иконкой и текстом */
+  font-size: 14px;
+  color: #444444;
+}
+
+/* Размер иконки внутри «пилла» */
+.amenity-item img {
+  width: 16px;
+  height: 16px;
 }

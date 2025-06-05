@@ -12,6 +12,7 @@ import importIcon from "../../assets/icons/adminImport.svg";
 import moveoutIcon from "../../assets/icons/adminMoveOut.svg";
 import api from "../../api.js";
 import AuditLog from "./AuditLog.jsx";
+
 const mockStats = {
   students: 1234,
   dorms: 3,
@@ -113,6 +114,15 @@ const handleNavigate = (to) => {
     <div className="admin-layout">
       <AdminSidebar />
       <div className="admin-main">
+      <div className="admin-header-row">Add commentMore actions
+          <div style={{ flex: 1 }}></div>
+          <button
+            className="admin-chat-btn"
+            onClick={() => navigate("/admin/chats")}
+          >
+            Чаты
+          </button>
+        </div>
         <h2 className="admin-title">Админ панель</h2>
         <div className="admin-dashboard-cards">
           <div className="admin-card">

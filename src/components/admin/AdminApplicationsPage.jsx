@@ -1,4 +1,4 @@
-// AdminApplicationsDistributePage.jsx
+// src/pages/admin/AdminApplicationsDistributePage.jsx
 
 import React, { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
@@ -18,18 +18,21 @@ const AdminApplicationsDistributePage = () => {
   // ——— Заявки (левая колонка) ———
   const [applications, setApplications] = useState([]);
   const [search, setSearch] = useState("");
-  const [selectedFloor, setSelectedFloor] = useState(null);
   const [page, setPage] = useState(1);
 
   // Фильтры (левый верхний блок)
   const [filterOpen, setFilterOpen] = useState(false);
   const filterRef = useRef();
-  const [byTest, setByTest] = useState(false);
-  const [byDate, setByDate] = useState(false);
-  const [byGender, setByGender] = useState(false);
-  const [arrowTest, setArrowTest] = useState(true);
-  const [arrowDate, setArrowDate] = useState(true);
+
+  // 1) Фильтрация по полу
   const [arrowGender, setArrowGender] = useState(false);
+  const [maleOnly, setMaleOnly] = useState(false);
+  const [femaleOnly, setFemaleOnly] = useState(false);
+
+  // 2) Фильтрация по статусу заселения
+  const [arrowRoomStatus, setArrowRoomStatus] = useState(false);
+  const [assignedOnly, setAssignedOnly] = useState(false);
+  const [unassignedOnly, setUnassignedOnly] = useState(false);
 
   // ——— Общежития и этажи (правая колонка) ———
   const [dorms, setDorms] = useState([]);
@@ -38,6 +41,7 @@ const AdminApplicationsDistributePage = () => {
   const dropdownRef = useRef(null);
 
   const [floors, setFloors] = useState([]);
+  const [selectedFloor, setSelectedFloor] = useState(null);
   const [rooms, setRooms] = useState([]); // список комнат с сервера
 
   // ───────────── Загрузка списка общежитий ─────────────
@@ -165,13 +169,32 @@ const AdminApplicationsDistributePage = () => {
     fetchApplications();
   }, []);
 
-  // ───────────── Фильтрация заявок по поиску ─────────────
-  const filteredApps = applications.filter((app) => {
-    const fio = `${app.student?.last_name ?? ""} ${
-      app.student?.first_name ?? ""
-    } ${app.student?.middle_name ?? ""}`;
+  // ───────────── Фильтрация заявок ─────────────
+  // Поиск по ФИО
+  let filteredApps = applications.filter((app) => {
+    const fio = `${app.student?.last_name ?? ""} ${app.student?.first_name ?? ""} ${app.student?.middle_name ?? ""}`;
     return fio.toLowerCase().includes(search.toLowerCase());
   });
+
+  // Фильтрация по полу (если выбраны maleOnly или femaleOnly)
+  if (maleOnly || femaleOnly) {
+    filteredApps = filteredApps.filter((app) => {
+      const gender = app.student?.gender; // предполагаем, что "M" или "F"
+      if (maleOnly && gender === "M") return true;
+      if (femaleOnly && gender === "F") return true;
+      return false;
+    });
+  }
+
+  // Фильтрация по статусу заселения (assignedOnly / unassignedOnly)
+  if (assignedOnly || unassignedOnly) {
+    filteredApps = filteredApps.filter((app) => {
+      const hasRoom = Boolean(app.room);
+      if (assignedOnly && hasRoom) return true;
+      if (unassignedOnly && !hasRoom) return true;
+      return false;
+    });
+  }
 
   const totalPages = Math.ceil(filteredApps.length / ITEMS_PER_PAGE);
   const paginatedApps = filteredApps.slice(
@@ -237,6 +260,16 @@ const AdminApplicationsDistributePage = () => {
       });
   };
 
+  // ───────────── Сбросить все фильтры ─────────────
+  const resetFilters = () => {
+    setArrowGender(false);
+    setMaleOnly(false);
+    setFemaleOnly(false);
+    setArrowRoomStatus(false);
+    setAssignedOnly(false);
+    setUnassignedOnly(false);
+  };
+
   return (
     <div className="admin-page-container">
       <AdminSidebar />
@@ -245,7 +278,7 @@ const AdminApplicationsDistributePage = () => {
         <div className="header-row">
           <h1>Заявки</h1>
           <div className="actions-list-distribute">
-            <button className="actions-list-distribute-btn active">
+            <button className="actions-list-distribute-btn active" onClick={() => navigate("/admin/applications")}>
               Все заявки
             </button>
             <button
@@ -254,9 +287,7 @@ const AdminApplicationsDistributePage = () => {
             >
               Распределить студентов
             </button>
-            <button className="actions-list-distribute-btn save">
-              Сохранить
-            </button>
+            <button className="actions-list-distribute-btn save">Сохранить</button>
           </div>
         </div>
 
@@ -280,7 +311,10 @@ const AdminApplicationsDistributePage = () => {
                   className="search-input"
                   placeholder="Поиск..."
                   value={search}
-                  onChange={(e) => setSearch(e.target.value)}
+                  onChange={(e) => {
+                    setSearch(e.target.value);
+                    setPage(1);
+                  }}
                 />
                 <img src={searchIcon} alt="search" className="search-icon" />
                 <button
@@ -293,59 +327,121 @@ const AdminApplicationsDistributePage = () => {
                 </button>
                 {filterOpen && (
                   <div className="filter-dropdown" ref={filterRef}>
-                    <div className="filter-checkbox-row">
-                      <input
-                        type="checkbox"
-                        checked={byTest}
-                        onChange={() => setByTest((v) => !v)}
-                        id="byTest"
-                      />
-                      <label htmlFor="byTest" style={{ cursor: "pointer" }}>
-                        По тесту
-                      </label>
-                      <span
-                        className="filter-arrow"
-                        onClick={() => setArrowTest((a) => !a)}
-                        style={{ marginLeft: "auto" }}
-                      >
-                        {arrowTest ? "▲" : "▼"}
-                      </span>
+                    {/* === ФИЛЬТР ПО ПОЛУ === */}
+                    <div className="filter-section">
+                      <div className="filter-checkbox-row">
+                        <label style={{ cursor: "pointer", display: "flex", alignItems: "center" }}>
+                          <input
+                            type="checkbox"
+                            checked={arrowGender}
+                            onChange={() => {
+                              setArrowGender((a) => !a);
+                            }}
+                          />
+                          <span style={{ marginLeft: "5px" }}>По полу</span>
+                          <span className="filter-arrow" style={{ marginLeft: "auto" }}>
+                            {arrowGender ? "▲" : "▼"}
+                          </span>
+                        </label>
+                      </div>
+                      {arrowGender && (
+                        <div className="filter-suboptions" style={{ paddingLeft: "20px" }}>
+                          <div className="filter-checkbox-row">
+                            <input
+                              type="checkbox"
+                              id="maleOnly"
+                              checked={maleOnly}
+                              onChange={() => {
+                                setMaleOnly((v) => !v);
+                                // можно сбрасывать femaleOnly, если нужен взаимно-исключающий режим:
+                                // if (!maleOnly) setFemaleOnly(false);
+                              }}
+                            />
+                            <label htmlFor="maleOnly" style={{ cursor: "pointer", marginLeft: "5px" }}>
+                              Мужчины
+                            </label>
+                          </div>
+                          <div className="filter-checkbox-row">
+                            <input
+                              type="checkbox"
+                              id="femaleOnly"
+                              checked={femaleOnly}
+                              onChange={() => {
+                                setFemaleOnly((v) => !v);
+                                // можно сбрасывать maleOnly:
+                                // if (!femaleOnly) setMaleOnly(false);
+                              }}
+                            />
+                            <label htmlFor="femaleOnly" style={{ cursor: "pointer", marginLeft: "5px" }}>
+                              Женщины
+                            </label>
+                          </div>
+                        </div>
+                      )}
                     </div>
-                    <div className="filter-checkbox-row">
-                      <input
-                        type="checkbox"
-                        checked={byDate}
-                        onChange={() => setByDate((v) => !v)}
-                        id="byDate"
-                      />
-                      <label htmlFor="byDate" style={{ cursor: "pointer" }}>
-                        По дате
-                      </label>
-                      <span
-                        className="filter-arrow"
-                        onClick={() => setArrowDate((a) => !a)}
-                        style={{ marginLeft: "auto" }}
-                      >
-                        {arrowDate ? "▲" : "▼"}
-                      </span>
+
+                    {/* === ФИЛЬТР ПО СТАТУСУ ЗАСЕЛЕНИЯ === */}
+                    <div className="filter-section" style={{ marginTop: "10px" }}>
+                      <div className="filter-checkbox-row">
+                        <label style={{ cursor: "pointer", display: "flex", alignItems: "center" }}>
+                          <input
+                            type="checkbox"
+                            checked={arrowRoomStatus}
+                            onChange={() => {
+                              setArrowRoomStatus((a) => !a);
+                            }}
+                          />
+                          <span style={{ marginLeft: "5px" }}>Статус заселения</span>
+                          <span className="filter-arrow" style={{ marginLeft: "auto" }}>
+                            {arrowRoomStatus ? "▲" : "▼"}
+                          </span>
+                        </label>
+                      </div>
+                      {arrowRoomStatus && (
+                        <div className="filter-suboptions" style={{ paddingLeft: "20px" }}>
+                          <div className="filter-checkbox-row">
+                            <input
+                              type="checkbox"
+                              id="assignedOnly"
+                              checked={assignedOnly}
+                              onChange={() => {
+                                setAssignedOnly((v) => !v);
+                                // можно сбрасывать unassignedOnly:
+                                // if (!assignedOnly) setUnassignedOnly(false);
+                              }}
+                            />
+                            <label htmlFor="assignedOnly" style={{ cursor: "pointer", marginLeft: "5px" }}>
+                              Назначена комната
+                            </label>
+                          </div>
+                          <div className="filter-checkbox-row">
+                            <input
+                              type="checkbox"
+                              id="unassignedOnly"
+                              checked={unassignedOnly}
+                              onChange={() => {
+                                setUnassignedOnly((v) => !v);
+                                // можно сбрасывать assignedOnly:
+                                // if (!unassignedOnly) setAssignedOnly(false);
+                              }}
+                            />
+                            <label htmlFor="unassignedOnly" style={{ cursor: "pointer", marginLeft: "5px" }}>
+                              Без комнаты
+                            </label>
+                          </div>
+                        </div>
+                      )}
                     </div>
-                    <div className="filter-checkbox-row">
-                      <input
-                        type="checkbox"
-                        checked={byGender}
-                        onChange={() => setByGender((v) => !v)}
-                        id="byGender"
-                      />
-                      <label htmlFor="byGender" style={{ cursor: "pointer" }}>
-                        По полу
-                      </label>
-                      <span
-                        className="filter-arrow"
-                        onClick={() => setArrowGender((a) => !a)}
-                        style={{ marginLeft: "auto" }}
+
+                    {/* === КНОПКА СБРОСИТЬ ФИЛЬТРЫ === */}
+                    <div className="filter-reset-row" style={{ marginTop: "15px", textAlign: "center" }}>
+                      <button
+                        type="button"
+                        className="filter-reset-btn"
+                        onClick={resetFilters}
                       >
-                        {arrowGender ? "▲" : "▼"}
-                      </span>
+                        Сбросить фильтры
+                      </button>
                     </div>
                   </div>
                 )}
@@ -368,14 +464,23 @@ const AdminApplicationsDistributePage = () => {
                   onDragStart={(e) => handleDragStart(e, app.id)}
                 >
                   <div className="fio">
-                    {app.student?.last_name}{" "}
-                    {app.student?.first_name}{" "}
+                    {app.student?.last_name} {app.student?.first_name}{" "}
                     {app.student?.middle_name}
                   </div>
                   <div className="extra">
                     S{app.student?.s} <br />
                     Тест: {app.test_result ?? "-"} <br />
-                    Пол: {app.student?.gender === "M" ? "Муж." : "Жен."}
+                    Пол: {app.student?.gender === "M" ? "Муж." : "Жен."} <br />
+                    {app.room ? (
+                      <>
+                        Заселен в:{" "}
+                        {app.room.dorm?.name
+                          ? `${app.room.dorm.name}, комн. ${app.room.number}`
+                          : `комн. ${app.room.number}`}
+                      </>
+                    ) : (
+                      "Не заселен"
+                    )}
                   </div>
                 </div>
               ))}
@@ -386,9 +491,7 @@ const AdminApplicationsDistributePage = () => {
                 {Array.from({ length: totalPages }).map((_, idx) => (
                   <button
                     key={idx}
-                    className={`pagination-btn${
-                      page === idx + 1 ? " active" : ""
-                    }`}
+                    className={`pagination-btn${page === idx + 1 ? " active" : ""}`}
                     onClick={() => setPage(idx + 1)}
                   >
                     {idx + 1}
@@ -430,47 +533,15 @@ const AdminApplicationsDistributePage = () => {
                   </div>
                 )}
               </div>
-
-              {/* Кнопка «обновить общежития» */}
-              <img
-                src={refreshIcon}
-                alt="refresh"
-                className="rooms-block-refresh"
-                onClick={() => {
-                  api
-                    .get("/dorms/")
-                    .then((response) => {
-                      const data = Array.isArray(response.data)
-                        ? response.data
-                        : Array.isArray(response.data.results)
-                        ? response.data.results
-                        : [];
-                      setDorms(data);
-                      if (data.length > 0) {
-                        setSelectedDorm(data[0]);
-                      }
-                    })
-                    .catch((error) => {
-                      console.error(
-                        "Не удалось загрузить общежития:",
-                        error
-                      );
-                    });
-                }}
-              />
             </div>
 
             {/* Рендерим кнопки этажей */}
             <div className="floors-row">
-              {floors.length === 0 && (
-                <div className="no-floors">Этажи не найдены</div>
-              )}
+              {floors.length === 0 && <div className="no-floors">Этажи не найдены</div>}
               {floors.map((floor) => (
                 <button
                   key={floor}
-                  className={`floor-btn${
-                    selectedFloor === floor ? " selected" : ""
-                  }`}
+                  className={`floor-btn${selectedFloor === floor ? " selected" : ""}`}
                   onClick={() => setSelectedFloor(floor)}
                 >
                   {floor} этаж
@@ -480,9 +551,7 @@ const AdminApplicationsDistributePage = () => {
 
             {/* Рендерим реальные комнаты с сервера и навешиваем Drop */}
             <div className="rooms-row">
-              {rooms.length === 0 && (
-                <div className="no-rooms">Комнаты не найдены</div>
-              )}
+              {rooms.length === 0 && <div className="no-rooms">Комнаты не найдены</div>}
               {rooms.map((room) => (
                 <div
                   key={room.id}
@@ -491,9 +560,7 @@ const AdminApplicationsDistributePage = () => {
                   onDrop={(e) => handleDrop(e, room.id)}
                 >
                   <div className="room-header">{room.number}</div>
-                  <div className="room-capacity">
-                    {room.capacity}-местная
-                  </div>
+                  <div className="room-capacity">{room.capacity}-местная</div>
                   <div className="room-free">
                     {room.free_spots} свободн
                     {room.free_spots === 1 ? "о" : "ых"} мест
@@ -516,12 +583,6 @@ const AdminApplicationsDistributePage = () => {
                       <div>— Нет заселённых студентов</div>
                     )}
                   </div>
-                  {/* <button
-                    className="settle-btn"
-                    disabled={room.free_spots === 0}
-                  >
-                    Заселить
-                  </button> */}
                 </div>
               ))}
             </div>

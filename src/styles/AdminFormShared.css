@@ -193,3 +193,201 @@
     width: 100%;
   }
 }
+
+
+
+
+
+/* AdminFormShared.css */
+
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background: #fff;
+  border-radius: 8px;
+  width: 500px;               /* или любая другая желаемая ширина */
+  max-height: 80vh;           /* ограничиваем высоту 80% от высоты экрана */
+  overflow-y: auto;           /* включаем вертикальный скролл, если содержимого больше, чем max-height */
+  padding: 20px;
+  position: relative;
+}
+
+/* Стили для крестика закрытия */
+.modal-close-btn {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: transparent;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+}
+
+/* Стили для формы */
+.form-container {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-container label {
+  margin-bottom: 12px;
+}
+
+.dorm-images-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.dorm-image-item {
+  position: relative;
+}
+
+.dorm-image-item img {
+  width: 100px;
+  height: 80px;
+  object-fit: cover;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.dorm-image-item button {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  background: rgba(195, 41, 57, 0.8);
+  color: #fff;
+  border: none;
+  padding: 2px 6px;
+  font-size: 12px;
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+.form-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.save-button,
+.cancel-button {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.save-button {
+  background-color: #4caf50;
+  color: #fff;
+}
+
+.cancel-button {
+  background-color: #ccc;
+  color: #333;
+}
+
+
+/* Обёртка для одной строки с полями комнаты */
+.room-row {
+  display: flex;
+  flex-wrap: wrap;          /* если не вмещается, переносим элементы */
+  gap: 10px;                /* расстояние между элементами */
+  align-items: flex-end;    /* выравниваем по нижнему краю */
+  margin-bottom: 10px;      /* расстояние до следующей строки */
+}
+
+/* Лейбл + инпуты внутри .room-row делаем колонкой, но растягиваем по ширине */
+.room-row label {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 30%;            /* базовая ширина 30%, но можно сжать/расширить */
+  min-width: 120px;         /* минимально 120px, чтобы инпут не «слизался» */
+}
+
+/* Сам текст инпута для номера комнаты и вместимости */
+.room-input,
+.capacity-input {
+  width: 100%;              /* занимает всю ширину родителя (label) */
+  padding: 6px 8px;         /* внутренние отступы для удобства */
+  border: 1px solid #ccc;   /* тонкая серая рамка */
+  border-radius: 4px;       /* скругляем углы */
+  font-size: 14px;          /* читаемый размер шрифта */
+  box-sizing: border-box;   /* чтобы padding не ломал ширину */
+  transition: border-color 0.2s;
+}
+
+/* При фокусе граница подсвечивается */
+.room-input:focus,
+.capacity-input:focus {
+  outline: none;
+  border-color: #4caf50;    /* зелёный акцент при фокусе */
+}
+
+/* Кнопка «Удалить комнату» */
+.room-remove-btn {
+  background: transparent;
+  border: none;
+  color: #c00;              /* красный крестик */
+  font-weight: bold;
+  cursor: pointer;
+  font-size: 18px;
+  line-height: 1;
+  padding: 0;               /* убираем лишние отступы */
+  margin-top: 24px;         /* чтобы кнопка стояла примерно на уровне полей */
+  flex: 0 0 auto;           /* не растягиваться, занимать ровно свой контент */
+  margin-bottom: 3vh;
+}
+
+/* Кнопка «Добавить ещё одну комнату» */
+.add-room-button {
+  background-color: #4caf50;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  padding: 8px 16px;
+  cursor: pointer;
+  margin-bottom: 20px;
+  width: 100%;
+  max-width: 300px;         /* чтобы не был шире 300px */
+  font-size: 14px;
+  transition: background-color 0.2s;
+}
+
+.add-room-button:hover {
+  background-color: #45a049; /* чуть более тёмный при наведении */
+}
+
+
+
+.toggle-rooms-button {
+  /* background-color: #1976d2; */
+  background: none;
+  color: #fff;
+  border: solid 2px #6c757d;
+  border-radius: 4px;
+  padding: 8px 16px;
+  cursor: pointer;
+  margin-bottom: 15px;
+  font-size: 14px;
+  transition: background-color 0.2s;
+  color: #000;
+}
+
+.toggle-rooms-button:hover {
+  /* background-color: #1669b2; */
+  border-color: #D80434;
+}

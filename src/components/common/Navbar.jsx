@@ -24,7 +24,15 @@ const Navbar = ({ isAuthenticated, userRole, onLogout }) => {
 
   // ---------------- ADMIN NOTIFICATIONS -----------------
   const [adminNotifications, setAdminNotifications] = useState([]);
-  const [isAdminNotifOpen, setIsAdminNotifOpen] = useState(false); // <-- Обратите внимание: именно так!
+  const [isAdminNotifOpen, setIsAdminNotifOpen] = useState(false);
+
+  // Состояния, связанные с тем, есть ли у студента заявка
+  const [hasApplication, setHasApplication] = useState(false);
+  const [noApplication, setNoApplication] = useState(false);
+  const [isEditWarningOpen, setIsEditWarningOpen] = useState(false)
+  const [loadingSettings, setLoadingSettings] = useState(true)
+  const [allowEdit, setAllowEdit] = useState(false)
+
 
   const navigate = useNavigate();
 
@@ -48,9 +56,7 @@ const Navbar = ({ isAuthenticated, userRole, onLogout }) => {
           setUserName('');
           setAvatarUrl('');
         });
-    }
-    else if (userRole === 'admin') {
-      // У нас на бекенде настроен роут /admins/me/
+    } else if (userRole === 'admin') {
       api.get('/admins/me/')
         .then(res => {
           const data = res.data;
@@ -62,8 +68,7 @@ const Navbar = ({ isAuthenticated, userRole, onLogout }) => {
           setUserName('');
           setAvatarUrl('');
         });
-    }
-    else {
+    } else {
       setUserName('');
       setAvatarUrl('');
     }
@@ -77,6 +82,20 @@ const Navbar = ({ isAuthenticated, userRole, onLogout }) => {
       audioRef.current = audio;
     }
   }, [userRole, isAuthenticated]);
+
+  useEffect(() => {
+    const fetchGlobalSettings = async () => {
+      try {
+        const response = await api.get("/global-settings/")
+        setAllowEdit(!!response.data?.allow_application_edit)
+      } catch (error) {
+        console.error("Ошибка при загрузке настроек:", error)
+      } finally {
+        setLoadingSettings(false)
+      }
+    }
+    fetchGlobalSettings()
+  }, [])
 
   // 3) Периодически загружаем уведомления студента
   useEffect(() => {
@@ -95,6 +114,41 @@ const Navbar = ({ isAuthenticated, userRole, onLogout }) => {
       return () => clearInterval(interval);
     }
   }, [isAuthenticated, userRole]);
+
+  // 5) Дополнительный useEffect для проверки наличия заявки у студента
+  useEffect(() => {
+    if (isAuthenticated && userRole === 'student') {
+      api.get('/application_status/')
+        .then(res => {
+          // Любой успешный ответ (200) означает, что заявка есть
+          setHasApplication(true);
+          setNoApplication(false);
+        })
+        .catch(err => {
+          if (err.response?.status === 404) {
+            // Если нет заявки — возвращается 404
+            setHasApplication(false);
+            setNoApplication(true);
+          } else {
+            console.error('Ошибка при проверке статуса заявки в Navbar:', err);
+            // В остальных случаях просто считаем, что заявки нет
+            setHasApplication(false);
+            setNoApplication(true);
+          }
+        });
+    }
+  }, [isAuthenticated, userRole]);
+
+
+
+  const handleEditApplicationClick = () => {
+    if (loadingSettings) return
+    if (allowEdit) {
+      navigate("/edit-application")
+    } else {
+      setIsEditWarningOpen(true)
+    }
+  }
 
   // Загрузка уведомлений студента
   const fetchStudentNotifications = async () => {
@@ -178,9 +232,26 @@ const Navbar = ({ isAuthenticated, userRole, onLogout }) => {
           </li>
           {isAuthenticated && userRole === 'student' && (
             <li>
-              <Link to="/create-application" className="nav-btn-link">
-                Подать заявку
-              </Link>
+              {/* 
+                Если заявка есть (hasApplication=true) — ведём на /edit-application, 
+                иначе — на /create-application 
+              */}
+              {hasApplication 
+                ? (
+                  <div to="/edit-application" className="nav-btn-link" onClick={handleEditApplicationClick}>
+                    Редактировать заявку
+                  </div>
+                ) : (
+                  <Link to="/create-application" className="nav-btn-link">
+                    Подать заявку
+                  </Link>
+                )
+              }
+            </li>
+          )}
+          {userRole === 'admin' && (
+            <li>
+              <Link to="/admin" className="nav-btn-link">Admin Panel</Link>
             </li>
           )}
         </ul>
@@ -231,7 +302,7 @@ const Navbar = ({ isAuthenticated, userRole, onLogout }) => {
             >
               <img src={bellIcon} alt="Уведомления" />
             </button>
-            {isAdminNotifOpen && (  /* <-- Здесь используем именно isAdminNotifOpen */
+            {isAdminNotifOpen && (
               <div className="notifications-popup">
                 <h4>Уведомления (Админ)</h4>
                 {adminNotifications.length === 0 ? (
@@ -311,6 +382,29 @@ const Navbar = ({ isAuthenticated, userRole, onLogout }) => {
           ☰
         </button>
       </div>
+
+
+
+      {isEditWarningOpen && (
+        <div
+          className="modal-overlay"
+          onClick={() => setIsEditWarningOpen(false)}
+        >
+          <div className="profile-modal" onClick={(e) => e.stopPropagation()}>
+            <h3>Редактирование заявок отключено</h3>
+            <p>
+              В данный момент редактирование заявок недоступно. Свяжитесь с
+              администрацией.
+            </p>
+            <button
+              className="profile-modal-btn grey"
+              onClick={() => setIsEditWarningOpen(false)}
+            >
+              Понятно
+            </button>
+          </div>
+        </div>
+      )}
     </nav>
   );
 };

@@ -24,6 +24,7 @@ import IconSecurity from "../../assets/icons/DormCardIconSecurity.svg";
 const DormitoryDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+
   const [dorm, setDorm] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -35,8 +36,8 @@ const DormitoryDetail = () => {
         const response = await api.get(`dorms/${id}/`);
         setDorm(response.data);
       } catch (err) {
-        setError("Ошибка при загрузке данных общежития.");
         console.error(err);
+        setError("Ошибка при загрузке данных общежития.");
       } finally {
         setLoading(false);
       }
@@ -44,35 +45,49 @@ const DormitoryDetail = () => {
     fetchDorm();
   }, [id]);
 
-  if (loading) return <p>Загрузка...</p>;
-  if (error) return <p className="error-message">{error}</p>;
-  if (!dorm) return <p>Общежитие не найдено.</p>;
+  if (loading) {
+    return <p>Загрузка...</p>;
+  }
 
+  if (error) {
+    return <p className="error-message">{error}</p>;
+  }
+
+  if (!dorm) {
+    return <p>Общежитие не найдено.</p>;
+  }
+
+  // Собираем массив URL-изображений: если в dorm.images есть элементы → берем все ссылки,
+  // иначе оставляем единственную заглушку defaultDormImg
   const images =
     dorm.images && dorm.images.length > 0
-      ? dorm.images.map((img) => img.image)
+      ? dorm.images.map((imgObj) => imgObj.image)
       : [defaultDormImg];
 
+  // Обработчики для переключения карусели
   const handlePrev = () => {
-    setCarouselIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1));
+    setCarouselIndex((prevIndex) =>
+      prevIndex === 0 ? images.length - 1 : prevIndex - 1
+    );
   };
   const handleNext = () => {
-    setCarouselIndex((prev) => (prev === images.length - 1 ? 0 : prev + 1));
+    setCarouselIndex((prevIndex) =>
+      prevIndex === images.length - 1 ? 0 : prevIndex + 1
+    );
   };
 
+  // Основная информация о общежитии, которая будет отображаться списком
   const mainInfo = [
     { icon: IconLocation, label: dorm.address || "Адрес отсутствует" },
-    { icon: IconPhone, label: dorm.phone || "+7 (777) 77-77-777" },
-    { icon: IconManager, label: `Комендант: ${dorm.manager || "Не указан"}` },
-    { icon: IconType, label: `Тип: ${dorm.dorm_type || "Коридорный"}` },
-    { icon: IconYear, label: `Год постройки: ${dorm.year_built || "2024"}` },
-    { icon: IconFloor, label: `Этажей: ${dorm.floors || "9"}` },
+    { icon: IconPhone, label: dorm.phone || "+7 (747) 364 88 99" },
+    { icon: IconFloor, label: `Этажей: ${dorm.floors_count || "9"}` },
     { icon: IconCost, label: `${dorm.cost || "80000"} тг` },
     { icon: IconBed, label: `${dorm.total_places || "250"} мест` },
   ];
 
+  // Список удобств
   const amenities = [
-    { icon: IconWifi, label: "Wi‑Fi" },
+    { icon: IconWifi, label: "Wi-Fi" },
     { icon: IconCanteen, label: "Столовая" },
     { icon: IconLibrary, label: "Библиотека" },
     { icon: IconGym, label: "Спортзал" },
@@ -81,19 +96,22 @@ const DormitoryDetail = () => {
     { icon: IconSecurity, label: "Охрана" },
   ];
 
+  // Формируем URL для карты Яндекс по адресу общежития
   const dormAddress = dorm.address ? dorm.address : dorm.name;
   const encodedAddress = encodeURIComponent(dormAddress);
   const mapUrl = `https://yandex.kz/map-widget/v1/?text=${encodedAddress}&z=17.19`;
 
   return (
     <div className="dormitory-page">
+      {/* Заголовок и описание */}
       <h1 className="dorm-title">{dorm.name}</h1>
       <p className="dorm-desc">
         {dorm.description ||
           "Традиционное студенческое общежитие коридорного типа, расположенное в непосредственной близости от главного учебного корпуса университета."}
       </p>
 
-      <div className="dorm-carousel">
+      {/* Блок с каруселью изображений */}
+      <div className="dorm-carousel-wrapper">
         <button className="carousel-arrow left" onClick={handlePrev}>
           &#60;
         </button>
@@ -101,27 +119,34 @@ const DormitoryDetail = () => {
           src={images[carouselIndex]}
           alt={`dorm-${carouselIndex + 1}`}
           className="carousel-image"
+          onError={(e) => {
+            // Если URL битый — показываем дефолтное изображение
+            e.currentTarget.src = defaultDormImg;
+          }}
         />
         <button className="carousel-arrow right" onClick={handleNext}>
           &#62;
         </button>
       </div>
+
+      {/* Индикаторы карусели (точки) */}
       <div className="carousel-dots">
         {images.map((_, idx) => (
           <span
             key={idx}
             className={`dot ${idx === carouselIndex ? "active" : ""}`}
             onClick={() => setCarouselIndex(idx)}
-          ></span>
+          />
         ))}
       </div>
 
+      {/* Раздел с основной информацией и удобствами */}
       <div className="dorm-info-section">
         <div className="dorm-info-card">
           <h3>Основная информация</h3>
           <ul className="info-list">
             {mainInfo.map((item, idx) => (
-              <li key={idx}>
+              <li key={idx} className="info-item">
                 <img src={item.icon} alt="" />
                 <span>{item.label}</span>
               </li>
@@ -132,21 +157,27 @@ const DormitoryDetail = () => {
           <h3>Удобства</h3>
           <div className="amenities-list">
             {amenities.map((am, idx) => (
-              <span key={idx} className="amenity">
-                <img src={am.icon} alt={am.label} /> {am.label}
+              <span key={idx} className="amenity-item">
+                <img src={am.icon} alt={am.label} />
+                <span>{am.label}</span>
               </span>
             ))}
           </div>
         </div>
       </div>
 
+      {/* Блок с кнопкой подачи заявки */}
       <div className="apply-section">
         <h2>Подайте заявку прямо сейчас</h2>
-        <button className="apply-btn" onClick={() => navigate("/create-application")}>
+        <button
+          className="apply-btn"
+          onClick={() => navigate("/create-application")}
+        >
           Подать заявку
         </button>
       </div>
 
+      {/* Блок с картой */}
       <div className="map-block">
         <iframe
           src={mapUrl}
@@ -160,11 +191,14 @@ const DormitoryDetail = () => {
             borderRadius: 18,
             minHeight: 350,
             width: "100%",
-            border: "0",
+            border: 0,
             display: "block",
           }}
-        ></iframe>
+        />
       </div>
+
+      {/* Футер */}
+      {/* <Footer /> */}
     </div>
   );
 };

@@ -26,10 +26,17 @@
     justify-content: flex-start;
 }
 
-/* Аватар слева */
-.profile-avatar-circle {
+/* Обёртка для аватара, чтобы позиционировать оверлей */
+.avatar-wrapper {
+    position: relative;
     width: 145px;
     height: 145px;
+}
+
+/* Круглый аватар */
+.profile-avatar-circle {
+    width: 100%;
+    height: 100%;
     border-radius: 50%;
     background: #C32939;
     color: #fff;
@@ -39,24 +46,37 @@
     font-size: 56px;
     font-weight: 700;
     user-select: none;
+    object-fit: cover;
+    cursor: pointer;
 }
 
-
+/* Оверлей-слой поверх аватара – изначально скрыт */
 .avatar-overlay {
     position: absolute;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
+    border-radius: 50%;
     background-color: rgba(0, 0, 0, 0.4);
-    color: white;
     display: flex;
     align-items: center;
     justify-content: center;
-    border-radius: 50%;
     opacity: 0;
     transition: opacity 0.3s ease;
     cursor: pointer;
+}
+
+/* Иконка камеры внутри оверлея */
+.camera-icon {
+    width: 32px;
+    height: 32px;
+    filter: invert(1); /* если ваша иконка чёрная, она станет белой */
+}
+
+/* При наведении на обёртку аватара показываем оверлей */
+.avatar-wrapper:hover .avatar-overlay {
+    opacity: 1;
 }
 
 /* Инфо по левому краю */
@@ -74,7 +94,9 @@
     margin-bottom: 1px;
     color: #434343;
 }
-.profile-main-id, .profile-main-email {
+
+.profile-main-id,
+.profile-main-email {
     color: #707070;
     font-size: 17px;
     margin-bottom: 2px;
@@ -94,7 +116,10 @@
     transition: background 0.19s;
     align-self: flex-start;
 }
-.profile-change-password-btn:hover { background: #a6212e; }
+
+.profile-change-password-btn:hover {
+    background: #a6212e;
+}
 
 /* Линия разделения */
 .profile-hr {
@@ -109,12 +134,14 @@
     margin-bottom: 35px;
     margin-left: 0;
 }
+
 .profile-status-title {
     font-size: 28px;
     font-weight: 700;
     margin-bottom: 13px;
     color: #555;
 }
+
 .profile-status-row {
     font-size: 23px;
     margin-bottom: 8px;
@@ -124,10 +151,12 @@
     align-items: center;
     gap: 5px;
 }
+
 .profile-status-review {
     color: #c32939;
     font-weight: 700;
 }
+
 .profile-status-desc {
     font-size: 16px;
     color: #444;
@@ -160,12 +189,20 @@
     align-items: center;
     transition: background 0.18s;
 }
+
 .profile-edit-app-btn {
     background: #c32939;
     margin-left: 0;
+    margin-top: 5vh;
 }
-.profile-upload-btn:hover { background: #888; }
-.profile-edit-app-btn:hover { background: #a6212e; }
+
+.profile-upload-btn:hover {
+    background: #888;
+}
+
+.profile-edit-app-btn:hover {
+    background: #a6212e;
+}
 
 .profile-upload-btn-label {
     display: flex;
@@ -178,51 +215,231 @@
 }
 
 /* Модалки и адаптивность — не меняем */
-.profile-modal-overlay { /* ... */ }
-
-
-
-.profile-modal-overlay {
+.modal-overlay {
     position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background: white;
-    padding: 20px;
-    border-radius: 12px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    z-index: 1000; 
-    width: 90%;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+/* .modal-content {
+    background: #ffffff;
+    border-radius: 8px;
+    padding: 24px;
+    position: relative;
     max-width: 400px;
+    width: 100%;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+} */
+
+/* Спецстили для модалки управления аватаром */
+.avatar-modal h2 {
+    margin: 0;
+    font-size: 20px;
+    text-align: center;
 }
 
-
-
-.profile-modal { /* ... */ }
-
-@media (max-width: 900px) {
-    .profile-page-main { padding: 18px 7vw 0 7vw; }
-    .profile-main-block { gap: 20px; }
-    .profile-avatar-circle { width: 90px; height: 90px; font-size: 30px;}
-    .profile-main-fio { font-size: 18px;}
-    .profile-main-id, .profile-main-email { font-size: 13px;}
-    .profile-status-title { font-size: 18px;}
-    .profile-status-row { font-size: 15px;}
-    .profile-upload-btn, .profile-edit-app-btn { font-size: 14px; height: 36px;}
-    .profile-modal { min-width: 94vw; }
+.avatar-modal-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 16px;
 }
 
-@media (max-width: 500px) {
-    .profile-page-main { padding: 8px 3vw 0 3vw;}
-    .profile-main-block { flex-direction: column; align-items: flex-start;}
+.avatar-modal-buttons .modal-btn {
+    padding: 10px 16px;
+    border-radius: 4px;
+    font-size: 16px;
+    border: none;
+    cursor: pointer;
 }
 
+.avatar-modal-buttons .delete-btn {
+    background-color: #e74c3c;
+    color: white;
+}
 
-.link-like-text{
+.avatar-modal-buttons .choose-btn {
+    background-color: #3498db;
+    color: white;
+}
+
+.modal-close-btn {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: transparent;
+    border: none;
+    font-size: 18px;
+    cursor: pointer;
+}
+
+/* Стили для модалки смены пароля */
+.profile-modal {
+    background: #fff;
+    border-radius: 8px;
+    padding: 24px;
+    position: relative;
+    max-width: 400px;
+    width: 100%;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.simple-modal-input {
+    width: 100%;
+    padding: 8px 12px;
+    margin-top: 8px;
+    margin-bottom: 12px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+.simple-modal-btn {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 4px;
+    margin-right: 8px;
+    cursor: pointer;
+}
+
+.simple-modal-btn.cancel {
+    background-color: #bdc3c7;
+    color: white;
+}
+
+.simple-modal-btn.save {
+    background-color: #27ae60;
+    color: white;
+}
+
+.error-message {
+    color: #e74c3c;
+    font-size: 14px;
+    margin-top: -8px;
+    margin-bottom: 8px;
+}
+
+/* Модалка для загрузки чека */
+.excel-modal-content {
+    padding-top: 40px;
+}
+
+.excel-upload-box {
+    border: 1px dashed #888;
+    padding: 20px;
+    text-align: center;
+    margin-top: 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+}
+
+.excel-upload-img {
+    width: 48px;
+    height: 48px;
+}
+
+.excel-upload-success {
+    color: #27ae60;
+    font-size: 16px;
+}
+
+.excel-upload-default {
+    color: #888;
+    font-size: 16px;
+}
+
+.fileinfo-title {
+    font-weight: bold;
+    margin-bottom: 4px;
+}
+
+.fileinfo-template-link {
+    display: block;
+    margin-top: 8px;
+    color: #2980b9;
     text-decoration: underline;
 }
 
+.upload-message {
+    margin-top: 12px;
+    text-align: center;
+}
 
-.link-like-text:hover{
+.upload-message.success {
+    color: green;
+}
+
+.upload-message.error {
+    color: red;
+}
+
+/* Немного стилизации для мобильных или узких экранов */
+@media (max-width: 900px) {
+    .profile-page-main {
+        padding: 18px 7vw 0 7vw;
+    }
+    .profile-main-block {
+        gap: 20px;
+    }
+    .avatar-wrapper {
+        width: 90px;
+        height: 90px;
+    }
+    .profile-avatar-circle {
+        font-size: 30px;
+    }
+    .profile-main-fio {
+        font-size: 18px;
+    }
+    .profile-main-id,
+    .profile-main-email {
+        font-size: 13px;
+    }
+    .profile-status-title {
+        font-size: 18px;
+    }
+    .profile-status-row {
+        font-size: 15px;
+    }
+    .profile-upload-btn,
+    .profile-edit-app-btn {
+        font-size: 14px;
+        height: 36px;
+    }
+    .profile-modal {
+        min-width: 94vw;
+    }
+}
+
+@media (max-width: 500px) {
+    .profile-page-main {
+        padding: 8px 3vw 0 3vw;
+    }
+    .profile-main-block {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}
+
+.link-like-text {
+    text-decoration: underline;
+}
+
+.link-like-text:hover {
     cursor: pointer;
+}
+
+.profile-modal-actions {
+    margin-top: 2vh;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    column-gap: 1vw;
 }
