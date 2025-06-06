@@ -232,4 +232,8 @@ body, html, #root {
 }
 
 
+details summary{
+  margin-top: 2.5vh;
+}
+
 

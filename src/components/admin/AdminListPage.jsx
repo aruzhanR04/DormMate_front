@@ -93,7 +93,7 @@ const AdminListPage = () => {
                       </div>
                     )}
                   </td>
-                  <td>{admin.s}</td>
+                  <td>{admin.s} {admin.id}</td>
                   <td>{admin.first_name}</td>
                   <td>{admin.last_name}</td>
                   <td>{admin.middle_name}</td>

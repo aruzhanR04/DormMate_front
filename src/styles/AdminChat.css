@@ -197,3 +197,122 @@
   margin: 30px auto;
   font-size: 18px;
 }
+
+
+
+
+/* .chat-message-row — это общий контейнер для одной строки сообщения */
+.chat-message-row {
+  display: flex;
+  align-items: flex-start;
+  margin-bottom: 12px;
+}
+
+/* Когда сообщение НЕ своё (chat-message-row--other), аватар слева, текст серый */
+.chat-message-row--other {
+  justify-content: flex-start; /* выравниваем влево */
+}
+
+/* Когда сообщение СВОЁ (chat-message-row--own), выровняем вправо, без аватара */
+.chat-message-row--own {
+  justify-content: flex-end; /* выравниваем вправо */
+}
+
+/* Авотарка всегда слева у чужих */
+.chat-message-row--other .chat-avatar {
+  margin-right: 8px;
+}
+.chat-message-row--other .chat-avatar__img,
+.chat-message-row--other .chat-avatar__placeholder {
+  /* у чужого аватар в поле 40×40 */
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+/* У “своего” сообщения скрываем блок аватара (или просто даём margin слева) */
+.chat-message-row--own .chat-avatar {
+  display: none;
+}
+
+/* Тело сообщения */
+.chat-message-body {
+  max-width: 60%; /* чтобы не растягивался на всю ширину */
+  display: flex;
+  flex-direction: column;
+}
+
+/* Заголовок: имя и комната */
+.chat-message-header {
+  margin-bottom: 4px;
+  font-size: 14px;
+  color: #333;
+  display: flex;
+  flex-wrap: wrap;
+}
+.chat-message-sender {
+  font-weight: 600;
+}
+.chat-message-room {
+  margin-left: 4px;
+  color: #555;
+}
+
+/* Базовый “пузырёк” */
+.chat-message-bubble {
+  position: relative;
+  padding: 8px 12px;
+  border-radius: 16px;
+  display: inline-flex;
+  align-items: baseline;
+}
+
+/* Текст внутри пузырька */
+.chat-message-text {
+  font-size: 14px;
+  color: #000;
+  line-height: 1.4;
+}
+
+/* Время справа внизу */
+.chat-message-time {
+  font-size: 11px;
+  color: #666;
+  margin-left: 8px;
+  align-self: flex-end;
+}
+
+/* === Отдельно стили для “чужих” сообщений === */
+.chat-message-row--other .chat-message-bubble {
+  background-color: #f0f0f0; /* светло-серый */
+  border: 1px solid #ddd;
+}
+
+/* === Отдельно стили для “своих” сообщений === */
+.chat-message-row--own .chat-message-bubble {
+  background-color: #daf5d7; /* нежно-зелёный */
+  border: 1px solid #b5e1b1;
+}
+
+/* Когда сообщение своё, “пузырёк” выравнивается вправо */
+.chat-message-row--own .chat-message-body {
+  align-items: flex-end;
+}
+
+
+
+.chat-message-row--own .chat-message-bubble {
+  background-color: #dcf8c6; /* светло-зелёный фон для собственных */
+}
+
+.chat-message-row--other .chat-message-bubble {
+  background-color: #f0f0f0; /* сероватый фон для чужих */
+}
+
+.chat-message-bubble--own {
+  /* дополнительные отступы, если нужно */
+}
+.chat-message-bubble--other {
+  /* дополнительные отступы, если нужно */
+}

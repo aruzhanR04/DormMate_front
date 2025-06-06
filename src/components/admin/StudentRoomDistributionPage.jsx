@@ -237,7 +237,7 @@ const AdminApplicationsDistributePage = () => {
                         }}
                       >
                         <img
-                          src={app.status !== "rejected" || app.status !== "pending" ? approveRed : approveGray}
+                          src={app.status !== "rejected" && app.status !== "pending" ? approveRed : approveGray}
                           alt="approve"
                         />
                       </button>

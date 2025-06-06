@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import api from "../../api"; // Ваш axios-инстанс
+import api from "../../api"; // Убедитесь, что путь верно указывает на ваш Axios-инстанс
 import AdminSidebar from "./AdminSidebar";
 import searchIcon from "../../assets/icons/Search.svg";
 import filterIcon from "../../assets/icons/filter.svg";
@@ -12,7 +12,7 @@ import "../../styles/AdminApplicationsDistribute.css";
 
 const ITEMS_PER_PAGE = 8;
 
-const AdminApplicationsDistributePage = () => {
+export default function AdminApplicationsDistributePage() {
   const navigate = useNavigate();
 
   // ——— Заявки (левая колонка) ———
@@ -24,12 +24,12 @@ const AdminApplicationsDistributePage = () => {
   const [filterOpen, setFilterOpen] = useState(false);
   const filterRef = useRef();
 
-  // 1) Фильтрация по полу
+  // Фильтрация по полу
   const [arrowGender, setArrowGender] = useState(false);
   const [maleOnly, setMaleOnly] = useState(false);
   const [femaleOnly, setFemaleOnly] = useState(false);
 
-  // 2) Фильтрация по статусу заселения
+  // Фильтрация по статусу заселения
   const [arrowRoomStatus, setArrowRoomStatus] = useState(false);
   const [assignedOnly, setAssignedOnly] = useState(false);
   const [unassignedOnly, setUnassignedOnly] = useState(false);
@@ -42,25 +42,26 @@ const AdminApplicationsDistributePage = () => {
 
   const [floors, setFloors] = useState([]);
   const [selectedFloor, setSelectedFloor] = useState(null);
-  const [rooms, setRooms] = useState([]); // список комнат с сервера
+  const [rooms, setRooms] = useState([]); // список комнат
+  const [roomOccupants, setRoomOccupants] = useState({}); // { roomId: [{ id, fio }, ...] }
 
   // ───────────── Загрузка списка общежитий ─────────────
   useEffect(() => {
     api
       .get("/dorms/")
-      .then((response) => {
-        const data = Array.isArray(response.data)
-          ? response.data
-          : Array.isArray(response.data.results)
-          ? response.data.results
+      .then((res) => {
+        const data = Array.isArray(res.data)
+          ? res.data
+          : Array.isArray(res.data.results)
+          ? res.data.results
           : [];
         setDorms(data);
         if (data.length > 0) {
           setSelectedDorm(data[0]);
         }
       })
-      .catch((error) => {
-        console.error("Не удалось загрузить общежития:", error);
+      .catch((err) => {
+        console.error("Не удалось загрузить общежития:", err);
       });
   }, []);
 
@@ -74,19 +75,19 @@ const AdminApplicationsDistributePage = () => {
 
     api
       .get(`/dorms/${selectedDorm.id}/floors_count/`)
-      .then((response) => {
+      .then((res) => {
         const count =
-          typeof response.data.floors_count === "number"
-            ? response.data.floors_count
+          typeof res.data.floors_count === "number"
+            ? res.data.floors_count
             : 0;
         const arr = Array.from({ length: count }, (_, i) => i + 1);
         setFloors(arr);
         setSelectedFloor(arr.length > 0 ? arr[0] : null);
       })
-      .catch((error) => {
+      .catch((err) => {
         console.error(
           `Не удалось получить этажи для dorm ${selectedDorm.id}:`,
-          error
+          err
         );
         setFloors([]);
         setSelectedFloor(null);
@@ -102,91 +103,163 @@ const AdminApplicationsDistributePage = () => {
 
     api
       .get(`/rooms/?dorm=${selectedDorm.id}&floor=${selectedFloor}`)
-      .then((response) => {
-        const data = Array.isArray(response.data)
-          ? response.data
-          : Array.isArray(response.data.results)
-          ? response.data.results
+      .then((res) => {
+        const roomsData = Array.isArray(res.data)
+          ? res.data
+          : Array.isArray(res.data.results)
+          ? res.data.results
           : [];
-        setRooms(data);
+        setRooms(roomsData);
       })
-      .catch((error) => {
+      .catch((err) => {
         console.error(
           `Не удалось загрузить комнаты для dorm ${selectedDorm.id} и floor ${selectedFloor}:`,
-          error
+          err
         );
         setRooms([]);
       });
   };
-
-  useEffect(() => {
-    fetchRooms();
-  }, [selectedDorm, selectedFloor]);
-
-  // ───────────── Закрытие дропдауна общежитий при клике вне ─────────────
-  useEffect(() => {
-    function handleClickOutside(event) {
-      if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(event.target)
-      ) {
-        setIsOpen(false);
-      }
-    }
-    document.addEventListener("mousedown", handleClickOutside);
-    return () =>
-      document.removeEventListener("mousedown", handleClickOutside);
-  }, [dropdownRef]);
-
-  // ───────────── Закрытие фильтров при клике вне ─────────────
-  useEffect(() => {
-    function handleClickOutside(e) {
-      if (filterRef.current && !filterRef.current.contains(e.target)) {
-        setFilterOpen(false);
-      }
-    }
-    document.addEventListener("mousedown", handleClickOutside);
-    return () =>
-      document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+  useEffect(fetchRooms, [selectedDorm, selectedFloor]);
 
   // ───────────── Загрузка списка заявок ─────────────
-  const fetchApplications = async () => {
+  const fetchApplications = () => {
+    api
+      .get("/student-in-dorm/")
+      .then((res) => {
+        const apps = Array.isArray(res.data)
+          ? res.data
+          : Array.isArray(res.data.results)
+          ? res.data.results
+          : Object.values(res.data);
+        setApplications(apps);
+      })
+      .catch((err) => {
+        console.error("Ошибка при загрузке списка заявок:", err);
+        setApplications([]);
+      });
+  };
+  useEffect(fetchApplications, []);
+
+  // ───────────── Обновляем roomOccupants, когда меняются rooms или applications ─────────────
+  useEffect(() => {
+    const map = {};
+    rooms.forEach((r) => {
+      map[r.id] = [];
+    });
+    applications.forEach((app) => {
+      if (app.room && app.room.id in map) {
+        const fio = `${app.student.last_name} ${app.student.first_name} ${
+          app.student.middle_name || ""
+        }`.trim();
+        map[app.room.id].push({ id: app.id, fio });
+      }
+    });
+    setRoomOccupants(map);
+  }, [rooms, applications]);
+
+  // ───────────── Сбросить фильтры ─────────────
+  const resetFilters = () => {
+    setArrowGender(false);
+    setMaleOnly(false);
+    setFemaleOnly(false);
+    setArrowRoomStatus(false);
+    setAssignedOnly(false);
+    setUnassignedOnly(false);
+  };
+
+  // ───────────── Drag & Drop ─────────────
+
+  // 1) Начало перетаскивания карточки студента
+  const handleDragStart = (event, studentInDormId) => {
+    event.dataTransfer.setData("studentInDormId", studentInDormId);
+  };
+
+
+  const handleSendOrders = async () => {
     try {
-      const response = await api.get("/student-in-dorm/");
-      const apps = Array.isArray(response.data)
-        ? response.data
-        : Array.isArray(response.data.results)
-        ? response.data.results
-        : Object.values(response.data);
-      setApplications(apps);
+      const response = await api.post('/issue-order/');
+      setMessage({ type: 'success', text: response.data.detail });
+      fetchApplications();
     } catch (error) {
-      console.error("Ошибка при загрузке заявок:", error);
+      console.error('Ошибка отправки ордеров:', error);
+      setMessage({ type: 'error', text: 'Ошибка отправки ордеров.' });
     }
   };
 
-  useEffect(() => {
-    fetchApplications();
-  }, []);
+  // 2) Разрешаем сброс на комнату
+  const handleDragOver = (event) => {
+    event.preventDefault();
+  };
 
-  // ───────────── Фильтрация заявок ─────────────
-  // Поиск по ФИО
-  let filteredApps = applications.filter((app) => {
-    const fio = `${app.student?.last_name ?? ""} ${app.student?.first_name ?? ""} ${app.student?.middle_name ?? ""}`;
+  // 3) Отпустили карточку над комнатой → PATCH
+  const handleDrop = (event, roomId) => {
+    event.preventDefault();
+    const studentInDormId = event.dataTransfer.getData("studentInDormId");
+    if (!studentInDormId) return;
+
+    api
+      .patch(`/student-in-dorm/${studentInDormId}/`, { room_id: roomId })
+      .then(() => {
+        setTimeout(() => {
+          fetchRooms();
+          fetchApplications();
+        }, 200);
+      })
+      .catch((err) => {
+        console.error("PATCH ERROR:", err.response?.data || err);
+      });
+  };
+
+  // 4) Отвязывание студента от комнаты
+  const handleUnassign = (studentInDormId) => {
+    api
+      .patch(`/student-in-dorm/${studentInDormId}/`, { room_id: null })
+      .then(() => {
+        setTimeout(() => {
+          fetchRooms();
+          fetchApplications();
+        }, 200);
+      })
+      .catch((err) => {
+        console.error("UNASSIGN ERROR:", err.response?.data || err);
+      });
+  };
+
+  // ───────────── Автоматическое распределение по группам ─────────────
+  const handleGroupDistribution = async () => {
+    try {
+      const response = await api.post("/distribute-students2/");
+      // Предполагаем, что возвращается { detail: "..." }
+      alert(response.data.detail || "Автоматическое распределение выполнено");
+      fetchApplications();
+    } catch (error) {
+      console.error("Ошибка распределения по группам:", error);
+      alert("Ошибка распределения по группам");
+    }
+  };
+
+  // ───────────── Выбор общежития ─────────────
+  const handleSelectDorm = (dorm) => {
+    setSelectedDorm(dorm);
+    setIsOpen(false);
+  };
+
+  // ───────────── Фильтрация заявок для пагинации ─────────────
+  let filteredApps = (applications || []).filter((app) => {
+    const fio = `${app.student?.last_name ?? ""} ${app.student?.first_name ?? ""} ${
+      app.student?.middle_name ?? ""
+    }`;
     return fio.toLowerCase().includes(search.toLowerCase());
   });
 
-  // Фильтрация по полу (если выбраны maleOnly или femaleOnly)
   if (maleOnly || femaleOnly) {
     filteredApps = filteredApps.filter((app) => {
-      const gender = app.student?.gender; // предполагаем, что "M" или "F"
+      const gender = app.student?.gender; // "M" или "F"
       if (maleOnly && gender === "M") return true;
       if (femaleOnly && gender === "F") return true;
       return false;
     });
   }
-
-  // Фильтрация по статусу заселения (assignedOnly / unassignedOnly)
   if (assignedOnly || unassignedOnly) {
     filteredApps = filteredApps.filter((app) => {
       const hasRoom = Boolean(app.room);
@@ -202,83 +275,18 @@ const AdminApplicationsDistributePage = () => {
     page * ITEMS_PER_PAGE
   );
 
-  // ───────────── Обработчик выбора общежития ─────────────
-  const handleSelectDorm = (dorm) => {
-    setSelectedDorm(dorm);
-    setIsOpen(false);
-  };
-
-  // ───────────── Обработчики Drag & Drop ─────────────
-
-  // Когда начинаем перетаскивать карточку студента
-  const handleDragStart = (event, studentInDormId) => {
-    event.dataTransfer.setData("studentInDormId", studentInDormId);
-  };
-
-  // Для комнат: разрешаем сброс
-  const handleDragOver = (event) => {
-    event.preventDefault();
-  };
-
-  // Когда отпустили карточку над комнатой
-  const handleDrop = (event, roomId) => {
-    event.preventDefault();
-    const studentInDormId = event.dataTransfer.getData("studentInDormId");
-    if (!studentInDormId) return;
-
-    api
-      .patch(`/student-in-dorm/${studentInDormId}/`, {
-        room: roomId,
-      })
-      .then(() => {
-        fetchRooms();
-        fetchApplications();
-      })
-      .catch((error) => {
-        console.error(
-          `Не удалось назначить студента ${studentInDormId} в комнату ${roomId}:`,
-          error
-        );
-      });
-  };
-
-  // ───────────── Отвязывание студента от комнаты ─────────────
-  const handleUnassign = (studentInDormId) => {
-    api
-      .patch(`/student-in-dorm/${studentInDormId}/`, {
-        room: null,
-      })
-      .then(() => {
-        fetchRooms();
-        fetchApplications();
-      })
-      .catch((error) => {
-        console.error(
-          `Не удалось отвязать студента ${studentInDormId} от комнаты:`,
-          error
-        );
-      });
-  };
-
-  // ───────────── Сбросить все фильтры ─────────────
-  const resetFilters = () => {
-    setArrowGender(false);
-    setMaleOnly(false);
-    setFemaleOnly(false);
-    setArrowRoomStatus(false);
-    setAssignedOnly(false);
-    setUnassignedOnly(false);
-  };
-
   return (
     <div className="admin-page-container">
       <AdminSidebar />
       <div className="content-area">
-        {/* Заголовок и кнопки */}
+        {/* ====== Заголовок и кнопки ====== */}
         <div className="header-row">
           <h1>Заявки</h1>
           <div className="actions-list-distribute">
-            <button className="actions-list-distribute-btn active" onClick={() => navigate("/admin/applications")}>
+            <button
+              className="actions-list-distribute-btn active"
+              onClick={() => navigate("/admin/applications")}
+            >
               Все заявки
             </button>
             <button
@@ -287,12 +295,11 @@ const AdminApplicationsDistributePage = () => {
             >
               Распределить студентов
             </button>
-            <button className="actions-list-distribute-btn save">Сохранить</button>
           </div>
         </div>
 
         <div className="admin-applications-page-flex">
-          {/* ===================== ЛЕВАЯ КОЛОНКА: Одобренные заявки ===================== */}
+          {/* ====== ЛЕВАЯ КОЛОНКА: Одобренные заявки ====== */}
           <div className="approved-requests-block">
             <div className="approved-requests-title-row">
               Одобренные заявки
@@ -327,16 +334,14 @@ const AdminApplicationsDistributePage = () => {
                 </button>
                 {filterOpen && (
                   <div className="filter-dropdown" ref={filterRef}>
-                    {/* === ФИЛЬТР ПО ПОЛУ === */}
+                    {/* ===== ФИЛЬТР ПО ПОЛУ ===== */}
                     <div className="filter-section">
                       <div className="filter-checkbox-row">
                         <label style={{ cursor: "pointer", display: "flex", alignItems: "center" }}>
                           <input
                             type="checkbox"
                             checked={arrowGender}
-                            onChange={() => {
-                              setArrowGender((a) => !a);
-                            }}
+                            onChange={() => setArrowGender((a) => !a)}
                           />
                           <span style={{ marginLeft: "5px" }}>По полу</span>
                           <span className="filter-arrow" style={{ marginLeft: "auto" }}>
@@ -351,11 +356,7 @@ const AdminApplicationsDistributePage = () => {
                               type="checkbox"
                               id="maleOnly"
                               checked={maleOnly}
-                              onChange={() => {
-                                setMaleOnly((v) => !v);
-                                // можно сбрасывать femaleOnly, если нужен взаимно-исключающий режим:
-                                // if (!maleOnly) setFemaleOnly(false);
-                              }}
+                              onChange={() => setMaleOnly((v) => !v)}
                             />
                             <label htmlFor="maleOnly" style={{ cursor: "pointer", marginLeft: "5px" }}>
                               Мужчины
@@ -366,11 +367,7 @@ const AdminApplicationsDistributePage = () => {
                               type="checkbox"
                               id="femaleOnly"
                               checked={femaleOnly}
-                              onChange={() => {
-                                setFemaleOnly((v) => !v);
-                                // можно сбрасывать maleOnly:
-                                // if (!femaleOnly) setMaleOnly(false);
-                              }}
+                              onChange={() => setFemaleOnly((v) => !v)}
                             />
                             <label htmlFor="femaleOnly" style={{ cursor: "pointer", marginLeft: "5px" }}>
                               Женщины
@@ -380,16 +377,14 @@ const AdminApplicationsDistributePage = () => {
                       )}
                     </div>
 
-                    {/* === ФИЛЬТР ПО СТАТУСУ ЗАСЕЛЕНИЯ === */}
+                    {/* ===== ФИЛЬТР ПО СТАТУСУ ЗАСЕЛЕНИЯ ===== */}
                     <div className="filter-section" style={{ marginTop: "10px" }}>
                       <div className="filter-checkbox-row">
                         <label style={{ cursor: "pointer", display: "flex", alignItems: "center" }}>
                           <input
                             type="checkbox"
                             checked={arrowRoomStatus}
-                            onChange={() => {
-                              setArrowRoomStatus((a) => !a);
-                            }}
+                            onChange={() => setArrowRoomStatus((a) => !a)}
                           />
                           <span style={{ marginLeft: "5px" }}>Статус заселения</span>
                           <span className="filter-arrow" style={{ marginLeft: "auto" }}>
@@ -404,11 +399,7 @@ const AdminApplicationsDistributePage = () => {
                               type="checkbox"
                               id="assignedOnly"
                               checked={assignedOnly}
-                              onChange={() => {
-                                setAssignedOnly((v) => !v);
-                                // можно сбрасывать unassignedOnly:
-                                // if (!assignedOnly) setUnassignedOnly(false);
-                              }}
+                              onChange={() => setAssignedOnly((v) => !v)}
                             />
                             <label htmlFor="assignedOnly" style={{ cursor: "pointer", marginLeft: "5px" }}>
                               Назначена комната
@@ -419,11 +410,7 @@ const AdminApplicationsDistributePage = () => {
                               type="checkbox"
                               id="unassignedOnly"
                               checked={unassignedOnly}
-                              onChange={() => {
-                                setUnassignedOnly((v) => !v);
-                                // можно сбрасывать assignedOnly:
-                                // if (!unassignedOnly) setAssignedOnly(false);
-                              }}
+                              onChange={() => setUnassignedOnly((v) => !v)}
                             />
                             <label htmlFor="unassignedOnly" style={{ cursor: "pointer", marginLeft: "5px" }}>
                               Без комнаты
@@ -433,13 +420,9 @@ const AdminApplicationsDistributePage = () => {
                       )}
                     </div>
 
-                    {/* === КНОПКА СБРОСИТЬ ФИЛЬТРЫ === */}
+                    {/* ===== КНОПКА СБРОСИТЬ ФИЛЬТРЫ ===== */}
                     <div className="filter-reset-row" style={{ marginTop: "15px", textAlign: "center" }}>
-                      <button
-                        type="button"
-                        className="filter-reset-btn"
-                        onClick={resetFilters}
-                      >
+                      <button type="button" className="filter-reset-btn" onClick={resetFilters}>
                         Сбросить фильтры
                       </button>
                     </div>
@@ -460,7 +443,7 @@ const AdminApplicationsDistributePage = () => {
                     (app.status === "approved" ? " approved" : "") +
                     (app.room ? " has-room" : " no-room")
                   }
-                  draggable={true}
+                  draggable
                   onDragStart={(e) => handleDragStart(e, app.id)}
                 >
                   <div className="fio">
@@ -469,15 +452,14 @@ const AdminApplicationsDistributePage = () => {
                   </div>
                   <div className="extra">
                     S{app.student?.s} <br />
-                    Тест: {app.test_result ?? "-"} <br />
+                    Тест: {app.application.test_result ?? "-"} <br />
                     Пол: {app.student?.gender === "M" ? "Муж." : "Жен."} <br />
                     {app.room ? (
-                      <>
-                        Заселен в:{" "}
-                        {app.room.dorm?.name
+                      <>{`Заселен в: ${
+                        app.room.dorm?.name
                           ? `${app.room.dorm.name}, комн. ${app.room.number}`
-                          : `комн. ${app.room.number}`}
-                      </>
+                          : `комн. ${app.room.number}`
+                      }`}</>
                     ) : (
                       "Не заселен"
                     )}
@@ -501,7 +483,7 @@ const AdminApplicationsDistributePage = () => {
             )}
           </div>
 
-          {/* ===================== ПРАВАЯ КОЛОНКА: Выбор общежития → Этажи → Комнаты ===================== */}
+          {/* ====== ПРАВАЯ КОЛОНКА: Общежитие → Этажи → Комнаты ====== */}
           <div className="rooms-block">
             <div className="rooms-block-title-row">
               {/* Дропдаун выбора общежития */}
@@ -535,7 +517,7 @@ const AdminApplicationsDistributePage = () => {
               </div>
             </div>
 
-            {/* Рендерим кнопки этажей */}
+            {/* Кнопки этажей */}
             <div className="floors-row">
               {floors.length === 0 && <div className="no-floors">Этажи не найдены</div>}
               {floors.map((floor) => (
@@ -549,7 +531,7 @@ const AdminApplicationsDistributePage = () => {
               ))}
             </div>
 
-            {/* Рендерим реальные комнаты с сервера и навешиваем Drop */}
+            {/* Карточки комнат (Drop target) */}
             <div className="rooms-row">
               {rooms.length === 0 && <div className="no-rooms">Комнаты не найдены</div>}
               {rooms.map((room) => (
@@ -566,8 +548,9 @@ const AdminApplicationsDistributePage = () => {
                     {room.free_spots === 1 ? "о" : "ых"} мест
                   </div>
                   <div className="student-list">
-                    {Array.isArray(room.assigned_students) &&
-                      room.assigned_students.map((stu) => (
+                    {Array.isArray(roomOccupants[room.id]) &&
+                    roomOccupants[room.id].length > 0 ? (
+                      roomOccupants[room.id].map((stu) => (
                         <div className="student-item" key={stu.id}>
                           <span>{stu.fio}</span>
                           <img
@@ -578,8 +561,8 @@ const AdminApplicationsDistributePage = () => {
                             onClick={() => handleUnassign(stu.id)}
                           />
                         </div>
-                      ))}
-                    {room.assigned_students.length === 0 && (
+                      ))
+                    ) : (
                       <div>— Нет заселённых студентов</div>
                     )}
                   </div>
@@ -591,14 +574,12 @@ const AdminApplicationsDistributePage = () => {
 
         {/* Нижние кнопки */}
         <div className="bottom-actions-row">
-          <button className="orders-btn">Разослать ордера</button>
-          <button className="actions-list-distribute-btn selected">
-            Автоматически распределить по комнатам
+          <button className="orders-btn" onClick={() => handleSendOrders()}>Разослать ордера</button>
+          <button className="actions-list-distribute-btn selected" onClick={() => handleGroupDistribution()}>
+            Автоматически распределить по группам
           </button>
         </div>
       </div>
     </div>
   );
-};
-
-export default AdminApplicationsDistributePage;
+}

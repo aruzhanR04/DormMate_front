@@ -1,4 +1,3 @@
-// src/components/common/Navbar.jsx
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import '../../styles/Navbar.css';
@@ -11,7 +10,7 @@ const Navbar = ({ isAuthenticated, userRole, onLogout }) => {
   const [menuOpen, setMenuOpen] = useState(false);
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
 
-  // Имя и URL аватара текущего пользователя
+  // Профиль пользователя
   const [userName, setUserName] = useState('');
   const [avatarUrl, setAvatarUrl] = useState('');
 
@@ -25,18 +24,19 @@ const Navbar = ({ isAuthenticated, userRole, onLogout }) => {
   // ---------------- ADMIN NOTIFICATIONS -----------------
   const [adminNotifications, setAdminNotifications] = useState([]);
   const [isAdminNotifOpen, setIsAdminNotifOpen] = useState(false);
+  const [hasNewAdminNotification, setHasNewAdminNotification] = useState(false);
+  const prevAdminCountRef = useRef(0);
 
-  // Состояния, связанные с тем, есть ли у студента заявка
+  // Состояния заявки студента
   const [hasApplication, setHasApplication] = useState(false);
   const [noApplication, setNoApplication] = useState(false);
-  const [isEditWarningOpen, setIsEditWarningOpen] = useState(false)
-  const [loadingSettings, setLoadingSettings] = useState(true)
-  const [allowEdit, setAllowEdit] = useState(false)
-
+  const [isEditWarningOpen, setIsEditWarningOpen] = useState(false);
+  const [loadingSettings, setLoadingSettings] = useState(true);
+  const [allowEdit, setAllowEdit] = useState(false);
 
   const navigate = useNavigate();
 
-  // 1) Подгрузка профиля: для студента — /studentdetail/, для админа — /admins/me/
+  // 1) Загрузка профиля
   useEffect(() => {
     if (!isAuthenticated) {
       setUserName('');
@@ -83,21 +83,22 @@ const Navbar = ({ isAuthenticated, userRole, onLogout }) => {
     }
   }, [userRole, isAuthenticated]);
 
+  // 3) Глобальные настройки (для разрешения редактирования заявки)
   useEffect(() => {
     const fetchGlobalSettings = async () => {
       try {
-        const response = await api.get("/global-settings/")
-        setAllowEdit(!!response.data?.allow_application_edit)
+        const response = await api.get('/global-settings/');
+        setAllowEdit(!!response.data?.allow_application_edit);
       } catch (error) {
-        console.error("Ошибка при загрузке настроек:", error)
+        console.error('Ошибка при загрузке настроек:', error);
       } finally {
-        setLoadingSettings(false)
+        setLoadingSettings(false);
       }
-    }
-    fetchGlobalSettings()
-  }, [])
+    };
+    fetchGlobalSettings();
+  }, []);
 
-  // 3) Периодически загружаем уведомления студента
+  // 4) Периодически загружаем уведомления студента
   useEffect(() => {
     if (isAuthenticated && userRole === 'student') {
       fetchStudentNotifications();
@@ -106,7 +107,7 @@ const Navbar = ({ isAuthenticated, userRole, onLogout }) => {
     }
   }, [isAuthenticated, userRole]);
 
-  // 4) Периодически загружаем уведомления администратора
+  // 5) Периодически загружаем уведомления администратора
   useEffect(() => {
     if (isAuthenticated && userRole === 'admin') {
       fetchAdminNotifications();
@@ -115,23 +116,20 @@ const Navbar = ({ isAuthenticated, userRole, onLogout }) => {
     }
   }, [isAuthenticated, userRole]);
 
-  // 5) Дополнительный useEffect для проверки наличия заявки у студента
+  // 6) Проверяем, есть ли у студента заявка
   useEffect(() => {
     if (isAuthenticated && userRole === 'student') {
       api.get('/application_status/')
         .then(res => {
-          // Любой успешный ответ (200) означает, что заявка есть
           setHasApplication(true);
           setNoApplication(false);
         })
         .catch(err => {
           if (err.response?.status === 404) {
-            // Если нет заявки — возвращается 404
             setHasApplication(false);
             setNoApplication(true);
           } else {
             console.error('Ошибка при проверке статуса заявки в Navbar:', err);
-            // В остальных случаях просто считаем, что заявки нет
             setHasApplication(false);
             setNoApplication(true);
           }
@@ -139,16 +137,14 @@ const Navbar = ({ isAuthenticated, userRole, onLogout }) => {
     }
   }, [isAuthenticated, userRole]);
 
-
-
   const handleEditApplicationClick = () => {
-    if (loadingSettings) return
+    if (loadingSettings) return;
     if (allowEdit) {
-      navigate("/edit-application")
+      navigate('/edit-application');
     } else {
-      setIsEditWarningOpen(true)
+      setIsEditWarningOpen(true);
     }
-  }
+  };
 
   // Загрузка уведомлений студента
   const fetchStudentNotifications = async () => {
@@ -173,6 +169,12 @@ const Navbar = ({ isAuthenticated, userRole, onLogout }) => {
       const res = await api.get('/notifications/admin/');
       const data = Array.isArray(res.data) ? res.data : [];
       setAdminNotifications(data);
+
+      // Если количество новых уведомлений больше предыдущего и есть хотя бы одно
+      if (data.length > prevAdminCountRef.current && data.length > 0) {
+        setHasNewAdminNotification(true);
+      }
+      prevAdminCountRef.current = data.length;
     } catch (err) {
       console.error('Ошибка загрузки уведомлений администратора:', err);
     }
@@ -182,7 +184,7 @@ const Navbar = ({ isAuthenticated, userRole, onLogout }) => {
   const markStudentNotificationRead = async (id) => {
     try {
       await api.post('/notifications/', { notification_ids: [id] });
-      setStudentNotifications(prev => prev.filter(n => n.id !== id));
+      setStudentNotifications((prev) => prev.filter((n) => n.id !== id));
     } catch (err) {
       console.error('Ошибка отметки уведомления (студент):', err);
     }
@@ -192,23 +194,24 @@ const Navbar = ({ isAuthenticated, userRole, onLogout }) => {
   const markAdminNotificationRead = async (id) => {
     try {
       await api.post('/notifications/admin/', { notification_ids: [id] });
-      setAdminNotifications(prev => prev.filter(n => n.id !== id));
+      setAdminNotifications((prev) => prev.filter((n) => n.id !== id));
     } catch (err) {
       console.error('Ошибка отметки уведомления (админ):', err);
     }
   };
 
   const toggleStudentNotifications = () => {
-    setIsStudentNotifOpen(prev => !prev);
+    setIsStudentNotifOpen((prev) => !prev);
     if (!isStudentNotifOpen) setHasNewStudentNotification(false);
   };
 
   const toggleAdminNotifications = () => {
-    setIsAdminNotifOpen(prev => !prev);
+    setIsAdminNotifOpen((prev) => !prev);
+    if (!isAdminNotifOpen) setHasNewAdminNotification(false);
   };
 
-  const toggleMenu = () => setMenuOpen(prev => !prev);
-  const toggleProfileDropdown = () => setProfileDropdownOpen(prev => !prev);
+  const toggleMenu = () => setMenuOpen((prev) => !prev);
+  const toggleProfileDropdown = () => setProfileDropdownOpen((prev) => !prev);
 
   const getInitials = () => {
     if (!userName) return '';
@@ -228,30 +231,30 @@ const Navbar = ({ isAuthenticated, userRole, onLogout }) => {
       <div className="navbar-right">
         <ul className={`nav-list ${menuOpen ? 'open' : ''}`}>
           <li>
-            <Link to="/" className="nav-btn-link">Главная</Link>
+            <Link to="/" className="nav-btn-link">
+              Главная
+            </Link>
           </li>
+
           {isAuthenticated && userRole === 'student' && (
             <li>
-              {/* 
-                Если заявка есть (hasApplication=true) — ведём на /edit-application, 
-                иначе — на /create-application 
-              */}
-              {hasApplication 
-                ? (
-                  <div to="/edit-application" className="nav-btn-link" onClick={handleEditApplicationClick}>
-                    Редактировать заявку
-                  </div>
-                ) : (
-                  <Link to="/create-application" className="nav-btn-link">
-                    Подать заявку
-                  </Link>
-                )
-              }
+              {hasApplication ? (
+                <div className="nav-btn-link" onClick={handleEditApplicationClick}>
+                  Редактировать заявку
+                </div>
+              ) : (
+                <Link to="/create-application" className="nav-btn-link">
+                  Подать заявку
+                </Link>
+              )}
             </li>
           )}
+
           {userRole === 'admin' && (
             <li>
-              <Link to="/admin" className="nav-btn-link">Admin Panel</Link>
+              <Link to="/admin" className="nav-btn-link">
+                Admin Panel
+              </Link>
             </li>
           )}
         </ul>
@@ -274,7 +277,7 @@ const Navbar = ({ isAuthenticated, userRole, onLogout }) => {
                 {studentNotifications.length === 0 ? (
                   <p className="no-notifications">Нет уведомлений</p>
                 ) : (
-                  studentNotifications.map(n => (
+                  studentNotifications.map((n) => (
                     <div key={n.id} className="notification-item">
                       <p>{n.message}</p>
                       <button
@@ -301,6 +304,7 @@ const Navbar = ({ isAuthenticated, userRole, onLogout }) => {
               type="button"
             >
               <img src={bellIcon} alt="Уведомления" />
+              {hasNewAdminNotification && <span className="notification-dot" />}
             </button>
             {isAdminNotifOpen && (
               <div className="notifications-popup">
@@ -308,7 +312,7 @@ const Navbar = ({ isAuthenticated, userRole, onLogout }) => {
                 {adminNotifications.length === 0 ? (
                   <p className="no-notifications">Нет уведомлений</p>
                 ) : (
-                  adminNotifications.map(n => (
+                  adminNotifications.map((n) => (
                     <div key={n.id} className="notification-item">
                       <p>{n.message}</p>
                       <button
@@ -325,7 +329,7 @@ const Navbar = ({ isAuthenticated, userRole, onLogout }) => {
           </div>
         )}
 
-        {/* Блок профиля (аватар + имя) */}
+        {/* Блок профиля */}
         {isAuthenticated ? (
           <div className="profile-menu-wrapper">
             <button
@@ -334,17 +338,14 @@ const Navbar = ({ isAuthenticated, userRole, onLogout }) => {
               aria-label="Меню пользователя"
               type="button"
             >
-              {avatarUrl
-                ? <img src={avatarUrl} alt="Аватар пользователя" className="avatar-image" />
-                : <span className="avatar-initials">{getInitials() || 'ИФ'}</span>
-              }
+              {avatarUrl ? (
+                <img src={avatarUrl} alt="Аватар пользователя" className="avatar-image" />
+              ) : (
+                <span className="avatar-initials">{getInitials() || 'ИФ'}</span>
+              )}
             </button>
 
-            <button
-              className="profile-name-btn"
-              onClick={toggleProfileDropdown}
-              type="button"
-            >
+            <button className="profile-name-btn" onClick={toggleProfileDropdown} type="button">
               {userName || 'Имя Фамилия'}
             </button>
 
@@ -352,50 +353,39 @@ const Navbar = ({ isAuthenticated, userRole, onLogout }) => {
               <div className="profile-dropdown">
                 <div className="profile-name">{userName || 'Имя Фамилия'}</div>
                 <ul>
-                  <li>
-                    <Link to="/profile" onClick={() => setProfileDropdownOpen(false)}>
-                      Профиль
-                    </Link>
-                  </li>
-                  <li>
-                    <button
-                      type="button"
-                      onClick={onLogout}
-                      className="logout-btn"
-                    >
-                      Выйти
-                    </button>
-                  </li>
+                  {userRole === 'student' ? (
+                    <li>
+                      <Link to="/profile" onClick={() => setProfileDropdownOpen(false)}>
+                        Профиль
+                      </Link>
+                    </li>
+                  ) : (
+                    <li>
+                      <button type="button" onClick={onLogout} className="logout-btn">
+                        Выйти
+                      </button>
+                    </li>
+                  )}
                 </ul>
               </div>
             )}
           </div>
         ) : (
-          <Link to="/login" className="btn-login">Войти</Link>
+          <Link to="/login" className="btn-login">
+            Войти
+          </Link>
         )}
 
-        <button
-          className="menu-toggle"
-          onClick={toggleMenu}
-          aria-label="Открыть меню"
-        >
+        <button className="menu-toggle" onClick={toggleMenu} aria-label="Открыть меню">
           ☰
         </button>
       </div>
 
-
-
       {isEditWarningOpen && (
-        <div
-          className="modal-overlay"
-          onClick={() => setIsEditWarningOpen(false)}
-        >
+        <div className="modal-overlay" onClick={() => setIsEditWarningOpen(false)}>
           <div className="profile-modal" onClick={(e) => e.stopPropagation()}>
             <h3>Редактирование заявок отключено</h3>
-            <p>
-              В данный момент редактирование заявок недоступно. Свяжитесь с
-              администрацией.
-            </p>
+            <p>В данный момент редактирование заявок недоступно. Свяжитесь с администрацией.</p>
             <button
               className="profile-modal-btn grey"
               onClick={() => setIsEditWarningOpen(false)}

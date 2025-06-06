@@ -114,8 +114,15 @@ const handleNavigate = (to) => {
     <div className="admin-layout">
       <AdminSidebar />
       <div className="admin-main">
-      <div className="admin-header-row">Add commentMore actions
+      <div className="admin-header-row">
           <div style={{ flex: 1 }}></div>
+          <button
+            className="admin-chat-btn"
+            onClick={() => navigate("/admin/dorm-chats")}
+            style={{marginRight:"2vw"}}
+          >
+            Чаты общежитий
+          </button>
           <button
             className="admin-chat-btn"
             onClick={() => navigate("/admin/chats")}

@@ -14,6 +14,7 @@
   border: 2px solid #bf2a45;
   overflow: hidden;
   min-height: 480px;
+  margin-bottom: 7vh;
 }
 
 .chat-header {

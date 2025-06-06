@@ -38,6 +38,8 @@ import WebAssistant from './pages/elements/WebAssistant';
 import EditApplication from './pages/application/EditApplication';
 
 import DormitoryDetail from './pages/dormitories/Dormitory1';
+import AdminDormChatPage from './components/admin/AdminDormChats';
+import StudentDormChat from './pages/user/StudentDormChat';
 
 const DormAdd = () => <div>Добавление общежития</div>;
 const DormUpdate = () => <div>Изменение общежития</div>;
@@ -114,6 +116,10 @@ function App() {
           <Route
             path="/create-application"
             element={<PrivateRoute isAuthenticated={isAuthenticated}><CreateApplication /></PrivateRoute>}
+          />
+          <Route
+            path="/dorm-chat"
+            element={<PrivateRoute isAuthenticated={isAuthenticated}><StudentDormChat /></PrivateRoute>}
           />
           <Route
             path="/test-submission"
@@ -193,6 +199,10 @@ function App() {
           <Route
             path="/admin/chats"
             element={<AdminRoute isAuthenticated={isAuthenticated} userRole={userRole}><AdminChatPage /></AdminRoute>}
+          />
+          <Route
+            path="/admin/dorm-chats"
+            element={<AdminRoute isAuthenticated={isAuthenticated} userRole={userRole}><AdminDormChatPage /></AdminRoute>}
           />
         </Routes>
 
