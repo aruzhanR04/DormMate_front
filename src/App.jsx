@@ -40,6 +40,7 @@ import EditApplication from './pages/application/EditApplication';
 import DormitoryDetail from './pages/dormitories/Dormitory1';
 import AdminDormChatPage from './components/admin/AdminDormChats';
 import StudentDormChat from './pages/user/StudentDormChat';
+import { I18nProvider } from './i18n/I18nContext';
 
 const DormAdd = () => <div>Добавление общежития</div>;
 const DormUpdate = () => <div>Изменение общежития</div>;
@@ -92,6 +93,7 @@ function App() {
   };
 
   return (
+    <I18nProvider defaultLang="ru">
     <Router>
       <div>
         <Navbar isAuthenticated={isAuthenticated} userRole={userRole} onLogout={handleLogout} />
@@ -216,6 +218,7 @@ function App() {
         )}
       </div>
     </Router>
+    </I18nProvider>
   );
 }
 

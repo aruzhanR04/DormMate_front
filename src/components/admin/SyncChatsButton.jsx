@@ -1,8 +1,12 @@
 // src/components/SyncChatsButton.jsx
 import React, { useState } from "react";
 import goApi from "../../goApi";
+import { useI18n } from "../../i18n/I18nContext";
 
 export default function SyncChatsButton() {
+  const { t } = useI18n();
+  const txt = t("syncChatsButton");
+
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
 
@@ -11,21 +15,17 @@ export default function SyncChatsButton() {
     setMessage("");
 
     try {
-      // 1) Создаём/дополняем недостающие чаты
       const initResp = await goApi.post("/chats/init_all");
-      // После этого можно (опционально) сразу очистить устаревшие
       const cleanupResp = await goApi.delete("/chats/cleanup");
 
       setMessage(
-        `init_all: ${initResp.data.message}. cleanup: удалено ${cleanupResp.data.deleted_chats} чатов.`
+        txt.messageInitCleanup
+          .replace("{initMsg}", initResp.data.message)
+          .replace("{deleted}", cleanupResp.data.deleted_chats)
       );
     } catch (err) {
-      console.error(err);
-      setMessage(
-        `Ошибка синхронизации: ${
-          err.response?.data?.error || err.message
-        }`
-      );
+      const errMsg = err.response?.data?.error || err.message;
+      setMessage(txt.error.replace("{error}", errMsg));
     } finally {
       setLoading(false);
     }
@@ -34,7 +34,7 @@ export default function SyncChatsButton() {
   return (
     <div>
       <button onClick={handleSync} disabled={loading}>
-        {loading ? "Синхронизируем..." : "Синхронизировать чаты"}
+        {loading ? txt.syncing : txt.sync}
       </button>
       {message && <p>{message}</p>}
     </div>

@@ -1,251 +1,234 @@
 // src/components/UserDashboard.jsx
-
-"use client"
-
-import { useState, useEffect, useRef } from "react"
-import { useNavigate } from "react-router-dom"
-import api from "../../api"
-import "../../styles/UserDashboard.css"
-import cameraIcon from "../../assets/icons/camera.png"
-import uploadDefault from "../../assets/icons/excel_upload_default.svg"
-import uploadActive from "../../assets/icons/excel_upload_active.svg"
+import React, { useState, useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
+import api from "../../api";
+import "../../styles/UserDashboard.css";
+import cameraIcon from "../../assets/icons/camera.png";
+import uploadDefault from "../../assets/icons/excel_upload_default.svg";
+import uploadActive from "../../assets/icons/excel_upload_active.svg";
+import { useI18n } from "../../i18n/I18nContext";
 
 const UserDashboard = () => {
-  const navigate = useNavigate()
+  const { t } = useI18n();
+  const navigate = useNavigate();
 
-  // --- Профиль и статус заявки ---
-  const [profile, setProfile] = useState(null)
-  const [loading, setLoading] = useState(true)
-  const [profileError, setProfileError] = useState("")
-  const [status, setStatus] = useState("")
-  const [statusError, setStatusError] = useState("")
-  const [noApplication, setNoApplication] = useState(false)
-  const [allowEdit, setAllowEdit] = useState(false)
-  const [loadingSettings, setLoadingSettings] = useState(true)
+  // Profile & status
+  const [profile, setProfile] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [profileError, setProfileError] = useState("");
+  const [status, setStatus] = useState("");
+  const [statusError, setStatusError] = useState("");
+  const [noApplication, setNoApplication] = useState(false);
+  const [allowEdit, setAllowEdit] = useState(false);
+  const [loadingSettings, setLoadingSettings] = useState(true);
 
-  // --- Модалки и пароли ---
-  const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false)
-  const [isEditWarningOpen, setIsEditWarningOpen] = useState(false)
-  const [oldPassword, setOldPassword] = useState("")
-  const [newPassword, setNewPassword] = useState("")
-  const [confirmPassword, setConfirmPassword] = useState("")
-  const [passwordMessage, setPasswordMessage] = useState("")
+  // Modals & passwords
+  const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
+  const [isEditWarningOpen, setIsEditWarningOpen] = useState(false);
+  const [oldPassword, setOldPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [passwordMessage, setPasswordMessage] = useState("");
 
-  // --- Модалка изменения аватара ---
-  const [isAvatarModalOpen, setIsAvatarModalOpen] = useState(false)
+  // Avatar modal & upload
+  const [isAvatarModalOpen, setIsAvatarModalOpen] = useState(false);
+  const [avatarFile, setAvatarFile] = useState(null);
+  const [avatarUploadMessage, setAvatarUploadMessage] = useState("");
+  const fileInputRef = useRef(null);
 
-  // --- Состояния для загрузки аватара ---
-  const [avatarFile, setAvatarFile] = useState(null)
-  const [avatarUploadMessage, setAvatarUploadMessage] = useState("")
+  // Payment upload
+  const [paymentScreenshot, setPaymentScreenshot] = useState(null);
+  const [uploadMessage, setUploadMessage] = useState("");
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [importStatus, setImportStatus] = useState("default");
+  const [excelModal, setExcelModal] = useState(false);
 
-  // Ссылка на скрытый <input type="file"> для аватара
-  const fileInputRef = useRef(null)
-
-  // --- Загрузка скриншота (платежа) ---
-  const [paymentScreenshot, setPaymentScreenshot] = useState(null)
-  const [uploadMessage, setUploadMessage] = useState("")
-  const [selectedFile, setSelectedFile] = useState(null)
-  const [importStatus, setImportStatus] = useState("default")
-  const [excelModal, setExcelModal] = useState(false)
-
-  // --- Загрузка профиля ---
+  // Fetch profile
   useEffect(() => {
-    const fetchProfile = async () => {
+    (async () => {
       try {
-        const response = await api.get("/studentdetail/")
-        setProfile(response.data)
-      } catch (err) {
-        setProfileError("Не удалось загрузить данные профиля")
+        const res = await api.get("/studentdetail/");
+        setProfile(res.data);
+      } catch {
+        setProfileError(t("userDashboard.errorProfile"));
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
-    }
-    fetchProfile()
-  }, [])
+    })();
+  }, [t]);
 
-  // --- Статус заявки ---
+  // Fetch status
   useEffect(() => {
-    const fetchApplicationStatus = async () => {
+    (async () => {
       try {
-        const response = await api.get("/application_status/")
-        setStatus(response.data.status || "Нет данных")
+        const res = await api.get("/application_status/");
+        setStatus(res.data.status || t("userDashboard.application") + "");
       } catch (err) {
         if (err.response?.status === 404) {
-          setNoApplication(true)
+          setNoApplication(true);
         } else {
-          setStatusError("Ошибка при получении статуса заявки. Попробуйте снова.")
+          setStatusError(
+            t("userDashboard.errorProfile")
+          );
         }
       }
-    }
-    fetchApplicationStatus()
-  }, [])
+    })();
+  }, [t]);
 
-  // --- Глобальные настройки (для редактирования заявки) ---
+  // Fetch settings
   useEffect(() => {
-    const fetchGlobalSettings = async () => {
+    (async () => {
       try {
-        const response = await api.get("/global-settings/")
-        setAllowEdit(!!response.data?.allow_application_edit)
-      } catch (error) {
-        console.error("Ошибка при загрузке настроек:", error)
+        const res = await api.get("/global-settings/");
+        setAllowEdit(!!res.data.allow_application_edit);
+      } catch {
+        console.error("Error loading settings");
       } finally {
-        setLoadingSettings(false)
+        setLoadingSettings(false);
       }
-    }
-    fetchGlobalSettings()
-  }, [])
+    })();
+  }, []);
 
-  // --- Обработка выбора файла для платежного скриншота ---
   const handleFileChange = (e) => {
-    const file = e.target.files[0]
+    const file = e.target.files[0];
     if (file) {
-      setSelectedFile(file)
-      setPaymentScreenshot(file)
-      setImportStatus("success")
-      setUploadMessage("")
+      setSelectedFile(file);
+      setPaymentScreenshot(file);
+      setImportStatus("success");
+      setUploadMessage("");
     }
-  }
+  };
 
-  // --- Отправка файла платежного скриншота ---
   const handleUpload = async () => {
     if (!paymentScreenshot) {
-      setUploadMessage("Пожалуйста, выберите файл для загрузки")
-      return
+      setUploadMessage(t("userDashboard.selectFilePrompt"));
+      return;
     }
-    const formData = new FormData()
-    formData.append("payment_screenshot", paymentScreenshot)
+    const fd = new FormData();
+    fd.append("payment_screenshot", paymentScreenshot);
     try {
-      await api.post("/upload_payment_screenshot/", formData, {
+      await api.post("/upload_payment_screenshot/", fd, {
         headers: { "Content-Type": "multipart/form-data" },
-      })
-      setUploadMessage("Скриншот успешно загружен.")
+      });
+      setUploadMessage(t("userDashboard.uploadSuccess"));
       setTimeout(() => {
-        setExcelModal(false)
-        setSelectedFile(null)
-        setImportStatus("default")
-      }, 1000)
+        setExcelModal(false);
+        setSelectedFile(null);
+        setImportStatus("default");
+      }, 1000);
     } catch {
-      setUploadMessage("Ошибка при загрузке файла. Попробуйте снова.")
+      setUploadMessage(t("userDashboard.uploadError"));
     }
-  }
+  };
 
-  // --- Обработка смены пароля ---
   const handleChangePassword = async () => {
-    setPasswordMessage("")
+    setPasswordMessage("");
     if (!oldPassword || !newPassword || !confirmPassword) {
-      setPasswordMessage("Пожалуйста, заполните все поля.")
-      return
+      setPasswordMessage(t("userDashboard.passwordFillAll"));
+      return;
     }
     if (newPassword !== confirmPassword) {
-      setPasswordMessage("Пароли не совпадают.")
-      return
+      setPasswordMessage(t("userDashboard.passwordMismatch"));
+      return;
     }
     try {
-      const response = await api.post("/change_password/", {
+      const res = await api.post("/change_password/", {
         old_password: oldPassword,
         new_password: newPassword,
         confirm_password: confirmPassword,
-      })
-      setPasswordMessage(response.data.message || "Пароль успешно изменён.")
-      setTimeout(() => setIsPasswordModalOpen(false), 1200)
-    } catch (err) {
+      });
       setPasswordMessage(
-        err.response?.data?.error || "Ошибка при изменении пароля. Попробуйте снова."
-      )
+        res.data.message || t("userDashboard.passwordSuccess")
+      );
+      setTimeout(() => setIsPasswordModalOpen(false), 1200);
+    } catch {
+      setPasswordMessage(t("userDashboard.passwordError"));
     }
-  }
+  };
 
-  // --- Клик «Редактировать заявку» ---
   const handleEditApplicationClick = () => {
-    if (loadingSettings) return
-    if (allowEdit) {
-      navigate("/edit-application")
-    } else {
-      setIsEditWarningOpen(true)
-    }
-  }
+    if (loadingSettings) return;
+    if (allowEdit) navigate("/edit-application");
+    else setIsEditWarningOpen(true);
+  };
 
-  // --- Обработчик для открытия модалки управления аватаром ---
-  const handleAvatarClick = () => {
-    setIsAvatarModalOpen(true)
-  }
-
-  // --- Отправка нового аватара ---
   const handleAvatarChange = (e) => {
-    const file = e.target.files[0]
+    const file = e.target.files[0];
     if (file) {
-      setAvatarFile(file)
-      handleAvatarUpload(file)
-      setIsAvatarModalOpen(false)
+      setAvatarFile(file);
+      handleAvatarUpload(file);
+      setIsAvatarModalOpen(false);
     }
-  }
+  };
 
-  // --- Загрузка аватара на сервер ---
   const handleAvatarUpload = async (file) => {
     if (!file) {
-      setAvatarUploadMessage("Пожалуйста, выберите изображение.")
-      return
+      setAvatarUploadMessage(
+        t("userDashboard.selectFilePrompt")
+      );
+      return;
     }
-    const formData = new FormData()
-    formData.append("avatar", file)
+    const fd = new FormData();
+    fd.append("avatar", file);
     try {
-      await api.post("/upload-avatar/", formData, {
+      await api.post("/upload-avatar/", fd, {
         headers: { "Content-Type": "multipart/form-data" },
-      })
-      setAvatarUploadMessage("Аватар успешно обновлён.")
+      });
+      setAvatarUploadMessage(t("userDashboard.passwordSuccess"));
       setTimeout(async () => {
-        const res = await api.get("/studentdetail/")
-        setProfile(res.data)
-      }, 500)
+        const res = await api.get("/studentdetail/");
+        setProfile(res.data);
+      }, 500);
     } catch {
-      setAvatarUploadMessage("Ошибка при загрузке аватара.")
+      setAvatarUploadMessage(
+        t("userDashboard.passwordError")
+      );
     }
-  }
+  };
 
-  // --- Удаление аватара (отправляем запрос на удаление) ---
   const handleAvatarDelete = async () => {
     try {
-      await api.delete("/upload-avatar/") // предположим, что на бэкенде есть этот эндпоинт
-      setAvatarUploadMessage("Аватар удалён.")
-      setProfile((prev) => ({ ...prev, avatar: null }))
-      setIsAvatarModalOpen(false)
+      await api.delete("/upload-avatar/");
+      setAvatarUploadMessage(
+        t("userDashboard.deleteAvatar")
+      );
+      setProfile((p) => ({ ...p, avatar: null }));
+      setIsAvatarModalOpen(false);
     } catch {
-      setAvatarUploadMessage("Ошибка при удалении аватара.")
+      setAvatarUploadMessage(
+        t("userDashboard.uploadError")
+      );
     }
-  }
+  };
 
-  // --- Клик по кругу аватара открывает скрытый input ---
-  const triggerFileInput = () => {
-    fileInputRef.current?.click()
-  }
+  if (loading)
+    return <h1>{t("userDashboard.loadingProfile")}</h1>;
 
   return (
     <div className="profile-page-main">
-      <h1 className="profile-title">Мой профиль</h1>
+      <h1 className="profile-title">
+        {t("userDashboard.profileTitle")}
+      </h1>
 
-      {/* Блок с аватаром и личными данными */}
+      {profileError && (
+        <p className="error">{profileError}</p>
+      )}
+
+      {/* Profile block */}
       <div className="profile-main-block">
-        <div
-          className="avatar-wrapper"
-          onMouseEnter={() => {}}
-          onMouseLeave={() => {}}
-        >
+        <div className="avatar-wrapper" onClick={() => setIsAvatarModalOpen(true)}>
           <img
-            src={profile && profile.avatar ? profile.avatar : "/default-avatar.png"}
-            alt="Аватар"
+            src={profile?.avatar || "/default-avatar.png"}
+            alt="Avatar"
             className="profile-avatar-circle"
           />
-
-          {/* Полупрозрачный оверлей с иконкой камеры, появляется при наведении */}
-          <div className="avatar-overlay" onClick={handleAvatarClick}>
+          <div className="avatar-overlay">
             <img
               src={cameraIcon}
-              alt="Изменить аватар"
+              alt={t("userDashboard.changePassword")}
               className="camera-icon"
             />
           </div>
-
-          {/* Скрытый input для выбора файла */}
           <input
             ref={fileInputRef}
             type="file"
@@ -254,75 +237,66 @@ const UserDashboard = () => {
             onChange={handleAvatarChange}
           />
         </div>
-
         <div className="profile-main-info-block">
           <div className="profile-main-fio">
-            {profile ? (
-              <span>
-                {profile.first_name} {profile.last_name}
-              </span>
-            ) : (
-              <span>Загрузка...</span>
-            )}
+            <span>
+              {profile?.first_name} {profile?.last_name}
+            </span>
           </div>
           <div className="profile-main-id">
-            {profile && <span>{profile.s}</span>}
+            <span>{profile?.s}</span>
           </div>
           <div className="profile-main-email">
-            {profile && <span>{profile.email}</span>}
+            <span>{profile?.email}</span>
           </div>
           <button
             className="profile-change-password-btn"
             onClick={() => setIsPasswordModalOpen(true)}
           >
-            Сменить пароль
+            {t("userDashboard.changePassword")}
           </button>
         </div>
       </div>
 
-      {avatarUploadMessage && (
-        <div className="avatar-upload-message">{avatarUploadMessage}</div>
-      )}
-
+      {/* Status section */}
       <hr className="profile-hr" />
-
-      {/* Блок «Статус заявки» */}
       <div className="profile-status-section">
-        <div className="profile-status-title">Статус заявки</div>
+        <div className="profile-status-title">
+          {t("userDashboard.statusTitle")}
+        </div>
         <div className="profile-status-row">
           {noApplication ? (
             <p>
-              Похоже, вы ещё не подали заявку. Вы можете подать её{" "}
+              {t("userDashboard.noApplication")}
               <span
                 className="link-like-text"
                 onClick={() => navigate("/create-application")}
               >
-                здесь
-              </span>
-              .
+                {t("userDashboard.here")}
+              </span>.
             </p>
           ) : (
-            status && (
-              <span>
-                <span>Заявка – </span>
-                <span className="profile-status-review">{status}</span>
+            <span>
+              {t("userDashboard.application")}
+              <span className="profile-status-review">
+                {status}
               </span>
-            )
+            </span>
           )}
         </div>
 
         {status ===
-          "Ваша заявка одобрена, внесите оплату и прикрепите сюда чек." && (
+          t("userDashboard.approvedPayment") && (
           <>
             <div className="profile-status-desc">
-              Внесите оплату и прикрепите скриншот
+              {t("userDashboard.payAndUpload")}
             </div>
             <div className="profile-status-actions">
               <button
                 className="profile-upload-btn"
                 onClick={() => setExcelModal(true)}
               >
-                Загрузить скриншот
+                {t("userDashboard.uploadScreenshot")}
               </button>
             </div>
           </>
@@ -333,67 +307,60 @@ const UserDashboard = () => {
           onClick={handleEditApplicationClick}
           disabled={loadingSettings}
         >
-          {loadingSettings ? "Загрузка..." : "Редактировать заявку"}
+          {loadingSettings
+            ? t("userDashboard.loadingSettings")
+            : t("userDashboard.editApplication")}
         </button>
 
         {uploadMessage && (
-          <div className="profile-upload-message">{uploadMessage}</div>
+          <div className="profile-upload-message">
+            {uploadMessage}
+          </div>
         )}
       </div>
 
-      {/* Модалка управления аватаром */}
+      {/* Avatar modal */}
       {isAvatarModalOpen && (
-        <div
-          className="modal-overlay"
-          onClick={() => setIsAvatarModalOpen(false)}
-        >
+        <div className="modal-overlay" onClick={() => setIsAvatarModalOpen(false)}>
           <div className="modal-content avatar-modal" onClick={(e) => e.stopPropagation()}>
-            <h2>Управление аватаром</h2>
+            <h2>{t("userDashboard.avatarManageTitle")}</h2>
             <div className="avatar-modal-buttons">
               <button className="modal-btn delete-btn" onClick={handleAvatarDelete}>
-                Удалить аватар
+                {t("userDashboard.deleteAvatar")}
               </button>
-              <button
-                className="modal-btn choose-btn"
-                onClick={() => {
-                  fileInputRef.current?.click()
-                }}
-              >
-                Выбрать новый
+              <button className="modal-btn choose-btn" onClick={() => fileInputRef.current?.click()}>
+                {t("userDashboard.chooseNew")}
               </button>
             </div>
             <button className="modal-close-btn" onClick={() => setIsAvatarModalOpen(false)}>
-              ✕
+              {t("userDashboard.close")}
             </button>
           </div>
         </div>
       )}
 
-      {/* Модалка для смены пароля */}
+      {/* Change password modal */}
       {isPasswordModalOpen && (
-        <div
-          className="modal-overlay"
-          onClick={() => setIsPasswordModalOpen(false)}
-        >
+        <div className="modal-overlay" onClick={() => setIsPasswordModalOpen(false)}>
           <div className="profile-modal" onClick={(e) => e.stopPropagation()}>
-            <h3>Сменить пароль</h3>
+            <h3>{t("userDashboard.changePasswordTitle")}</h3>
             <input
               type="password"
-              placeholder="Старый пароль"
+              placeholder={t("userDashboard.oldPassword")}
               value={oldPassword}
               onChange={(e) => setOldPassword(e.target.value)}
               className="simple-modal-input"
             />
             <input
               type="password"
-              placeholder="Новый пароль"
+              placeholder={t("userDashboard.newPassword")}
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
               className="simple-modal-input"
             />
             <input
               type="password"
-              placeholder="Подтвердите новый пароль"
+              placeholder={t("userDashboard.confirmPassword")}
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               className="simple-modal-input"
@@ -406,81 +373,73 @@ const UserDashboard = () => {
                 className="simple-modal-btn cancel"
                 onClick={() => setIsPasswordModalOpen(false)}
               >
-                Отмена
+                {t("userDashboard.cancel")}
               </button>
               <button
                 className="simple-modal-btn save"
                 onClick={handleChangePassword}
               >
-                Сохранить
+                {t("userDashboard.save")}
               </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* Модалка-предупреждение (редактирование заявок) */}
+      {/* Edit warning modal */}
       {isEditWarningOpen && (
-        <div
-          className="modal-overlay"
-          onClick={() => setIsEditWarningOpen(false)}
-        >
+        <div className="modal-overlay" onClick={() => setIsEditWarningOpen(false)}>
           <div className="profile-modal" onClick={(e) => e.stopPropagation()}>
-            <h3>Редактирование заявок отключено</h3>
-            <p>
-              В данный момент редактирование заявок недоступно. Свяжитесь с
-              администрацией.
-            </p>
+            <h3>{t("userDashboard.editDisabledTitle")}</h3>
+            <p>{t("userDashboard.editDisabledDesc")}</p>
             <button
               className="profile-modal-btn grey"
               onClick={() => setIsEditWarningOpen(false)}
             >
-              Понятно
+              {t("userDashboard.okay")}
             </button>
           </div>
         </div>
       )}
 
-      {/* ==== Модалка для загрузки чека об оплате ==== */}
+      {/* Upload receipt modal */}
       {excelModal && (
         <div className="modal-overlay">
           <div className="modal-content excel-modal-content">
             <button
               className="modal-close-btn"
               onClick={() => {
-                setExcelModal(false)
-                setSelectedFile(null)
-                setImportStatus("default")
-                setPaymentScreenshot(null)
-                setUploadMessage("")
+                setExcelModal(false);
+                setSelectedFile(null);
+                setImportStatus("default");
+                setPaymentScreenshot(null);
+                setUploadMessage("");
               }}
             >
-              ✕
+              {t("userDashboard.close")}
             </button>
-            <h2>Загрузка чека об оплате</h2>
-
+            <h2>{t("userDashboard.excelModalTitle")}</h2>
             <div className="excel-upload-box">
               <img
                 src={importStatus === "success" ? uploadActive : uploadDefault}
-                alt="Импорт Excel"
+                alt="Import"
                 className="excel-upload-img"
               />
-
               {selectedFile ? (
                 <span className="excel-upload-success">
-                  Файл выбран: {selectedFile.name}
+                  {t("userDashboard.fileChosen", { name: selectedFile.name })}
                 </span>
               ) : (
-                <span className="excel-upload-default">Файл не выбран</span>
+                <span className="excel-upload-default">
+                  {t("userDashboard.fileNotChosen")}
+                </span>
               )}
-
               <button
                 className="modal-btn file-select-btn"
                 onClick={() => fileInputRef.current?.click()}
               >
-                Выбрать файл
+                {t("userDashboard.chooseFile")}
               </button>
-
               <input
                 type="file"
                 ref={fileInputRef}
@@ -489,32 +448,35 @@ const UserDashboard = () => {
                 onChange={handleFileChange}
               />
             </div>
-
             <div className="excel-modal-fileinfo">
-              <div className="fileinfo-title">Требования к файлу</div>
-              <div>Файл должен быть в формате PDF</div>
+              <div className="fileinfo-title">
+                {t("userDashboard.requirementsTitle")}
+              </div>
+              <div>{t("userDashboard.requirementsDesc")}</div>
             </div>
-
             <div className="modal-actions">
               <button
                 className="modal-btn cancel-btn"
                 onClick={() => {
-                  setExcelModal(false)
-                  setSelectedFile(null)
-                  setImportStatus("default")
-                  setPaymentScreenshot(null)
-                  setUploadMessage("")
+                  setExcelModal(false);
+                  setSelectedFile(null);
+                  setImportStatus("default");
+                  setPaymentScreenshot(null);
+                  setUploadMessage("");
                 }}
               >
-                Отмена
+                {t("userDashboard.cancel")}
               </button>
               <button className="modal-btn save-btn" onClick={handleUpload}>
-                Отправить
+                {t("userDashboard.send")}
               </button>
             </div>
-
             {uploadMessage && (
-              <p className={`upload-message ${uploadMessage.includes("успешно") ? "success" : "error"}`}>
+              <p
+                className={`upload-message ${
+                  uploadMessage.includes("успешно") ? "success" : "error"
+                }`}
+              >
                 {uploadMessage}
               </p>
             )}
@@ -522,7 +484,7 @@ const UserDashboard = () => {
         </div>
       )}
     </div>
-  )
-}
+  );
+};
 
-export default UserDashboard
+export default UserDashboard;

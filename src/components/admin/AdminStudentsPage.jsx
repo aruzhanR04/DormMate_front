@@ -1,76 +1,67 @@
-import React, { useState, useEffect, useRef } from "react";
-import api from "../../api"; // Ваш axios-инстанс
-import AdminSidebar from "./AdminSidebar";
+// src/components/AdminStudentsPage.jsx
 
+import React, { useState, useEffect, useRef } from "react";
+import api from "../../api";
+import AdminSidebar from "./AdminSidebar";
 import viewIcon from "../../assets/icons/viewIcon.svg";
 import editIcon from "../../assets/icons/editIcon.svg";
 import deleteIcon from "../../assets/icons/deleteIcon.svg";
 import uploadDefault from "../../assets/icons/excel_upload_default.svg";
 import uploadActive from "../../assets/icons/excel_upload_active.svg";
 import searchIcon from "../../assets/icons/Search.svg";
-
 import AdminStudentViewModal from "./AdminStudentViewModal";
 import AdminStudentEditModal from "./AdminStudentEditModal";
 import AdminStudentAddModal from "./AdminStudentAddModal";
 import AdminStudentDeleteModal from "./AdminStudentDeleteModal";
-
 import "../../styles/AdminActions.css";
+import { useI18n } from "../../i18n/I18nContext";
 
-const ITEMS_PER_PAGE = 4; // Должно совпадать с page_size на сервере
+const ITEMS_PER_PAGE = 4;
 
 const AdminStudentsPage = () => {
-  // 1. Локальное состояние
+  const { t } = useI18n();
   const [students, setStudents] = useState([]);
   const [totalCount, setTotalCount] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
   const [search, setSearch] = useState("");
-
   const [message, setMessage] = useState("");
 
-  // Состояния для Excel-импорта
   const [excelModal, setExcelModal] = useState(false);
   const [importStatus, setImportStatus] = useState("default");
   const [selectedFile, setSelectedFile] = useState(null);
   const fileInputRef = useRef();
 
-  // Состояния модалок
   const [addModalOpen, setAddModalOpen] = useState(false);
   const [editModalStudent, setEditModalStudent] = useState(null);
   const [viewModalStudent, setViewModalStudent] = useState(null);
   const [deleteModal, setDeleteModal] = useState(null);
 
-  // 2. Хук: при монтировании, смене search или currentPage
   useEffect(() => {
     fetchStudents();
   }, [search, currentPage]);
 
-  // 3. fetchStudents
   const fetchStudents = async () => {
     try {
       const params = {
         page: currentPage,
         page_size: ITEMS_PER_PAGE,
       };
-      if (search.trim()) {
-        params.query = search.trim();
-      }
-
-      const response = await api.get("/students/", { params });
-      const data = response.data;
-
+      if (search.trim()) params.query = search.trim();
+      const res = await api.get("/students/", { params });
+      const data = res.data;
       if (Array.isArray(data.results)) {
         setStudents(data.results);
         setTotalCount(data.count);
       } else {
-        setStudents(Array.isArray(data) ? data : []);
-        setTotalCount(Array.isArray(data) ? data.length : 0);
+        const arr = Array.isArray(data) ? data : [];
+        setStudents(arr);
+        setTotalCount(arr.length);
       }
-    } catch (error) {
-      setMessage("Ошибка при загрузке данных");
+    } catch {
+      setMessage(t("adminStudentsPage.messages.loadError"));
     }
   };
 
-  // 4. Обработчики
   const handleSearchChange = (e) => {
     setSearch(e.target.value);
     setCurrentPage(1);
@@ -89,23 +80,22 @@ const AdminStudentsPage = () => {
 
   const handleUpload = async () => {
     if (!selectedFile) {
-      setMessage("Сначала выберите файл");
+      setMessage(t("adminStudentsPage.messages.noFile"));
       return;
     }
-    const formData = new FormData();
-    formData.append("file", selectedFile);
-
+    const fd = new FormData();
+    fd.append("file", selectedFile);
     try {
-      await api.post("/upload-excel/", formData);
-      setMessage("Данные успешно загружены и обновлены");
+      await api.post("/upload-excel/", fd);
+      setMessage(t("adminStudentsPage.messages.uploadSuccess"));
       fetchStudents();
       setTimeout(() => {
         setExcelModal(false);
         setSelectedFile(null);
         setImportStatus("default");
       }, 1000);
-    } catch (error) {
-      setMessage("Ошибка при загрузке файла");
+    } catch {
+      setMessage(t("adminStudentsPage.messages.uploadError"));
     }
   };
 
@@ -118,8 +108,8 @@ const AdminStudentsPage = () => {
         fetchStudents();
       }
       setDeleteModal(null);
-    } catch (error) {
-      // Обработка ошибки удаления
+    } catch {
+      console.error("Error deleting student");
     }
   };
 
@@ -131,122 +121,116 @@ const AdminStudentsPage = () => {
     setDeleteModal(null);
   };
 
-  // 5. Подсчёт общего числа страниц
   const totalPages = Math.ceil(totalCount / ITEMS_PER_PAGE);
-
-  // 6. Локальное слайсирование (если сервер не порционирует корректно)
-  const paginatedStudents = Array.isArray(students)
-    ? students.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE)
-    : [];
 
   return (
     <div className="admin-page-container">
       <AdminSidebar />
-
       <div className="content-area">
-        {/* Заголовок и кнопки */}
+        {/* Header */}
         <div className="header-row">
-          <h1>Управление студентами</h1>
+          <h1>{t("adminStudentsPage.title")}</h1>
           <div className="actions-list">
-            <button onClick={() => setAddModalOpen(true)}>Добавить студента</button>
+            <button onClick={() => setAddModalOpen(true)}>
+              {t("adminStudentsPage.buttons.add")}
+            </button>
             <button
               style={{ background: "#229f31", color: "#fff" }}
               onClick={() => setExcelModal(true)}
             >
-              Импорт Excel
+              {t("adminStudentsPage.buttons.import")}
             </button>
             <button
               style={{ background: "#1480e3", color: "#fff" }}
-              onClick={() => {
-                /* Логика экспорта */
-              }}
             >
-              Экспорт Excel
+              {t("adminStudentsPage.buttons.export")}
             </button>
           </div>
         </div>
 
-        {/* Строка поиска */}
+        {/* Search */}
         <div className="search-row">
           <input
             type="text"
             className="search-input"
-            placeholder="Поиск..."
+            placeholder={t("adminStudentsPage.searchPlaceholder")}
             value={search}
             onChange={handleSearchChange}
           />
-          <img src={searchIcon} alt="Search" className="search-icon" />
+          <img
+            src={searchIcon}
+            alt={t("adminStudentsPage.icons.alt.search")}
+            className="search-icon"
+          />
         </div>
 
-        {/* Таблица со студентами */}
+        {/* Table */}
         <div className="students-table-container">
           <table className="students-table">
             <thead>
               <tr>
-                <th>Фото</th>
-                <th>S</th>
-                <th>Имя</th>
-                <th>Фамилия</th>
-                <th>Отчество</th>
-                <th>Курс</th>
-                <th>Операции</th>
+                {Object.values(t("adminStudentsPage.table.headers")).map((h) => (
+                  <th key={h}>{h}</th>
+                ))}
               </tr>
             </thead>
             <tbody>
-              {paginatedStudents.length > 0 ? (
-                paginatedStudents.map((student) => (
-                  <tr key={student.id}>
+              {students.length > 0 ? (
+                students.map((s) => (
+                  <tr key={s.id}>
                     <td>
-                      {student.avatar ? (
+                      {s.avatar ? (
                         <img
-                          src={student.avatar}
-                          alt="Avatar"
+                          src={s.avatar}
+                          alt={t("adminStudentsPage.icons.alt.view")}
                           className="student-avatar"
                         />
                       ) : (
                         <div className="student-avatar-placeholder">
-                          {student.first_name?.[0]}
-                          {student.last_name?.[0]}
+                          {s.first_name?.[0]}
+                          {s.last_name?.[0]}
                         </div>
                       )}
                     </td>
-                    <td>{student.s}</td>
-                    <td>{student.first_name}</td>
-                    <td>{student.last_name}</td>
-                    <td>{student.middle_name || "-"}</td>
-                    <td>{student.course}</td>
+                    <td>{s.s}</td>
+                    <td>{s.first_name}</td>
+                    <td>{s.last_name}</td>
+                    <td>{s.middle_name || "-"}</td>
+                    <td>{s.course}</td>
                     <td>
                       <img
                         src={viewIcon}
-                        alt="Просмотр"
+                        alt={t("adminStudentsPage.icons.alt.view")}
                         className="operation-icon"
-                        onClick={() => setViewModalStudent(student)}
+                        onClick={() => setViewModalStudent(s)}
                       />
                       <img
                         src={editIcon}
-                        alt="Редактировать"
+                        alt={t("adminStudentsPage.icons.alt.edit")}
                         className="operation-icon"
-                        onClick={() => setEditModalStudent(student)}
+                        onClick={() => setEditModalStudent(s)}
                       />
                       <img
                         src={deleteIcon}
-                        alt="Удалить"
+                        alt={t("adminStudentsPage.icons.alt.delete")}
                         className="operation-icon"
-                        onClick={() => setDeleteModal(student)}
+                        onClick={() => setDeleteModal(s)}
                       />
                     </td>
                   </tr>
                 ))
               ) : (
                 <tr>
-                  <td colSpan="7">Нет данных для отображения.</td>
+                  <td colSpan={7}>
+                    {t("adminStudentsPage.table.empty")}
+                  </td>
                 </tr>
               )}
             </tbody>
           </table>
         </div>
 
-        {/* Пагинация */}
+        {/* Pagination */}
         {totalPages > 1 && (
           <div className="pagination">
             <button
@@ -254,35 +238,32 @@ const AdminStudentsPage = () => {
               disabled={currentPage === 1}
               onClick={() => setCurrentPage((p) => p - 1)}
             >
-              &lt;
+              {t("adminStudentsPage.pagination.prev")}
             </button>
 
-            {Array.from({ length: totalPages }).map((_, idx) => {
-              const pageNum = idx + 1;
-              return (
-                <button
-                  key={pageNum}
-                  className={`pagination-btn${
-                    currentPage === pageNum ? " active" : ""
-                  }`}
-                  onClick={() => setCurrentPage(pageNum)}
-                >
-                  {pageNum}
-                </button>
-              );
-            })}
+            {Array.from({ length: totalPages }).map((_, idx) => (
+              <button
+                key={idx}
+                className={`pagination-btn${
+                  currentPage === idx + 1 ? " active" : ""
+                }`}
+                onClick={() => setCurrentPage(idx + 1)}
+              >
+                {t("adminStudentsPage.pagination.page", { page: idx + 1 })}
+              </button>
+            ))}
 
             <button
               className="pagination-btn"
               disabled={currentPage === totalPages}
               onClick={() => setCurrentPage((p) => p + 1)}
             >
-              &gt;
+              {t("adminStudentsPage.pagination.next")}
             </button>
           </div>
         )}
 
-        {/* Модалки: Добавить / Редактировать / Просмотреть / Удалить */}
+        {/* Modals */}
         {addModalOpen && (
           <AdminStudentAddModal
             onClose={() => setAddModalOpen(false)}
@@ -310,7 +291,7 @@ const AdminStudentsPage = () => {
           />
         )}
 
-        {/* Модалка для Excel-импорта */}
+        {/* Import Modal */}
         {excelModal && (
           <div className="modal">
             <div className="modal-content">
@@ -318,27 +299,33 @@ const AdminStudentsPage = () => {
                 className="modal-close-btn"
                 onClick={() => setExcelModal(false)}
               >
-                ✕
+                {t("adminStudentsPage.importModal.buttons.cancel")}
               </button>
-              <h2>Импорт данных из Excel</h2>
+              <h2>{t("adminStudentsPage.importModal.title")}</h2>
               <div
                 className="excel-upload-box"
                 onClick={() => fileInputRef.current?.click()}
               >
                 <img
-                  src={importStatus === "success" ? uploadActive : uploadDefault}
-                  alt="Импорт Excel"
+                  src={
+                    importStatus === "success"
+                      ? uploadActive
+                      : uploadDefault
+                  }
+                  alt={
+                    importStatus === "success"
+                      ? t("adminStudentsPage.icons.alt.importActive")
+                      : t("adminStudentsPage.icons.alt.importDefault")
+                  }
                   className="excel-upload-img"
                 />
-                {selectedFile ? (
-                  <span className="excel-upload-success">
-                    Файл выбран: {selectedFile.name}
-                  </span>
-                ) : (
-                  <span className="excel-upload-default">
-                    Загрузите файл Excel
-                  </span>
-                )}
+                <span className={`excel-upload-${importStatus}`}>
+                  {selectedFile
+                    ? t("adminStudentsPage.importModal.promptSuccess", {
+                        name: selectedFile.name,
+                      })
+                    : t("adminStudentsPage.importModal.promptDefault")}
+                </span>
                 <input
                   type="file"
                   ref={fileInputRef}
@@ -354,25 +341,21 @@ const AdminStudentsPage = () => {
                   className="modal-checkbox"
                 />
                 <label htmlFor="overwrite" style={{ fontSize: 16 }}>
-                  Перезаписать существующие данные
+                  {t("adminStudentsPage.importModal.checkbox")}
                 </label>
               </div>
               <div className="excel-modal-fileinfo">
-                <div className="fileinfo-title">Требования к файлу</div>
-                <div>
-                  Файл должен быть в формате XLSX или XLS
-                  <br />
-                  Первая строка — заголовки столбцов
-                  <br />
-                  <span className="fileinfo-fields">
-                    Обязательные поля: ФИО, Пол, Курс
-                  </span>
+                <div className="fileinfo-title">
+                  {t("adminStudentsPage.importModal.requirementsTitle")}
+                </div>
+                <div style={{ whiteSpace: "pre-wrap" }}>
+                  {t("adminStudentsPage.importModal.requirements")}
                 </div>
                 <a
                   href="/templates/students_template.xlsx"
                   className="fileinfo-template-link"
                 >
-                  Скачать шаблон файла
+                  {t("adminStudentsPage.importModal.templateLink")}
                 </a>
               </div>
               <div className="modal-actions">
@@ -380,10 +363,13 @@ const AdminStudentsPage = () => {
                   className="modal-btn cancel-btn"
                   onClick={() => setExcelModal(false)}
                 >
-                  Отмена
+                  {t("adminStudentsPage.importModal.buttons.cancel")}
                 </button>
-                <button className="modal-btn save-btn" onClick={handleUpload}>
-                  Сохранить
+                <button
+                  className="modal-btn save-btn"
+                  onClick={handleUpload}
+                >
+                  {t("adminStudentsPage.importModal.buttons.save")}
                 </button>
               </div>
               {message && (

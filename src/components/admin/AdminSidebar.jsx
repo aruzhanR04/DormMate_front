@@ -1,6 +1,9 @@
+// src/components/AdminSidebar.jsx
+
 import React from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import "../../styles/AdminSidebar.css";
+import { useI18n } from "../../i18n/I18nContext";
 
 import adminDashboard from "../../assets/icons/adminDashboard.svg";
 import adminStudent from "../../assets/icons/adminStudent.svg";
@@ -10,39 +13,42 @@ import adminAdmin from "../../assets/icons/adminAdmin.svg";
 import adminEvidence from "../../assets/icons/adminEvidence.svg";
 
 const menuItems = [
-  { path: "/admin", label: "Панель", icon: adminDashboard },
-  { path: "/admin/students", label: "Студенты", icon: adminStudent },
-  { path: "/admin/dormitories", label: "Общежития", icon: adminDormitories },
-  { path: "/admin/applications", label: "Заявки", icon: adminApplications },
-  { path: "/admin/admins", label: "Администраторы", icon: adminAdmin },
-  { path: "/admin/evidence-types", label: "Категории справок", icon: adminEvidence },
+  { path: "/admin", key: "dashboard", icon: adminDashboard },
+  { path: "/admin/students", key: "students", icon: adminStudent },
+  { path: "/admin/dormitories", key: "dormitories", icon: adminDormitories },
+  { path: "/admin/applications", key: "applications", icon: adminApplications },
+  { path: "/admin/admins", key: "admins", icon: adminAdmin },
+  { path: "/admin/evidence-types", key: "evidenceTypes", icon: adminEvidence },
 ];
 
 const AdminSidebar = () => {
+  const { t } = useI18n();
   const navigate = useNavigate();
   const location = useLocation();
 
   return (
     <nav className="sidebar">
       <ul>
-        {menuItems.map((item) => {
-          const isActive = location.pathname === item.path;
+        {menuItems.map(({ path, key, icon }) => {
+          const isActive = location.pathname === path;
           return (
             <li
-              key={item.path}
+              key={path}
               className={isActive ? "active" : ""}
-              onClick={() => navigate(item.path)}
+              onClick={() => navigate(path)}
               tabIndex={0}
-              onKeyDown={e => e.key === "Enter" && navigate(item.path)}
+              onKeyDown={(e) => e.key === "Enter" && navigate(path)}
             >
               <span className="sidebar-marker" />
               <img
-                src={item.icon}
-                alt={item.label}
+                src={icon}
+                alt={t(`adminSidebar.menu.${key}`)}
                 className="nav-icon"
                 draggable={false}
               />
-              <span className="sidebar-label">{item.label}</span>
+              <span className="sidebar-label">
+                {t(`adminSidebar.menu.${key}`)}
+              </span>
             </li>
           );
         })}

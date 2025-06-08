@@ -1,34 +1,43 @@
-import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom'; 
-import '../../styles/TestPage.css';
-import api from '../../api';
+// src/pages/TestPage.jsx
+import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import "../../styles/TestPage.css";
+import api from "../../api";
+import { useI18n } from "../../i18n/I18nContext";
 
 const TestPage = () => {
+  const { lang, t } = useI18n();
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [questions, setQuestions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [thankYouMessage, setThankYouMessage] = useState(false); 
-  const navigate = useNavigate(); 
+  const [thankYouMessage, setThankYouMessage] = useState(false);
+  const navigate = useNavigate();
 
   const fetchQuestions = async () => {
     setLoading(true);
     try {
-      const response = await api.get('http://127.0.0.1:8000/api/v1/questionlist');
-      console.log(response.data.results);
-      const formattedQuestions = response.data.results.map((q) => ({
-        id: q.id,
-        question: q.question_text,
-        options: [
-          { label: q.answer_variant_a, letter: 'A' },
-          { label: q.answer_variant_b, letter: 'B' },
-          { label: q.answer_variant_c, letter: 'C' },
-        ].filter(option => option.label), 
-        selectedAnswer: null,
-      }));
-      setQuestions(formattedQuestions);
+      const response = await api.get("http://127.0.0.1:8000/api/v1/questionlist");
+      const formatted = response.data.results.map((q) => {
+        // pick localized question text and answer variants
+        const question = q[`question_text_${lang}`] || q.question_text_ru;
+        const options = ["a", "b", "c"]
+          .map((letter) => {
+            const key = `answer_variant_${letter}_${lang}`;
+            const label = q[key] || q[`answer_variant_${letter}_ru`];
+            return label ? { letter: letter.toUpperCase(), label } : null;
+          })
+          .filter(Boolean);
+        return {
+          id: q.id,
+          question,
+          options,
+          selectedAnswer: null
+        };
+      });
+      setQuestions(formatted);
     } catch (err) {
-      setError('Ошибка загрузки вопросов');
+      setError(t("testPage.loadError"));
     } finally {
       setLoading(false);
     }
@@ -36,91 +45,98 @@ const TestPage = () => {
 
   useEffect(() => {
     fetchQuestions();
-  }, []);
+  }, [lang]);
 
   const handleNext = () => {
     if (currentQuestionIndex < questions.length - 1) {
-      setCurrentQuestionIndex(currentQuestionIndex + 1);
+      setCurrentQuestionIndex((i) => i + 1);
     } else {
       submitTest();
     }
   };
 
   const submitTest = async () => {
-    const testAnswers = questions.map(q => q.selectedAnswer?.letter || "");
-    console.log("Test answers:", testAnswers); 
-
-    if (testAnswers.includes("")) {
-      alert("Пожалуйста, ответьте на все вопросы.");
+    const answers = questions.map((q) => q.selectedAnswer?.letter || "");
+    if (answers.includes("")) {
+      alert(t("testPage.alertIncomplete"));
       return;
     }
-
     try {
-      const response = await api.post('/test/', { test_answers: testAnswers });
-      console.log("Результат отправлен:", response.data);
-
+      await api.post("/test/", { test_answers: answers });
       setThankYouMessage(true);
-
-      setTimeout(() => {
-        navigate('/profile');
-      }, 3000);
-    } catch (error) {
-      setError('Ошибка при отправке теста');
-      if (error.response) {
-        console.error("Ошибка:", error.response.status, error.response.data);
-      } else {
-        console.error("Ошибка сети или другая проблема:", error.message);
-      }
+      setTimeout(() => navigate("/profile"), 3000);
+    } catch {
+      setError(t("testPage.submitError"));
     }
   };
 
-  if (loading) return <div className="loading-indicator">Загрузка вопросов<span className="loading-dots"></span></div>;
-  if (error) return <div style={{ color: 'red' }}>Ошибка: {error}</div>;
-  if (thankYouMessage) return <div className="loading-indicator">Спасибо! Вы будете перенаправлены на страницу профиля<span className="loading-dots"></span></div>;
+  if (loading)
+    return (
+      <div className="loading-indicator">
+        {t("testPage.loading")}
+        <span className="loading-dots"></span>
+      </div>
+    );
+  if (error)
+    return (
+      <div style={{ color: "red" }}>
+        {t("testPage.errorPrefix", { error })}
+      </div>
+    );
+  if (thankYouMessage)
+    return (
+      <div className="loading-indicator">
+        {t("testPage.thankYou")}
+        <span className="loading-dots"></span>
+      </div>
+    );
 
-  const currentQuestion = questions[currentQuestionIndex];
-  const questionText = currentQuestion ? currentQuestion.question : "Вопрос не найден";
-  const options = currentQuestion?.options || [];
+  const current = questions[currentQuestionIndex];
+  const questionText = current?.question || t("testPage.questionNotFound");
 
   return (
     <div className="test-page">
       <div className="progress-indicator">
-        Вопрос {currentQuestionIndex + 1} из {questions.length}
+        {t("testPage.progress", {
+          current: currentQuestionIndex + 1,
+          total: questions.length
+        })}
       </div>
-      <h2>Психологическая совместимость</h2>
+      <h2>{t("testPage.title")}</h2>
       <p>{questionText}</p>
       <div className="options">
-        {options.map((option, index) => (
-          <label key={index}>
+        {current.options.map((opt, idx) => (
+          <label key={idx}>
             <input
               type="radio"
               name={`answer-${currentQuestionIndex}`}
               onChange={() => {
-                const updatedQuestions = [...questions];
-                updatedQuestions[currentQuestionIndex].selectedAnswer = option;
-                setQuestions(updatedQuestions);
+                const copy = [...questions];
+                copy[currentQuestionIndex].selectedAnswer = opt;
+                setQuestions(copy);
               }}
-              checked={currentQuestion.selectedAnswer?.letter === option.letter}
+              checked={current.selectedAnswer?.letter === opt.letter}
             />
-            {`${option.letter}. ${option.label}`}
+            {`${opt.letter}. ${opt.label}`}
           </label>
         ))}
       </div>
       <div className="navigation-buttons">
         <button
-          onClick={() => setCurrentQuestionIndex(currentQuestionIndex - 1)}
+          onClick={() => setCurrentQuestionIndex((i) => i - 1)}
           disabled={currentQuestionIndex === 0}
           className="back-btn"
-
         >
-          Назад
+          {t("testPage.back")}
         </button>
         <button onClick={handleNext} className="next-btn">
-          {currentQuestionIndex === questions.length - 1 ? "Отправить тест" : "Далее"}
+          {currentQuestionIndex === questions.length - 1
+            ? t("testPage.submitTest")
+            : t("testPage.next")}
         </button>
       </div>
     </div>
-  ); 
+  );
 };
 
 export default TestPage;

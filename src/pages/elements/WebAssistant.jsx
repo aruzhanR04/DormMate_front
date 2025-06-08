@@ -1,27 +1,32 @@
-import React, { useState, useEffect, useRef } from 'react';
-import api from '../../api';
-import '../../styles/ChatAssistant.css';
+// src/components/WebAssistant.jsx
+import React, { useState, useEffect, useRef } from "react";
+import api from "../../api";
+import "../../styles/ChatAssistant.css";
+import { useI18n } from "../../i18n/I18nContext";
 
 const WebAssistant = () => {
-  // новый стейт для управления видимостью окна
+  const { t } = useI18n();
   const [isChatVisible, setIsChatVisible] = useState(true);
-
-  const [chatId, setChatId] = useState(localStorage.getItem('chatId') || null);
+  const [chatId, setChatId] = useState(
+    localStorage.getItem("chatId") || null
+  );
   const [messages, setMessages] = useState([]);
-  const [userInput, setUserInput] = useState('');
+  const [userInput, setUserInput] = useState("");
   const [chatActive, setChatActive] = useState(true);
   const [error, setError] = useState(null);
   const [isOperatorConnected, setIsOperatorConnected] = useState(false);
 
   const chatBoxRef = useRef(null);
-  const userType = localStorage.getItem('user_type') || 'student';
+  const userType =
+    localStorage.getItem("user_type") || "student";
 
-  // 0) Загрузка истории сообщений + статуса оператора
+  const fallbackMessage = t("webAssistant.fallbackMessage");
+
   const fetchMessages = async (cId) => {
     try {
       const [msgRes, chatRes] = await Promise.all([
         api.get(`chats/${cId}/messages/`),
-        api.get(`chats/${cId}/`),
+        api.get(`chats/${cId}/`)
       ]);
       const data = Array.isArray(msgRes.data)
         ? msgRes.data
@@ -29,53 +34,69 @@ const WebAssistant = () => {
         ? msgRes.data.results
         : [];
       const transformed = data.map((msg) => {
-        const senderType = msg.sender_type;
-        const isUser = senderType === userType;
-        let timeString = '';
+        const isUser = msg.sender_type === userType;
+        let timeString = "";
         if (msg.timestamp) {
           const d = new Date(msg.timestamp);
           if (!isNaN(d)) {
-            timeString = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            timeString = d.toLocaleTimeString([], {
+              hour: "2-digit",
+              minute: "2-digit"
+            });
           }
         }
         return {
           id: msg.id,
           text: msg.content,
-          type: isUser ? 'user' : 'admin',
-          timestamp: timeString,
+          type: isUser ? "user" : "admin",
+          timestamp: timeString
         };
       });
       setMessages(transformed);
-      setIsOperatorConnected(!!chatRes.data.is_operator_connected);
-    } catch (err) {
-      if (err.response?.status === 404) {
-        localStorage.removeItem('chatId');
-        setChatId(null);
-      }
-      setError('Ошибка при загрузке сообщений.');
+      setIsOperatorConnected(
+        !!chatRes.data.is_operator_connected
+      );
+    } catch {
+      localStorage.removeItem("chatId");
+      setChatId(null);
+      setError(t("webAssistant.loadingError"));
     }
   };
 
-  // 1) Отправка сообщения студентом
   const handleSendMessage = async () => {
     if (!userInput.trim() || !chatActive) return;
+
     const text = userInput.trim();
-    setUserInput('');
-    const fallbackMessage = 'Ваш вопрос сложный! Оператор скоро подключится и поможет вам.';
+    setUserInput("");
+
     try {
-      const searchRes = await api.get(`questions/?search=${encodeURIComponent(text)}`);
+      const searchRes = await api.get(
+        `questions/?search=${encodeURIComponent(text)}`
+      );
       const autoAnswer =
-        Array.isArray(searchRes.data) && searchRes.data.length > 0 ? searchRes.data[0].answer : null;
+        Array.isArray(searchRes.data) &&
+        searchRes.data.length > 0
+          ? searchRes.data[0].answer
+          : null;
 
       let currentChatId = chatId;
       if (!currentChatId) {
-        const createRes = await api.post('student/chats/create/', {});
+        const createRes = await api.post(
+          "student/chats/create/",
+          {}
+        );
         currentChatId = createRes.data.id;
         setChatId(currentChatId);
-        localStorage.setItem('chatId', currentChatId);
+        localStorage.setItem(
+          "chatId",
+          currentChatId
+        );
       }
 
-      await api.post(`chats/${currentChatId}/send/`, { text });
+      await api.post(
+        `chats/${currentChatId}/send/`,
+        { text }
+      );
       await fetchMessages(currentChatId);
 
       if (autoAnswer && !isOperatorConnected) {
@@ -84,12 +105,17 @@ const WebAssistant = () => {
           {
             id: Date.now(),
             text: autoAnswer,
-            type: 'admin',
-            timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-          },
+            type: "admin",
+            timestamp: new Date().toLocaleTimeString(
+              [],
+              { hour: "2-digit", minute: "2-digit" }
+            )
+          }
         ]);
         if (autoAnswer === fallbackMessage) {
-          await handleRequestOperator(currentChatId);
+          await handleRequestOperator(
+            currentChatId
+          );
         }
       } else if (!autoAnswer && !isOperatorConnected) {
         setMessages((prev) => [
@@ -97,40 +123,48 @@ const WebAssistant = () => {
           {
             id: Date.now() + 1,
             text: fallbackMessage,
-            type: 'admin',
-            timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-          },
+            type: "admin",
+            timestamp: new Date().toLocaleTimeString(
+              [],
+              { hour: "2-digit", minute: "2-digit" }
+            )
+          }
         ]);
         await handleRequestOperator(currentChatId);
       } else {
         await fetchMessages(currentChatId);
       }
-    } catch (err) {
-      setError('Не удалось отправить сообщение.');
+    } catch {
+      setError(t("webAssistant.sendError"));
     }
   };
 
-  // 2) Вызов оператора
   const handleRequestOperator = async (cId) => {
     if (!cId || !chatActive) return;
     try {
-      await api.post('notifications/request-admin/', { chat_id: cId });
+      await api.post(
+        "notifications/request-admin/",
+        { chat_id: cId }
+      );
       setMessages((prev) => [
         ...prev,
         {
           id: Date.now() + 2,
-          text: 'Оператор вызван. Ожидайте...',
-          type: 'admin',
-          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        },
+          text: t("webAssistant.operatorCalled"),
+          type: "admin",
+          timestamp: new Date().toLocaleTimeString(
+            [],
+            { hour: "2-digit", minute: "2-digit" }
+          )
+        }
       ]);
-      // Без немедленного fetchMessages, чтобы локальное уведомление не затёрлось
-    } catch (err) {
-      setError('Не удалось вызвать оператора.');
+    } catch {
+      setError(
+        t("webAssistant.requestOperatorError")
+      );
     }
   };
 
-  // 3) Завершение чата (кнопка "Завершить чат")
   const handleEndChat = async () => {
     if (!chatId || !chatActive) return;
     try {
@@ -139,96 +173,129 @@ const WebAssistant = () => {
       setMessages((prev) => [
         ...prev,
         {
-          id: 'end',
-          text: 'Чат завершён.',
-          type: 'admin',
-          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        },
+          id: "end",
+          text: t("webAssistant.chatEnded"),
+          type: "admin",
+          timestamp: new Date().toLocaleTimeString(
+            [],
+            { hour: "2-digit", minute: "2-digit" }
+          )
+        }
       ]);
-      localStorage.removeItem('chatId');
+      localStorage.removeItem("chatId");
       setChatId(null);
-    } catch (err) {
-      setError('Не удалось завершить чат.');
+    } catch {
+      setError(
+        t("webAssistant.endChatError")
+      );
     }
   };
 
-  // 4) Автообновление истории и статуса оператора
   useEffect(() => {
     if (chatId) {
       fetchMessages(chatId);
-      const interval = setInterval(() => fetchMessages(chatId), 5000);
+      const interval = setInterval(
+        () => fetchMessages(chatId),
+        5000
+      );
       return () => clearInterval(interval);
     }
-  }, [chatId, isOperatorConnected]);
+  }, [chatId, isOperatorConnected, t]);
 
-  // 5) Прокрутка вниз при новых сообщениях
   useEffect(() => {
     if (chatBoxRef.current) {
-      chatBoxRef.current.scrollTop = chatBoxRef.current.scrollHeight;
+      chatBoxRef.current.scrollTop =
+        chatBoxRef.current.scrollHeight;
     }
   }, [messages]);
 
-  // Если окно скрыто, ничего не рисуем
   if (!isChatVisible) return null;
 
   return (
     <div className="web-assistant">
       <div className="chat-container">
         <div className="chat-header">
-          <span>Веб-помощник</span>
-          {/* Теперь крестик просто скрывает окно, а не завершает чат */}
+          <span>{t("webAssistant.title")}</span>
           <button
             className="chat-close-btn"
-            title="Закрыть"
+            title={t("webAssistant.closeTitle")}
             onClick={() => setIsChatVisible(false)}
           >
-            ×
+            {t("webAssistant.close")}
           </button>
         </div>
 
         <div className="chat-box" ref={chatBoxRef}>
           {messages.length > 0 ? (
             messages.map((msg) => (
-              <div key={msg.id} className={`chat-message ${msg.type}`}>
+              <div
+                key={msg.id}
+                className={`chat-message ${msg.type}`}
+              >
                 <span className="text">{msg.text}</span>
-                {msg.timestamp && <span className="timestamp">{msg.timestamp}</span>}
+                {msg.timestamp && (
+                  <span className="timestamp">
+                    {msg.timestamp}
+                  </span>
+                )}
               </div>
             ))
           ) : (
-            <p className="empty-messages">Нет сообщений</p>
+            <p className="empty-messages">
+              {t("webAssistant.emptyMessages")}
+            </p>
           )}
         </div>
 
-        {error && <p className="chat-error">{error}</p>}
+        {error && (
+          <p className="chat-error">{error}</p>
+        )}
 
         {chatActive ? (
           <div className="chat-footer">
             <div className="input-wrapper">
               <input
                 type="text"
-                placeholder="Введите вопрос..."
+                placeholder={t(
+                  "webAssistant.placeholder"
+                )}
                 value={userInput}
-                onChange={(e) => setUserInput(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
+                onChange={(e) =>
+                  setUserInput(e.target.value)
+                }
+                onKeyDown={(e) =>
+                  e.key === "Enter" &&
+                  handleSendMessage()
+                }
               />
-              <button className="send-btn" onClick={handleSendMessage}>
-                ➤
+              <button
+                className="send-btn"
+                onClick={handleSendMessage}
+              >
+                {t("webAssistant.send")}
               </button>
             </div>
             <div className="chat-actions">
               <button
                 className="operator-btn"
-                onClick={() => handleRequestOperator(chatId)}
+                onClick={() =>
+                  handleRequestOperator(chatId)
+                }
               >
-                Вызвать оператора
+                {t("webAssistant.operatorButton")}
               </button>
-              <button className="end-btn" onClick={handleEndChat}>
-                Завершить чат
+              <button
+                className="end-btn"
+                onClick={handleEndChat}
+              >
+                {t("webAssistant.endButton")}
               </button>
             </div>
           </div>
         ) : (
-          <p className="chat-ended">Чат завершён.</p>
+          <p className="chat-ended">
+            {t("webAssistant.chatEnded")}
+          </p>
         )}
       </div>
     </div>

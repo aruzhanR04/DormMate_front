@@ -1,9 +1,14 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import api from '../../api';
-import '../../styles/Application.css';
+  // src/components/ApplicationPage.jsx
+  import React, { useState, useEffect } from 'react';
+  import { useNavigate } from 'react-router-dom';
+  import api from '../../api';
+  import '../../styles/Application.css';
+  import { useI18n } from '../../i18n/I18nContext';
+  
+  const ApplicationPage = () => {
+    const { t } = useI18n();
+    const txt = t('applicationPage');  
 
-const ApplicationPage = () => {
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -179,55 +184,60 @@ const ApplicationPage = () => {
 
   const isFreshman = formData.course === 1;
 
+
+
   return (
     <div className="application-page">
       <div className="application-box">
-        <h1 className="app-title">Заявка на заселение</h1>
-        <p className="app-desc">
-          Заполните форму и предоставьте необходимые документы для подачи заявки на проживание в общежитии
-        </p>
+        <h1 className="app-title">{txt.title}</h1>
+        <p className="app-desc">{txt.description}</p>
+
         <form
           className="app-form"
-          onSubmit={e => {
-            e.preventDefault();
-            handleApplicationSubmit();
-          }}
+          onSubmit={e => { e.preventDefault(); handleApplicationSubmit(); }}
           autoComplete="off"
         >
           <div className="app-form-grid">
+            {/* First name */}
             <div className="input-block">
-              <label htmlFor="firstName">Имя</label>
+              <label htmlFor="firstName">{txt.firstName}</label>
               <input type="text" value={formData.firstName} readOnly id="firstName" />
             </div>
+            {/* Last name */}
             <div className="input-block">
-              <label htmlFor="lastName">Фамилия</label>
+              <label htmlFor="lastName">{txt.lastName}</label>
               <input type="text" value={formData.lastName} readOnly id="lastName" />
             </div>
+            {/* Course */}
             <div className="input-block">
-              <label htmlFor="course">Курс</label>
+              <label htmlFor="course">{txt.course}</label>
               <input type="text" value={formData.course} readOnly id="course" />
             </div>
+            {/* Birth date */}
             <div className="input-block">
-              <label htmlFor="birthDate">Дата рождения</label>
+              <label htmlFor="birthDate">{txt.birthDate}</label>
               <input type="text" value={formData.birthDate} readOnly id="birthDate" />
             </div>
+            {/* Gender */}
             <div className="input-block">
-              <label htmlFor="gender">Пол</label>
+              <label htmlFor="gender">{txt.gender}</label>
               <input type="text" value={formData.gender} readOnly id="gender" />
             </div>
+            {/* Parent phone */}
             <div className="input-block">
-              <label htmlFor="parentPhone">Телефон родителей</label>
+              <label htmlFor="parentPhone">{txt.parentPhone}</label>
               <input
                 type="text"
                 value={formData.parentPhone}
                 onChange={e => setFormData({ ...formData, parentPhone: e.target.value })}
-                placeholder="Введите номер родителей"
+                placeholder={txt.selectParentPhone}
                 id="parentPhone"
                 required
               />
             </div>
+            {/* Price range */}
             <div className="input-block">
-              <label htmlFor="priceRange">Ценовой диапазон</label>
+              <label htmlFor="priceRange">{txt.priceRange}</label>
               <select
                 name="priceRange"
                 value={formData.priceRange}
@@ -235,78 +245,67 @@ const ApplicationPage = () => {
                 required
                 id="priceRange"
               >
-                <option value="" disabled>Выберите стоимость</option>
+                <option value="" disabled>{txt.selectPrice}</option>
                 {dormitories.map((cost, idx) => (
                   <option key={idx} value={cost}>{cost} тг</option>
                 ))}
               </select>
             </div>
 
-            {/* Если первокурсник, показываем поля для ЕНТ */}
-            {isFreshman ? (
-              <>
-                <div className="input-block">
-                  <label htmlFor="entResult">Балл ЕНТ</label>
-                  <input
-                    type="number"
-                    min="0"
-                    max="140"
-                    value={formData.entResult}
-                    readOnly
-                    placeholder="Будет заполнено автоматически"
-                    id="entResult"
-                  />
-                </div>
-                <div className="input-block-file">
-                  <label htmlFor="ent_certificate">Сертификат ЕНТ (PDF)</label>
-                  <input
-                    type="file"
-                    name="ent_certificate"
-                    accept=".pdf"
-                    onChange={handleChange}
-                    id="ent_certificate"
-                  />
-                  {formData.documents.ent_certificate && (
-                    <div className="file-name">
-                      <span>{formData.documents.ent_certificate.name}</span>
-                      <button
-                        type="button"
-                        className="remove-file-btn"
-                        onClick={() => handleRemoveFile('ent_certificate')}
-                      >
-                        ✖
-                      </button>
-                    </div>
-                  )}
-                </div>
-              </>
-            ) : (
-              <div className="input-block">
-                <label htmlFor="entResult">GPA</label>
+            {/* ENT / GPA */}
+            <div className="input-block">
+              <label htmlFor="entResult">
+                {isFreshman
+                  ? txt.entResultLabel.freshman
+                  : txt.entResultLabel.other}
+              </label>
+              <input
+                type="text"
+                value={formData.entResult}
+                readOnly
+                placeholder={isFreshman ? txt.entPlaceholder : undefined}
+                id="entResult"
+              />
+            </div>
+
+            {/* ENT certificate upload for freshmen */}
+            {isFreshman && (
+              <div className="input-block-file">
+                <label htmlFor="ent_certificate">{txt.entCertificate}</label>
                 <input
-                  type="text"
-                  value={formData.entResult}
-                  readOnly
-                  id="entResult"
+                  type="file"
+                  name="ent_certificate"
+                  accept=".pdf"
+                  onChange={handleChange}
+                  id="ent_certificate"
                 />
+                {formData.documents.ent_certificate && (
+                  <div className="file-name">
+                    <span>{formData.documents.ent_certificate.name}</span>
+                    <button
+                      type="button"
+                      className="remove-file-btn"
+                      onClick={() => handleRemoveFile('ent_certificate')}
+                    >
+                      ✖
+                    </button>
+                  </div>
+                )}
               </div>
             )}
           </div>
 
-          {/* Показ списка файлов, загруженных на этом этапе (только новые) */}
+          {/* Selected files */}
           {Object.keys(formData.documents).length > 0 && (
             <div className="selected-files">
-              <h4>Выбранные файлы:</h4>
+              <h4>{txt.uploadDocsBtn}</h4>
               <ul>
                 {Object.entries(formData.documents).map(([code, fo]) => {
-                  // Найдём label у EvidenceType, чтобы подписать справа
                   const docType = evidenceTypes.find(et => et.code === code);
                   const docLabel = docType ? (docType.label || docType.name) : code;
-
                   return (
                     <li key={code}>
-                      <strong>{docLabel}:</strong>{' '}
-                      <span>{fo.name}</span>{' '}
+                      <strong>{docLabel}:</strong> {fo.name}{' '}
                       <button
                         className="remove-file-btn"
                         onClick={() => handleRemoveFile(code)}
@@ -326,25 +325,25 @@ const ApplicationPage = () => {
             onClick={() => setModalOpen(true)}
             style={{ marginTop: 28 }}
           >
-            Загрузить остальные документы
+            {txt.uploadDocsBtn}
           </button>
-          <button type="submit" className="submit-btn">Подать заявку</button>
+          <button type="submit" className="submit-btn">
+            {txt.submitBtn}
+          </button>
         </form>
       </div>
 
+      {/* Modal */}
       {isModalOpen && (
         <div className="modal application-modal">
           <div className="modal-content application-modal-content">
             <button className="close-btn" onClick={() => setModalOpen(false)}>✖</button>
-            <h3 className="modal-title">Загрузка документов</h3>
-            <div className="modal-subtext">
-              Здесь можно загрузить дополнительные файлы (не обязательно).<br />
-              {isFreshman
-                ? 'Загрузка «Сертификата ЕНТ» уже сделана выше. Вы можете добавить остальные документы.'
-                : 'Если у вас есть какие-либо документы (справки и т.п.), можете прикрепить их здесь.'}
+            <h3 className="modal-title">{txt.modal.title}</h3>
+            <p className="modal-subtext">
+              {isFreshman ? txt.modal.helpFreshman : txt.modal.helpOther}
               <br />
-              Недостающие файлы можно будет прикрепить позже.
-            </div>
+              {txt.modal.footer}
+            </p>
             <div className="docs-grid">
               {evidenceTypes
                 .filter(doc =>
@@ -356,7 +355,6 @@ const ApplicationPage = () => {
                   return (
                     <div key={doc.code} className="doc-upload-cell">
                       <label className="file-label">{doc.label || doc.name}</label>
-
                       {fileObj ? (
                         <div className="file-upload-item">
                           <span>{fileObj.name}</span>
@@ -368,7 +366,8 @@ const ApplicationPage = () => {
                             ✖
                           </button>
                           <label htmlFor={`input_${doc.code}`} className="file-upload-btn">
-                            Заменить<span className="file-upload-icon">📄</span>
+                            {txt.fileInputReplace}
+                            <span className="file-upload-icon">{txt.fileInputIcon}</span>
                           </label>
                           <input
                             type="file"
@@ -381,7 +380,8 @@ const ApplicationPage = () => {
                         </div>
                       ) : (
                         <label htmlFor={`input_${doc.code}`} className="file-upload-btn">
-                          Загрузить<span className="file-upload-icon">📄</span>
+                          {txt.fileInputUpload}
+                          <span className="file-upload-icon">{txt.fileInputIcon}</span>
                           <input
                             type="file"
                             name={doc.code}
@@ -398,7 +398,7 @@ const ApplicationPage = () => {
             </div>
             <div className="modal-btns">
               <button className="modal-cancel-btn" onClick={() => setModalOpen(false)}>
-                Закрыть
+                {txt.modal.closeBtn}
               </button>
             </div>
           </div>

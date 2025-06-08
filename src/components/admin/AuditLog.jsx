@@ -1,196 +1,182 @@
-"use client"
+// src/components/AuditLog.jsx
 
-import { useState, useEffect } from "react"
-import { User, Download, Home, FileText, Users } from "lucide-react"
+"use client";
+
+import React, { useState, useEffect } from "react";
+import { User, Download, Home, FileText, Users } from "lucide-react";
+import { useI18n } from "../../i18n/I18nContext";
 
 const AuditLog = () => {
-  const [actions, setActions] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(null)
+  const { t } = useI18n();
+  const [actions, setActions] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  // Маппинг типов действий на иконки и заголовки
   const getActionInfo = (logEntry) => {
-    const { action_type, model_name, model_verbose_name, object_repr, changes, actor_name } = logEntry
+    const {
+      action_type,
+      model_name,
+      model_verbose_name,
+      object_repr,
+      changes,
+      actor_name,
+    } = logEntry;
 
-    // Определяем иконку на основе модели
     const getModelIcon = (modelName) => {
       switch (modelName) {
         case "user":
         case "student":
-          return User
+          return User;
         case "application":
         case "заявка":
-          return FileText
+          return FileText;
         case "dormitory":
         case "общежитие":
-          return Home
+          return Home;
         case "group":
         case "группа":
-          return Users
+          return Users;
         default:
-          return Download
+          return Download;
       }
-    }
+    };
 
-    // Определяем цвет на основе типа действия
     const getActionColor = (actionType) => {
       switch (actionType) {
         case "Создание":
-          return "text-green-500"
+          return "text-green-500";
         case "Изменение":
-          return "text-blue-500"
+          return "text-blue-500";
         case "Удаление":
-          return "text-red-500"
+          return "text-red-500";
         default:
-          return "text-gray-500"
+          return "text-gray-500";
       }
-    }
+    };
 
-    const icon = getModelIcon(model_name)
-    const color = getActionColor(action_type)
+    const icon = getModelIcon(model_name);
+    const color = getActionColor(action_type);
+    const title = `${action_type} ${model_verbose_name || model_name || t("auditLog.title")}`;
 
-    // Формируем заголовок
-    const title = `${action_type} ${model_verbose_name || model_name || "объекта"}`
-
-    // Формируем описание
-    let desc = object_repr || "Неизвестный объект"
-
-    // Добавляем информацию об изменениях для действий "Изменение"
+    let desc = object_repr || t("auditLog.error");
     if (action_type === "Изменение" && changes && Object.keys(changes).length > 0) {
-      const changedFields = Object.keys(changes)
-      if (changedFields.length === 1) {
-        desc += ` - изменено поле "${changedFields[0]}"`
-      } else {
-        desc += ` - изменено полей: ${changedFields.length}`
-      }
+      const fields = Object.keys(changes);
+      desc += fields.length === 1
+        ? ` - изменено поле "${fields[0]}"`
+        : ` - изменено полей: ${fields.length}`;
     }
-
-    // Добавляем информацию о том, кто выполнил действие
     if (actor_name && actor_name !== "Система") {
-      desc += ` (${actor_name})`
+      desc += ` (${actor_name})`;
     }
 
-    return {
-      icon,
-      title,
-      desc,
-      color,
-    }
-  }
+    return { icon, title, desc, color };
+  };
 
   const fetchAuditLogs = async () => {
     try {
-      setLoading(true)
-      const response = await fetch("http://127.0.0.1:8000/api/v1/audit-log/")
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`)
-      }
-
-      const data = await response.json()
-
-      // Преобразуем данные из API в формат для отображения
-      const formattedActions = data.results.map((logEntry) => {
-        const actionInfo = getActionInfo(logEntry)
+      setLoading(true);
+      const resp = await fetch("http://127.0.0.1:8000/api/v1/audit-log/");
+      if (!resp.ok) throw new Error(resp.status);
+      const data = await resp.json();
+      const formatted = data.results.map((entry) => {
+        const info = getActionInfo(entry);
         return {
-          id: logEntry.id,
-          icon: actionInfo.icon,
-          title: actionInfo.title,
-          desc: actionInfo.desc,
-          color: actionInfo.color,
-          timestamp: logEntry.timestamp,
-          actor: logEntry.actor_name,
-          actionType: logEntry.action_type,
-          modelName: logEntry.model_verbose_name || logEntry.model_name,
-        }
-      })
-
-      setActions(formattedActions)
-      setError(null)
-    } catch (err) {
-      console.error("Ошибка при загрузке логов:", err)
-      setError("Не удалось загрузить логи аудита")
+          id: entry.id,
+          ...info,
+          timestamp: entry.timestamp,
+          modelName: entry.model_verbose_name || entry.model_name,
+        };
+      });
+      setActions(formatted);
+      setError(null);
+    } catch {
+      setError(t("auditLog.error"));
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   useEffect(() => {
-    fetchAuditLogs()
+    fetchAuditLogs();
+    const iv = setInterval(fetchAuditLogs, 30000);
+    return () => clearInterval(iv);
+  }, []);
 
-    // Обновляем логи каждые 30 секунд
-    const interval = setInterval(fetchAuditLogs, 30000)
-
-    return () => clearInterval(interval)
-  }, [])
-
-  const formatTimestamp = (timestamp) => {
-    const date = new Date(timestamp)
-    const now = new Date()
-    const diffInMinutes = Math.floor((now - date) / (1000 * 60))
-
-    if (diffInMinutes < 1) return "только что"
-    if (diffInMinutes < 60) return `${diffInMinutes} мин назад`
-    if (diffInMinutes < 1440) return `${Math.floor(diffInMinutes / 60)} ч назад`
-    return date.toLocaleDateString("ru-RU")
-  }
+  const formatTimestamp = (ts) => {
+    const date = new Date(ts);
+    const now = Date.now();
+    const diffM = Math.floor((now - date) / 60000);
+    if (diffM < 1) return t("auditLog.time.justNow");
+    if (diffM < 60) return t("auditLog.time.minutesAgo", { count: diffM });
+    if (diffM < 1440) return t("auditLog.time.hoursAgo", { count: Math.floor(diffM / 60) });
+    return date.toLocaleDateString(
+      t("auditLog.time.dateOptions.locale"),
+      {}
+    );
+  };
 
   if (loading) {
     return (
       <div className="admin-last-actions">
-        <div className="admin-last-title">Последние действия</div>
+        <div className="admin-last-title">{t("auditLog.title")}</div>
         <div className="admin-last-list">
           <div className="flex items-center justify-center p-8">
-            <div className="text-gray-500">Загрузка...</div>
+            <div className="text-gray-500">{t("auditLog.loading")}</div>
           </div>
         </div>
       </div>
-    )
+    );
   }
 
   if (error) {
     return (
       <div className="admin-last-actions">
-        <div className="admin-last-title">Последние действия</div>
+        <div className="admin-last-title">{t("auditLog.title")}</div>
         <div className="admin-last-list">
           <div className="flex items-center justify-center p-8">
             <div className="text-red-500">{error}</div>
           </div>
         </div>
       </div>
-    )
+    );
   }
 
   return (
     <div className="admin-last-actions">
-      <div className="admin-last-title">Последние действия</div>
+      <div className="admin-last-title">{t("auditLog.title")}</div>
       <div className="admin-last-list">
         {actions.map((action) => {
-          const IconComponent = action.icon
+          const Icon = action.icon;
           return (
             <div className="admin-action" key={action.id}>
               <div className={`admin-action-icon ${action.color}`}>
-                <IconComponent size={24} />
+                <Icon size={24} />
               </div>
               <div className="flex-1">
                 <div className="admin-action-title">{action.title}</div>
                 <div className="admin-action-desc">{action.desc}</div>
                 <div className="flex items-center gap-2 mt-1">
-                  <div className="text-xs text-gray-400">{formatTimestamp(action.timestamp)}</div>
+                  <div className="text-xs text-gray-400">
+                    {formatTimestamp(action.timestamp)}
+                  </div>
                   {action.modelName && (
                     <>
-                      <span className="text-xs text-gray-300">•</span>
-                      <div className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">{action.modelName}</div>
+                      <span className="text-xs text-gray-300">
+                        {t("auditLog.modelSeparator")}
+                      </span>
+                      <div className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">
+                        {action.modelName}
+                      </div>
                     </>
                   )}
                 </div>
               </div>
             </div>
-          )
+          );
         })}
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default AuditLog
+export default AuditLog;

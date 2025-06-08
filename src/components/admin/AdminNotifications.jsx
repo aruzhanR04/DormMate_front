@@ -1,21 +1,26 @@
-import React, { useState, useEffect } from 'react';
-import api from '../../api';
+// src/components/AdminNotifications.jsx
+
+import React, { useState, useEffect } from "react";
+import api from "../../api";
+import { useI18n } from "../../i18n/I18nContext";
 
 function AdminNotifications() {
+  const { t } = useI18n();
   const [notifications, setNotifications] = useState([]);
   const [error, setError] = useState(null);
 
-  // Загружаем уведомления каждые 5 сек
+  // Load every 5 seconds
   const fetchNotifications = async () => {
     try {
-      const res = await api.get('notifications/admin/');
-      setNotifications(res.data); // предполагаем список [{id, message, created_at}, ...]
+      const res = await api.get("notifications/admin/");
+      setNotifications(res.data);
+      setError(null);
     } catch (err) {
-      console.error('Ошибка при загрузке уведомлений админа:', err);
-      if (err.response && err.response.status === 401) {
-        setError('Не авторизовано для админа.');
+      console.error("Ошибка при загрузке уведомлений админа:", err);
+      if (err.response?.status === 401) {
+        setError(t("adminNotifications.errors.unauthorized"));
       } else {
-        setError('Ошибка при загрузке уведомлений.');
+        setError(t("adminNotifications.errors.loadError"));
       }
     }
   };
@@ -26,28 +31,29 @@ function AdminNotifications() {
     return () => clearInterval(interval);
   }, []);
 
-  // Отметить уведомление как прочитанное
   const markAsRead = async (id) => {
     try {
-      await api.post('notifications/admin/', { notification_ids: [id] });
-      setNotifications(prev => prev.filter(n => n.id !== id));
+      await api.post("notifications/admin/", { notification_ids: [id] });
+      setNotifications((prev) => prev.filter((n) => n.id !== id));
     } catch (err) {
-      console.error('Ошибка при отметке уведомления:', err);
+      console.error("Ошибка при отметке уведомления:", err);
     }
   };
 
   return (
     <div className="admin-notifications-popup">
-      <h4>Уведомления от студентов</h4>
-      {error && <p style={{ color: 'red' }}>{error}</p>}
+      <h4>{t("adminNotifications.title")}</h4>
+      {error && <p style={{ color: "red" }}>{error}</p>}
 
       {notifications.length === 0 ? (
-        <p>Нет новых уведомлений</p>
+        <p>{t("adminNotifications.empty")}</p>
       ) : (
-        notifications.map(n => (
+        notifications.map((n) => (
           <div key={n.id} className="admin-notif-item">
             <p>{n.message}</p>
-            <button onClick={() => markAsRead(n.id)}>Скрыть</button>
+            <button onClick={() => markAsRead(n.id)}>
+              {t("adminNotifications.buttons.hide")}
+            </button>
           </div>
         ))
       )}

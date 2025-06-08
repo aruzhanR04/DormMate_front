@@ -9,11 +9,13 @@ import filterIcon from "../../assets/icons/filter.svg";
 import refreshIcon from "../../assets/icons/refresh.svg";
 import xmark from "../../assets/icons/xmark.png";
 import "../../styles/AdminApplicationsDistribute.css";
+import { useI18n } from "../../i18n/I18nContext";
 
 const ITEMS_PER_PAGE = 8;
 
 export default function AdminApplicationsDistributePage() {
   const navigate = useNavigate();
+  const { lang, t } = useI18n();
 
   // ——— Заявки (левая колонка) ———
   const [applications, setApplications] = useState([]);
@@ -23,13 +25,9 @@ export default function AdminApplicationsDistributePage() {
   // Фильтры (левый верхний блок)
   const [filterOpen, setFilterOpen] = useState(false);
   const filterRef = useRef();
-
-  // Фильтрация по полу
   const [arrowGender, setArrowGender] = useState(false);
   const [maleOnly, setMaleOnly] = useState(false);
   const [femaleOnly, setFemaleOnly] = useState(false);
-
-  // Фильтрация по статусу заселения
   const [arrowRoomStatus, setArrowRoomStatus] = useState(false);
   const [assignedOnly, setAssignedOnly] = useState(false);
   const [unassignedOnly, setUnassignedOnly] = useState(false);
@@ -174,28 +172,29 @@ export default function AdminApplicationsDistributePage() {
     event.dataTransfer.setData("studentInDormId", studentInDormId);
   };
 
-
-  const handleSendOrders = async () => {
-    try {
-      const response = await api.post('/issue-order/');
-      setMessage({ type: 'success', text: response.data.detail });
-      fetchApplications();
-    } catch (error) {
-      console.error('Ошибка отправки ордеров:', error);
-      setMessage({ type: 'error', text: 'Ошибка отправки ордеров.' });
+  // 2) Разрешаем сброс на комнату только если в ней есть свободные места
+  const handleDragOver = (event, roomId) => {
+    const occupied = roomOccupants[roomId]?.length || 0;
+    const room = rooms.find((r) => r.id === roomId);
+    const free = (room?.capacity || 0) - occupied;
+    if (free > 0) {
+      event.preventDefault();
     }
   };
 
-  // 2) Разрешаем сброс на комнату
-  const handleDragOver = (event) => {
-    event.preventDefault();
-  };
-
-  // 3) Отпустили карточку над комнатой → PATCH
+  // 3) Отпустили карточку над комнатой → PATCH с проверкой на свободные места
   const handleDrop = (event, roomId) => {
     event.preventDefault();
     const studentInDormId = event.dataTransfer.getData("studentInDormId");
     if (!studentInDormId) return;
+
+    const occupied = roomOccupants[roomId]?.length || 0;
+    const room = rooms.find((r) => r.id === roomId);
+    const free = (room?.capacity || 0) - occupied;
+    if (free <= 0) {
+      alert("В этой комнате нет свободных мест.");
+      return;
+    }
 
     api
       .patch(`/student-in-dorm/${studentInDormId}/`, { room_id: roomId })
@@ -229,12 +228,23 @@ export default function AdminApplicationsDistributePage() {
   const handleGroupDistribution = async () => {
     try {
       const response = await api.post("/distribute-students2/");
-      // Предполагаем, что возвращается { detail: "..." }
       alert(response.data.detail || "Автоматическое распределение выполнено");
       fetchApplications();
     } catch (error) {
       console.error("Ошибка распределения по группам:", error);
       alert("Ошибка распределения по группам");
+    }
+  };
+
+  // ───────────── Отправка ордеров ─────────────
+  const handleSendOrders = async () => {
+    try {
+      const response = await api.post("/issue-order/");
+      alert(response.data.detail);
+      fetchApplications();
+    } catch (error) {
+      console.error("Ошибка отправки ордеров:", error);
+      alert("Ошибка отправки ордеров");
     }
   };
 
@@ -245,16 +255,15 @@ export default function AdminApplicationsDistributePage() {
   };
 
   // ───────────── Фильтрация заявок для пагинации ─────────────
-  let filteredApps = (applications || []).filter((app) => {
-    const fio = `${app.student?.last_name ?? ""} ${app.student?.first_name ?? ""} ${
-      app.student?.middle_name ?? ""
+  let filteredApps = applications.filter((app) => {
+    const fio = `${app.student.last_name} ${app.student.first_name} ${
+      app.student.middle_name || ""
     }`;
     return fio.toLowerCase().includes(search.toLowerCase());
   });
-
   if (maleOnly || femaleOnly) {
     filteredApps = filteredApps.filter((app) => {
-      const gender = app.student?.gender; // "M" или "F"
+      const gender = app.student.gender;
       if (maleOnly && gender === "M") return true;
       if (femaleOnly && gender === "F") return true;
       return false;
@@ -268,7 +277,6 @@ export default function AdminApplicationsDistributePage() {
       return false;
     });
   }
-
   const totalPages = Math.ceil(filteredApps.length / ITEMS_PER_PAGE);
   const paginatedApps = filteredApps.slice(
     (page - 1) * ITEMS_PER_PAGE,
@@ -281,19 +289,19 @@ export default function AdminApplicationsDistributePage() {
       <div className="content-area">
         {/* ====== Заголовок и кнопки ====== */}
         <div className="header-row">
-          <h1>Заявки</h1>
+          <h1>{t("applicationsDistributePage.title")}</h1>
           <div className="actions-list-distribute">
             <button
               className="actions-list-distribute-btn active"
               onClick={() => navigate("/admin/applications")}
             >
-              Все заявки
+              {t("applicationsDistributePage.btnAllApplications")}
             </button>
             <button
               className="actions-list-distribute-btn selected"
               onClick={() => navigate("/admin/applications/distribute")}
             >
-              Распределить студентов
+              {t("applicationsDistributePage.btnDistributeStudents")}
             </button>
           </div>
         </div>
@@ -302,10 +310,10 @@ export default function AdminApplicationsDistributePage() {
           {/* ====== ЛЕВАЯ КОЛОНКА: Одобренные заявки ====== */}
           <div className="approved-requests-block">
             <div className="approved-requests-title-row">
-              Одобренные заявки
+              {t("applicationsDistributePage.approvedRequests.title")}
               <img
                 src={refreshIcon}
-                alt="refresh"
+                alt={t("applicationsDistributePage.icons.alt.refresh")}
                 className="rooms-block-refresh"
                 onClick={fetchApplications}
               />
@@ -316,41 +324,62 @@ export default function AdminApplicationsDistributePage() {
                 <input
                   type="text"
                   className="search-input"
-                  placeholder="Поиск..."
+                  placeholder={t("applicationsDistributePage.search.placeholder")}
                   value={search}
                   onChange={(e) => {
                     setSearch(e.target.value);
                     setPage(1);
                   }}
                 />
-                <img src={searchIcon} alt="search" className="search-icon" />
+                <img
+                  src={searchIcon}
+                  alt={t("applicationsDistributePage.icons.alt.search")}
+                  className="search-icon"
+                />
                 <button
                   type="button"
                   className="filter-icon-btn"
                   onClick={() => setFilterOpen((prev) => !prev)}
-                  aria-label="Фильтр"
+                  aria-label={t("applicationsDistributePage.filter.label")}
                 >
-                  <img src={filterIcon} alt="filter" />
+                  <img
+                    src={filterIcon}
+                    alt={t("applicationsDistributePage.icons.alt.filter")}
+                  />
                 </button>
                 {filterOpen && (
                   <div className="filter-dropdown" ref={filterRef}>
-                    {/* ===== ФИЛЬТР ПО ПОЛУ ===== */}
+                    {/* Фильтр по полу */}
                     <div className="filter-section">
                       <div className="filter-checkbox-row">
-                        <label style={{ cursor: "pointer", display: "flex", alignItems: "center" }}>
+                        <label
+                          style={{
+                            cursor: "pointer",
+                            display: "flex",
+                            alignItems: "center",
+                          }}
+                        >
                           <input
                             type="checkbox"
                             checked={arrowGender}
                             onChange={() => setArrowGender((a) => !a)}
                           />
-                          <span style={{ marginLeft: "5px" }}>По полу</span>
-                          <span className="filter-arrow" style={{ marginLeft: "auto" }}>
+                          <span style={{ marginLeft: 5 }}>
+                            {t("applicationsDistributePage.filter.gender.title")}
+                          </span>
+                          <span
+                            className="filter-arrow"
+                            style={{ marginLeft: "auto" }}
+                          >
                             {arrowGender ? "▲" : "▼"}
                           </span>
                         </label>
                       </div>
                       {arrowGender && (
-                        <div className="filter-suboptions" style={{ paddingLeft: "20px" }}>
+                        <div
+                          className="filter-suboptions"
+                          style={{ paddingLeft: 20 }}
+                        >
                           <div className="filter-checkbox-row">
                             <input
                               type="checkbox"
@@ -358,8 +387,13 @@ export default function AdminApplicationsDistributePage() {
                               checked={maleOnly}
                               onChange={() => setMaleOnly((v) => !v)}
                             />
-                            <label htmlFor="maleOnly" style={{ cursor: "pointer", marginLeft: "5px" }}>
-                              Мужчины
+                            <label
+                              htmlFor="maleOnly"
+                              style={{ cursor: "pointer", marginLeft: 5 }}
+                            >
+                              {t(
+                                "applicationsDistributePage.filter.gender.male"
+                              )}
                             </label>
                           </div>
                           <div className="filter-checkbox-row">
@@ -369,31 +403,52 @@ export default function AdminApplicationsDistributePage() {
                               checked={femaleOnly}
                               onChange={() => setFemaleOnly((v) => !v)}
                             />
-                            <label htmlFor="femaleOnly" style={{ cursor: "pointer", marginLeft: "5px" }}>
-                              Женщины
+                            <label
+                              htmlFor="femaleOnly"
+                              style={{ cursor: "pointer", marginLeft: 5 }}
+                            >
+                              {t(
+                                "applicationsDistributePage.filter.gender.female"
+                              )}
                             </label>
                           </div>
                         </div>
                       )}
                     </div>
 
-                    {/* ===== ФИЛЬТР ПО СТАТУСУ ЗАСЕЛЕНИЯ ===== */}
-                    <div className="filter-section" style={{ marginTop: "10px" }}>
+                    {/* Фильтр по статусу заселения */}
+                    <div className="filter-section" style={{ marginTop: 10 }}>
                       <div className="filter-checkbox-row">
-                        <label style={{ cursor: "pointer", display: "flex", alignItems: "center" }}>
+                        <label
+                          style={{
+                            cursor: "pointer",
+                            display: "flex",
+                            alignItems: "center",
+                          }}
+                        >
                           <input
                             type="checkbox"
                             checked={arrowRoomStatus}
                             onChange={() => setArrowRoomStatus((a) => !a)}
                           />
-                          <span style={{ marginLeft: "5px" }}>Статус заселения</span>
-                          <span className="filter-arrow" style={{ marginLeft: "auto" }}>
+                          <span style={{ marginLeft: 5 }}>
+                            {t(
+                              "applicationsDistributePage.filter.roomStatus.title"
+                            )}
+                          </span>
+                          <span
+                            className="filter-arrow"
+                            style={{ marginLeft: "auto" }}
+                          >
                             {arrowRoomStatus ? "▲" : "▼"}
                           </span>
                         </label>
                       </div>
                       {arrowRoomStatus && (
-                        <div className="filter-suboptions" style={{ paddingLeft: "20px" }}>
+                        <div
+                          className="filter-suboptions"
+                          style={{ paddingLeft: 20 }}
+                        >
                           <div className="filter-checkbox-row">
                             <input
                               type="checkbox"
@@ -401,8 +456,13 @@ export default function AdminApplicationsDistributePage() {
                               checked={assignedOnly}
                               onChange={() => setAssignedOnly((v) => !v)}
                             />
-                            <label htmlFor="assignedOnly" style={{ cursor: "pointer", marginLeft: "5px" }}>
-                              Назначена комната
+                            <label
+                              htmlFor="assignedOnly"
+                              style={{ cursor: "pointer", marginLeft: 5 }}
+                            >
+                              {t(
+                                "applicationsDistributePage.filter.roomStatus.assigned"
+                              )}
                             </label>
                           </div>
                           <div className="filter-checkbox-row">
@@ -412,18 +472,30 @@ export default function AdminApplicationsDistributePage() {
                               checked={unassignedOnly}
                               onChange={() => setUnassignedOnly((v) => !v)}
                             />
-                            <label htmlFor="unassignedOnly" style={{ cursor: "pointer", marginLeft: "5px" }}>
-                              Без комнаты
+                            <label
+                              htmlFor="unassignedOnly"
+                              style={{ cursor: "pointer", marginLeft: 5 }}
+                            >
+                              {t(
+                                "applicationsDistributePage.filter.roomStatus.unassigned"
+                              )}
                             </label>
                           </div>
                         </div>
                       )}
                     </div>
 
-                    {/* ===== КНОПКА СБРОСИТЬ ФИЛЬТРЫ ===== */}
-                    <div className="filter-reset-row" style={{ marginTop: "15px", textAlign: "center" }}>
-                      <button type="button" className="filter-reset-btn" onClick={resetFilters}>
-                        Сбросить фильтры
+                    {/* Сбросить фильтры */}
+                    <div
+                      className="filter-reset-row"
+                      style={{ marginTop: 15, textAlign: "center" }}
+                    >
+                      <button
+                        type="button"
+                        className="filter-reset-btn"
+                        onClick={resetFilters}
+                      >
+                        {t("applicationsDistributePage.filter.reset")}
                       </button>
                     </div>
                   </div>
@@ -432,40 +504,51 @@ export default function AdminApplicationsDistributePage() {
             </div>
 
             <div className="approved-requests-list">
-              {paginatedApps.length === 0 && (
-                <div className="approved-requests-item">Нет заявок</div>
-              )}
-              {paginatedApps.map((app) => (
-                <div
-                  key={app.id}
-                  className={
-                    "approved-requests-item" +
-                    (app.status === "approved" ? " approved" : "") +
-                    (app.room ? " has-room" : " no-room")
-                  }
-                  draggable
-                  onDragStart={(e) => handleDragStart(e, app.id)}
-                >
-                  <div className="fio">
-                    {app.student?.last_name} {app.student?.first_name}{" "}
-                    {app.student?.middle_name}
-                  </div>
-                  <div className="extra">
-                    S{app.student?.s} <br />
-                    Тест: {app.application.test_result ?? "-"} <br />
-                    Пол: {app.student?.gender === "M" ? "Муж." : "Жен."} <br />
-                    {app.room ? (
-                      <>{`Заселен в: ${
-                        app.room.dorm?.name
-                          ? `${app.room.dorm.name}, комн. ${app.room.number}`
-                          : `комн. ${app.room.number}`
-                      }`}</>
-                    ) : (
-                      "Не заселен"
-                    )}
-                  </div>
+              {paginatedApps.length === 0 ? (
+                <div className="approved-requests-item">
+                  {t("applicationsDistributePage.approvedRequests.empty")}
                 </div>
-              ))}
+              ) : (
+                paginatedApps.map((app) => (
+                  <div
+                    key={app.id}
+                    className={
+                      "approved-requests-item" +
+                      (app.status === "approved" ? " approved" : "") +
+                      (app.room ? " has-room" : " no-room")
+                    }
+                    draggable
+                    onDragStart={(e) => handleDragStart(e, app.id)}
+                  >
+                    <div className="fio">
+                      {app.student?.last_name} {app.student?.first_name}{" "}
+                      {app.student?.middle_name}
+                    </div>
+                    <div className="extra">
+                      S{app.student?.s} <br />
+                      {t("applicationsDistributePage.studentCard.test")}:{" "}
+                      {app.application.test_result ?? "-"} <br />
+                      {t(
+                        `applicationsDistributePage.studentCard.gender.${app.student?.gender}`
+                      )}{" "}
+                      <br />
+                      {app.room ? (
+                        t(
+                          app.room.dorm?.name
+                            ? "applicationsDistributePage.studentCard.assignedIn"
+                            : "applicationsDistributePage.studentCard.assignedInNoDormName",
+                          {
+                            dorm: app.room.dorm?.name,
+                            room: app.room.number,
+                          }
+                        )
+                      ) : (
+                        t("applicationsDistributePage.studentCard.notAssigned")
+                      )}
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
 
             {totalPages > 1 && (
@@ -473,7 +556,9 @@ export default function AdminApplicationsDistributePage() {
                 {Array.from({ length: totalPages }).map((_, idx) => (
                   <button
                     key={idx}
-                    className={`pagination-btn${page === idx + 1 ? " active" : ""}`}
+                    className={`pagination-btn${
+                      page === idx + 1 ? " active" : ""
+                    }`}
                     onClick={() => setPage(idx + 1)}
                   >
                     {idx + 1}
@@ -486,97 +571,134 @@ export default function AdminApplicationsDistributePage() {
           {/* ====== ПРАВАЯ КОЛОНКА: Общежитие → Этажи → Комнаты ====== */}
           <div className="rooms-block">
             <div className="rooms-block-title-row">
-              {/* Дропдаун выбора общежития */}
               <div className="rooms-block" ref={dropdownRef}>
                 <div
                   className="rooms-block-title"
                   onClick={() => setIsOpen((prev) => !prev)}
                   style={{ cursor: "pointer" }}
                 >
-                  {selectedDorm ? selectedDorm.name : "Загрузка..."}{" "}
+                  {selectedDorm
+                    ? selectedDorm[`name_${lang}`] || selectedDorm.name_ru
+                    : t("applicationsDistributePage.dorms.loading")}{" "}
                   <span className="chevron">{isOpen ? "▲" : "▼"}</span>
                 </div>
-
                 {isOpen && (
                   <div className="rooms-dropdown">
-                    {Array.isArray(dorms) && dorms.length > 0 ? (
-                      dorms.map((dorm) => (
-                        <div
-                          key={dorm.id}
-                          className="room-item"
-                          onClick={() => handleSelectDorm(dorm)}
-                        >
-                          {dorm.name}
-                        </div>
-                      ))
+                    {dorms.length > 0 ? (
+                      dorms.map((d) => {
+                        const isSelected = selectedDorm?.id === d.id;
+                        return (
+                          <div
+                            key={d.id}
+                            className={`room-item${
+                              isSelected ? " selected" : ""
+                            }`}
+                            onClick={() => {
+                              handleSelectDorm(d);
+                              setIsOpen(false);
+                            }}
+                          >
+                            {d[`name_${lang}`] || d.name_ru}
+                          </div>
+                        );
+                      })
                     ) : (
-                      <div className="room-item">Общежитий не найдено</div>
+                      <div className="room-item empty">
+                        {t("applicationsDistributePage.dorms.empty")}
+                      </div>
                     )}
                   </div>
                 )}
               </div>
             </div>
 
-            {/* Кнопки этажей */}
             <div className="floors-row">
-              {floors.length === 0 && <div className="no-floors">Этажи не найдены</div>}
-              {floors.map((floor) => (
-                <button
-                  key={floor}
-                  className={`floor-btn${selectedFloor === floor ? " selected" : ""}`}
-                  onClick={() => setSelectedFloor(floor)}
-                >
-                  {floor} этаж
-                </button>
-              ))}
+              {floors.length === 0 ? (
+                <div className="no-floors">
+                  {t("applicationsDistributePage.floors.empty")}
+                </div>
+              ) : (
+                floors.map((floor) => (
+                  <button
+                    key={floor}
+                    className={`floor-btn${
+                      selectedFloor === floor ? " selected" : ""
+                    }`}
+                    onClick={() => setSelectedFloor(floor)}
+                  >
+                    {t("applicationsDistributePage.floors.floor", { floor })}
+                  </button>
+                ))
+              )}
             </div>
 
-            {/* Карточки комнат (Drop target) */}
             <div className="rooms-row">
-              {rooms.length === 0 && <div className="no-rooms">Комнаты не найдены</div>}
-              {rooms.map((room) => (
-                <div
-                  key={room.id}
-                  className="room-card"
-                  onDragOver={handleDragOver}
-                  onDrop={(e) => handleDrop(e, room.id)}
-                >
-                  <div className="room-header">{room.number}</div>
-                  <div className="room-capacity">{room.capacity}-местная</div>
-                  <div className="room-free">
-                    {room.free_spots} свободн
-                    {room.free_spots === 1 ? "о" : "ых"} мест
-                  </div>
-                  <div className="student-list">
-                    {Array.isArray(roomOccupants[room.id]) &&
-                    roomOccupants[room.id].length > 0 ? (
-                      roomOccupants[room.id].map((stu) => (
-                        <div className="student-item" key={stu.id}>
-                          <span>{stu.fio}</span>
-                          <img
-                            src={xmark}
-                            alt="Удалить"
-                            className="xmark-icon"
-                            width="20px"
-                            onClick={() => handleUnassign(stu.id)}
-                          />
-                        </div>
-                      ))
-                    ) : (
-                      <div>— Нет заселённых студентов</div>
-                    )}
-                  </div>
+              {rooms.length === 0 ? (
+                <div className="no-rooms">
+                  {t("applicationsDistributePage.rooms.empty")}
                 </div>
-              ))}
+              ) : (
+                rooms.map((room) => (
+                  <div
+                    key={room.id}
+                    className="room-card"
+                    onDragOver={(e) => handleDragOver(e, room.id)}
+                    onDrop={(e) => handleDrop(e, room.id)}
+                  >
+                    <div className="room-header">{room.number}</div>
+                    <div className="room-capacity">
+                      {t("applicationsDistributePage.rooms.capacity", {
+                        capacity: room.capacity,
+                      })}
+                    </div>
+                    <div className="room-free">
+                      {(() => {
+                        const occupied = roomOccupants[room.id]?.length || 0;
+                        const free = room.capacity - occupied;
+                        return t("applicationsDistributePage.rooms.freeSpots", {
+                          count: free,
+                        });
+                      })()}
+                    </div>
+                    <div className="student-list">
+                      {roomOccupants[room.id]?.length > 0 ? (
+                        roomOccupants[room.id].map((stu) => (
+                          <div className="student-item" key={stu.id}>
+                            <span>{stu.fio}</span>
+                            <img
+                              src={xmark}
+                              alt={t(
+                                "applicationsDistributePage.icons.alt.delete"
+                              )}
+                              className="xmark-icon"
+                              width={20}
+                              onClick={() => handleUnassign(stu.id)}
+                            />
+                          </div>
+                        ))
+                      ) : (
+                        <div>
+                          {t("applicationsDistributePage.rooms.noOccupants")}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
           </div>
         </div>
 
         {/* Нижние кнопки */}
         <div className="bottom-actions-row">
-          <button className="orders-btn" onClick={() => handleSendOrders()}>Разослать ордера</button>
-          <button className="actions-list-distribute-btn selected" onClick={() => handleGroupDistribution()}>
-            Автоматически распределить по группам
+          <button className="orders-btn" onClick={handleSendOrders}>
+            {t("applicationsDistributePage.bottomActions.sendOrders")}
+          </button>
+          <button
+            className="actions-list-distribute-btn selected"
+            onClick={handleGroupDistribution}
+          >
+            {t("applicationsDistributePage.bottomActions.distributeGroups")}
           </button>
         </div>
       </div>

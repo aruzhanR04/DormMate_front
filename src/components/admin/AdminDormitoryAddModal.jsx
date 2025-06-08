@@ -1,164 +1,173 @@
-// AdminDormitoryAddModal.js
+// src/components/AdminDormitoryAddModal.jsx
 import React, { useState } from "react";
-import api from '../../api'; // ваш axios-или-fetch API wrapper
-import '../../styles/AdminFormShared.css';
+import api from "../../api";
+import "../../styles/AdminFormShared.css";
+import { useI18n } from "../../i18n/I18nContext";
 
 const AdminDormitoryAddModal = ({ onClose }) => {
-  // === 1. State для полей общежития ===
+  const { t } = useI18n();
+
   const [formData, setFormData] = useState({
-    name: "",
+    name_ru: "",
+    name_kk: "",
+    name_en: "",
     address: "",
-    description: "",
+    description_ru: "",
+    description_kk: "",
+    description_en: "",
     total_places: "",
     cost: ""
   });
-
-  // === 2. State для динамического списка комнат ===
-  // Начинаем со списка из одной «пустой» комнаты
-  const [rooms, setRooms] = useState([
-    { number: "", capacity: "" }
-  ]);
-
-  // === 3. State для работы с фотографиями ===
-  // Здесь будем хранить загруженные пользователем файлы
+  const [rooms, setRooms] = useState([{ number: "", capacity: "" }]);
   const [images, setImages] = useState([]);
-
   const [message, setMessage] = useState("");
 
-  // Обработчик изменения полей общежития
   const handleChangeDorm = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  // Обработчик изменения полей конкретной комнаты (number или capacity)
-  const handleChangeRoom = (index, e) => {
+  const handleChangeRoom = (idx, e) => {
     const { name, value } = e.target;
-    setRooms(prevRooms => {
-      const updated = [...prevRooms];
-      updated[index] = {
-        ...updated[index],
-        [name]: value
-      };
+    setRooms((prev) => {
+      const updated = [...prev];
+      updated[idx] = { ...updated[idx], [name]: value };
       return updated;
     });
   };
 
-  // Добавить ещё одну «пустую» комнату
   const handleAddRoom = () => {
-    setRooms(prevRooms => ([...prevRooms, { number: "", capacity: "" }]));
+    setRooms((prev) => [...prev, { number: "", capacity: "" }]);
   };
 
-  // Удалить комнату по индексу
-  const handleRemoveRoom = (index) => {
-    setRooms(prevRooms => prevRooms.filter((_, i) => i !== index));
+  const handleRemoveRoom = (idx) => {
+    setRooms((prev) => prev.filter((_, i) => i !== idx));
   };
 
-  // === Обработчики для работы с фотографиями ===
-
-  // Когда пользователь выбирает новые файлы
   const handleFileChange = (e) => {
     const files = Array.from(e.target.files);
-    setImages(prevFiles => [...prevFiles, ...files]);
+    setImages((prev) => [...prev, ...files]);
   };
 
-  // Когда пользователь нажимает «Удалить» рядом с именем файла
-  const handleRemoveFile = (index) => {
-    setImages(prevFiles => prevFiles.filter((_, i) => i !== index));
+  const handleRemoveFile = (idx) => {
+    setImages((prev) => prev.filter((_, i) => i !== idx));
   };
 
-  // === Главный сабмит: создаём общежитие → комнаты → загружаем фото ===
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setMessage("");
 
-
-
-    
-
-    // 1) Проверяем, что поля общежития заполнены:
-    if (!formData.name || !formData.address || !formData.total_places || !formData.cost) {
-      setMessage("Пожалуйста, заполните все обязательные поля общежития.");
+    // Validation: require all name_* and address, total_places, cost
+    if (
+      !formData.name_ru ||
+      !formData.name_kk ||
+      !formData.name_en ||
+      !formData.address ||
+      !formData.total_places ||
+      !formData.cost
+    ) {
+      setMessage(t("adminDormitoryAddModal.messages.fillDorm"));
+      return;
+    }
+    // require all descriptions
+    if (
+      !formData.description_ru ||
+      !formData.description_kk ||
+      !formData.description_en
+    ) {
+      setMessage(t("adminDormitoryAddModal.messages.fillDescription"));
+      return;
+    }
+    // rooms validation
+    if (rooms.some((r) => !r.number || !r.capacity)) {
+      setMessage(t("adminDormitoryAddModal.messages.fillRooms"));
       return;
     }
 
-    // 2) Проверяем, что каждая комната имеет номер и вместимость:
-    const invalidRoom = rooms.some(r => !r.number || !r.capacity);
-    if (invalidRoom) {
-      setMessage("Все комнаты должны иметь номер и вместимость.");
-      return;
-    }
-    
     try {
-      // 3) Создаём Dorm через API
-      const dormResponse = await api.post("dorms/", {
-        name: formData.name,
-        address: formData.address,
-        description: formData.description,
-        total_places: formData.total_places,
-        cost: formData.cost
+      const { data: createdDorm } = await api.post("dorms/", {
+        ...formData
       });
-      const createdDorm = dormResponse.data;
-      console.log("Создаём комнаты для dorm ID:", createdDorm.id);
-      // 4) Циклично создаём комнаты, указывая в каждой поле dorm=createdDorm.id
+
+      // Create rooms
       for (const room of rooms) {
         await api.post("rooms/", {
           dorm: createdDorm.id,
           number: room.number,
           capacity: room.capacity
-          // поле floor заполнится на бэке автоматически через модель Room.save()
         });
       }
 
-      // 5) После того, как общежитие и комнаты созданы, загружаем фотографии
+      // Upload images
       for (const file of images) {
-        const formDataFile = new FormData();
-        formDataFile.append("dorm", createdDorm.id);
-        formDataFile.append("image", file);
-        // Эндпоинт для загрузки картинки: "dorm-images/"
-        await api.post("dorm-images/", formDataFile, {
+        const fd = new FormData();
+        fd.append("dorm", createdDorm.id);
+        fd.append("image", file);
+        await api.post("dorm-images/", fd, {
           headers: { "Content-Type": "multipart/form-data" }
         });
       }
 
-      setMessage("Общежитие, комнаты и фотографии успешно добавлены.");
-      // Закрываем модалку через 0.9 сек, чтобы успело появиться сообщение
+      setMessage(t("adminDormitoryAddModal.messages.success"));
       setTimeout(onClose, 900);
-    } catch (error) {
-      console.error(error);
-      setMessage("Ошибка при добавлении общежития/комнат/фотографий.");
+    } catch {
+      setMessage(t("adminDormitoryAddModal.messages.error"));
     }
   };
 
   return (
     <div className="modal">
       <div className="modal-content">
-        <button
-          className="modal-close-btn"
-          onClick={onClose}
-        >
-          ✕
+        <button className="modal-close-btn" onClick={onClose}>
+          {t("adminDormitoryAddModal.close")}
         </button>
-        <h2>Добавить общежитие</h2>
-
+        <h2>{t("adminDormitoryAddModal.title")}</h2>
         <form onSubmit={handleSubmit} className="form-container">
-
-          {/* ====== ПОЛЯ ОБЩЕЖИТИЯ ====== */}
+          {/* Names in three languages */}
           <label>
-            Название:
+            {t("adminDormitoryAddModal.labels.name_ru")}
             <input
               type="text"
-              name="name"
-              value={formData.name}
+              name="name_ru"
+              value={formData.name_ru}
+              onChange={handleChangeDorm}
+              required
+            />
+          </label>
+          <label>
+            {t("adminDormitoryAddModal.labels.name_kk")}
+            <input
+              type="text"
+              name="name_kk"
+              value={formData.name_kk}
+              onChange={handleChangeDorm}
+              required
+            />
+          </label>
+          <label>
+            {t("adminDormitoryAddModal.labels.name_en")}
+            <input
+              type="text"
+              name="name_en"
+              value={formData.name_en}
               onChange={handleChangeDorm}
               required
             />
           </label>
 
+          {/* Address, total places, cost */}
           <label>
-            Количество мест:
+            {t("adminDormitoryAddModal.labels.address")}
+            <input
+              type="text"
+              name="address"
+              value={formData.address}
+              onChange={handleChangeDorm}
+              required
+            />
+          </label>
+          <label>
+            {t("adminDormitoryAddModal.labels.total_places")}
             <input
               type="number"
               name="total_places"
@@ -167,9 +176,8 @@ const AdminDormitoryAddModal = ({ onClose }) => {
               required
             />
           </label>
-
           <label>
-            Цена:
+            {t("adminDormitoryAddModal.labels.cost")}
             <input
               type="number"
               name="cost"
@@ -179,60 +187,65 @@ const AdminDormitoryAddModal = ({ onClose }) => {
             />
           </label>
 
+          {/* Descriptions in three languages */}
           <label>
-            Адрес:
-            <input
-              type="text"
-              name="address"
-              value={formData.address}
+            {t("adminDormitoryAddModal.labels.description_ru")}
+            <textarea
+              name="description_ru"
+              value={formData.description_ru}
               onChange={handleChangeDorm}
-              required
+              rows={2}
             />
           </label>
-
           <label>
-            Описание:
+            {t("adminDormitoryAddModal.labels.description_kk")}
             <textarea
-              name="description"
-              value={formData.description}
+              name="description_kk"
+              value={formData.description_kk}
+              onChange={handleChangeDorm}
+              rows={2}
+            />
+          </label>
+          <label>
+            {t("adminDormitoryAddModal.labels.description_en")}
+            <textarea
+              name="description_en"
+              value={formData.description_en}
               onChange={handleChangeDorm}
               rows={2}
             />
           </label>
 
+          {/* Photos */}
           <hr style={{ margin: "20px 0" }} />
-
-
-           {/* ====== СЕКЦИЯ ДЛЯ ЗАГРУЗКИ ФОТОГРАФИЙ ====== */}
-           <h3>Фотографии</h3>
+          <h3>{t("adminDormitoryAddModal.labels.photosSection")}</h3>
           <label>
-            Выбрать фотографии:
+            {t("adminDormitoryAddModal.labels.images")}
             <input
               type="file"
-              name="images"
               multiple
-              onChange={handleFileChange}
               accept="image/*"
+              onChange={handleFileChange}
             />
           </label>
-
           {images.length > 0 && (
-            <ul style={{ marginTop: "10px", paddingLeft: "20px" }}>
-              {images.map((file, index) => (
-                <li key={index} style={{ marginBottom: "5px", display: "flex", alignItems: "center", gap: "10px" }}>
+            <ul style={{ marginTop: 10, paddingLeft: 20 }}>
+              {images.map((file, idx) => (
+                <li
+                  key={idx}
+                  style={{ display: "flex", alignItems: "center", gap: 10 }}
+                >
                   {file.name}
                   <button
                     type="button"
-                    onClick={() => handleRemoveFile(index)}
+                    title={t("adminDormitoryAddModal.buttons.removeFile")}
+                    onClick={() => handleRemoveFile(idx)}
                     style={{
                       background: "transparent",
                       border: "none",
                       color: "#c00",
-                      cursor: "pointer",
-                      fontSize: "16px",
-                      lineHeight: "1"
+                      cursor: "pointer"
                     }}
-                    title="Удалить этот файл"
                   >
                     ✕
                   </button>
@@ -241,85 +254,73 @@ const AdminDormitoryAddModal = ({ onClose }) => {
             </ul>
           )}
 
-          {/* ====== ДИНАМИЧЕСКИЙ СПИСОК КОМНАТ ====== */}
-
-
+          {/* Rooms */}
           <hr style={{ margin: "20px 0" }} />
-
-
-
-          <h3>Комнаты</h3>
+          <h3>{t("adminDormitoryAddModal.labels.roomsSection")}</h3>
           {rooms.map((room, idx) => (
-  <div key={idx} className="room-row">
-    <div className="room-field">
-      <label>
-        Номер комнаты:
-        <input
-          className="room-input"
-          type="text"
-          name="number"
-          value={room.number}
-          onChange={(e) => handleChangeRoom(idx, e)}
-          placeholder="101, 102A и т.д."
-          required
-        />
-      </label>
-    </div>
+            <div key={idx} className="room-row">
+              <div className="room-field">
+                <label>
+                  {t("adminDormitoryAddModal.labels.room_number")}
+                  <input
+                    type="text"
+                    name="number"
+                    value={room.number}
+                    placeholder={t(
+                      "adminDormitoryAddModal.placeholders.room_number"
+                    )}
+                    onChange={(e) => handleChangeRoom(idx, e)}
+                    required
+                  />
+                </label>
+              </div>
+              <div className="room-field">
+                <label>
+                  {t("adminDormitoryAddModal.labels.room_capacity")}
+                  <input
+                    type="number"
+                    name="capacity"
+                    value={room.capacity}
+                    placeholder={t(
+                      "adminDormitoryAddModal.placeholders.room_capacity"
+                    )}
+                    onChange={(e) => handleChangeRoom(idx, e)}
+                    required
+                  />
+                </label>
+              </div>
+              <button
+                type="button"
+                className="room-remove-btn"
+                title={t("adminDormitoryAddModal.buttons.removeRoom")}
+                onClick={() => handleRemoveRoom(idx)}
+              >
+                ✕
+              </button>
+            </div>
+          ))}
+          <button
+            type="button"
+            className="add-room-button"
+            onClick={handleAddRoom}
+          >
+            {t("adminDormitoryAddModal.buttons.addRoom")}
+          </button>
 
-    <div className="room-field">
-      <label>
-        Вместимость:
-        <input
-          className="capacity-input"
-          type="number"
-          name="capacity"
-          value={room.capacity}
-          onChange={(e) => handleChangeRoom(idx, e)}
-          min="1"
-          placeholder="2, 3 или 4"
-          required
-        />
-      </label>
-    </div>
-
-    <button
-      type="button"
-      className="room-remove-btn"
-      onClick={() => handleRemoveRoom(idx)}
-      title="Удалить эту комнату"
-    >
-      ✕
-    </button>
-  </div>
-))}
-
-<button
-  type="button"
-  className="add-room-button"
-  onClick={handleAddRoom}
->
-  + Добавить ещё одну комнату
-</button>
-
-         
-
+          {/* Actions */}
           <hr style={{ margin: "20px 0" }} />
-
-          {/* ====== КНОПКИ СОХРАНЕНИЯ / ОТМЕНЫ ====== */}
-          <div className="form-actions" style={{ display: "flex", gap: "10px" }}>
+          <div className="form-actions" style={{ gap: 10 }}>
             <button type="submit" className="save-button">
-              Сохранить
+              {t("adminDormitoryAddModal.buttons.save")}
             </button>
             <button
               type="button"
               className="cancel-button"
               onClick={onClose}
             >
-              Отмена
+              {t("adminDormitoryAddModal.buttons.cancel")}
             </button>
           </div>
-
-          {/* Отображаем поль�?зовательское сообщение об ошибке или успехе */}
           {message && (
             <div className="error-message" style={{ marginTop: 10 }}>
               {message}

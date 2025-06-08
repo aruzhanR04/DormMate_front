@@ -2,8 +2,11 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../../api';
 import '../../styles/Application.css';
+import { useI18n } from '../../i18n/I18nContext';
 
 const EditApplication = () => {
+  const { t } = useI18n();
+  const txt = t('editApplicationPage');
   const [formData, setFormData] = useState({
     firstName:   '',
     lastName:    '',
@@ -184,23 +187,21 @@ const EditApplication = () => {
   const renderModal = () => (
     <div className="modal application-modal">
       <div className="modal-content application-modal-content">
-        <button className="close-btn" onClick={() => setModalOpen(false)}>✖</button>
-        <h3 className="modal-title">Редактирование документов</h3>
-        <div className="modal-subtext">
-          Здесь вы можете удалить или заменить существующие файлы, а также загрузить новые.
-        </div>
+        <button
+          className="close-btn"
+          onClick={() => setModalOpen(false)}
+        >✖</button>
+        <h3 className="modal-title">{txt.labels.editDocs}</h3>
+        <div className="modal-subtext">{txt.desc}</div>
         <div className="docs-grid">
           {evidenceTypes.map(doc => {
-            // Если первокурсник, ent_certificate обрабатываем выше — пропускаем тут
             if (isFreshman && doc.code === 'ent_certificate') return null;
-
             const fo = formData.documents[doc.code];
-
+            const label = doc.label || doc.name;
             return (
               <div key={doc.code} className="doc-upload-cell">
-                {/* Метка с названием справки и (если есть) текущим файлом */}
                 <label className="file-label" htmlFor={`input_${doc.code}`}>
-                  {doc.label || doc.name}
+                  {label}
                   {fo?.existing && (
                     <span className="existing-file-info">
                       &nbsp;—&nbsp;
@@ -210,28 +211,29 @@ const EditApplication = () => {
                     </span>
                   )}
                 </label>
-
-                {/* Если файл уже есть (свойство `existing` или загружен пользователем),
-                    показываем ссылку + кнопку "Заменить" */}
                 {fo ? (
                   <div className="file-upload-item">
-
-                    <label htmlFor={`input_${doc.code}`} className="file-upload-btn">
-                      Заменить
-                    
-                    <input
-                      type="file"
-                      name={doc.code}
-                      accept="application/pdf"
-                      onChange={handleChange}
-                      id={`input_${doc.code}`}
-                      className="hidden-file-input"
-                    />
+                    <label
+                      htmlFor={`input_${doc.code}`}
+                      className="file-upload-btn"
+                    >
+                      {txt.labels.editDocs}
+                      <input
+                        type="file"
+                        name={doc.code}
+                        accept="application/pdf"
+                        onChange={handleChange}
+                        id={`input_${doc.code}`}
+                        className="hidden-file-input"
+                      />
                     </label>
                   </div>
                 ) : (
-                  <label htmlFor={`input_${doc.code}`} className="file-upload-btn">
-                    Загрузить
+                  <label
+                    htmlFor={`input_${doc.code}`}
+                    className="file-upload-btn"
+                  >
+                    {txt.labels.uploadEnt}
                     <input
                       type="file"
                       name={doc.code}
@@ -247,8 +249,11 @@ const EditApplication = () => {
           })}
         </div>
         <div className="modal-btns">
-          <button className="modal-cancel-btn" onClick={() => setModalOpen(false)}>
-            Закрыть
+          <button
+            className="modal-cancel-btn"
+            onClick={() => setModalOpen(false)}
+          >
+            {txt.labels.close}
           </button>
         </div>
       </div>
@@ -258,43 +263,24 @@ const EditApplication = () => {
   return (
     <div className="application-page">
       <div className="application-box">
-        <h1 className="app-title">Редактировать заявку</h1>
-        <p className="app-desc">
-          Внесите необходимые изменения и нажмите «Сохранить изменения»
-        </p>
+        <h1 className="app-title">{txt.title}</h1>
+        <p className="app-desc">{txt.desc}</p>
 
         <div className="app-form">
           <div className="app-form-grid">
+            {['firstName','lastName','course','gender','birthDate'].map(key => (
+              <div key={key} className="input-block">
+                <label>{txt.labels[key]}</label>
+                <input
+                  type="text"
+                  value={formData[key]}
+                  readOnly
+                />
+              </div>
+            ))}
+
             <div className="input-block">
-              <label>Имя</label>
-              <input type="text" value={formData.firstName} readOnly />
-            </div>
-            <div className="input-block">
-              <label>Фамилия</label>
-              <input type="text" value={formData.lastName} readOnly />
-            </div>
-            <div className="input-block">
-              <label>Курс</label>
-              <input type="text" value={formData.course} readOnly />
-            </div>
-            <div className="input-block">
-              <label>Пол</label>
-              <input
-                type="text"
-                value={
-                  formData.gender === 'M' ? 'Мужской'
-                  : formData.gender === 'F' ? 'Женский'
-                  : ''
-                }
-                readOnly
-              />
-            </div>
-            <div className="input-block">
-              <label>Дата рождения</label>
-              <input type="text" value={formData.birthDate} readOnly />
-            </div>
-            <div className="input-block">
-              <label>Телефон родителя</label>
+              <label>{txt.labels.parentPhone}</label>
               <input
                 type="text"
                 name="parentPhone"
@@ -302,15 +288,15 @@ const EditApplication = () => {
                 onChange={handleChange}
               />
             </div>
+
             <div className="input-block">
-              <label>Ценовой диапазон</label>
+              <label>{txt.labels.priceRange}</label>
               <select
                 name="priceRange"
                 value={formData.priceRange}
                 onChange={handleChange}
-                className="price-range-select"
               >
-                <option value="">Выберите стоимость</option>
+                <option value="">{txt.labels.priceRange}</option>
                 {costOptions.map(c => (
                   <option key={c} value={c}>
                     {Number(c).toLocaleString('ru-RU')} ₸
@@ -319,22 +305,21 @@ const EditApplication = () => {
               </select>
             </div>
 
-            {/* Поля для ЕНТ или GPA */}
             {isFreshman ? (
               <>
                 <div className="input-block">
-                  <label>Балл ЕНТ</label>
+                  <label>{txt.labels.entResult.label}</label>
                   <input
                     type="number"
                     name="entResult"
                     value={formData.entResult}
                     readOnly
-                    placeholder="Будет заполнено при загрузке сертификата"
+                    placeholder={txt.labels.entResult.placeholder}
                   />
                 </div>
                 <div className="input-block-file">
                   <label htmlFor="ent_certificate" className="file-upload-btn">
-                    Загрузить сертификат ЕНТ
+                    {txt.labels.uploadEnt}
                   </label>
                   <input
                     type="file"
@@ -351,19 +336,15 @@ const EditApplication = () => {
                         type="button"
                         className="remove-file-btn"
                         onClick={() => handleRemoveFile('ent_certificate')}
-                      >
-                        ✖
-                      </button>
+                      >✖</button>
                     </div>
                   )}
-                  <small className="field-note">
-                    Загрузите PDF сертификата, чтобы поле «Балл ЕНТ» было заполнено автоматически.
-                  </small>
+                  <small className="field-note">{txt.notes.ent}</small>
                 </div>
               </>
             ) : (
               <div className="input-block">
-                <label>GPA</label>
+                <label>{txt.labels.gpa}</label>
                 <input
                   type="text"
                   name="entResult"
@@ -375,29 +356,24 @@ const EditApplication = () => {
           </div>
         </div>
 
-        {/* Список уже загруженных файлов (с названием справки) */}
         {Object.keys(formData.documents).length > 0 && (
           <div className="selected-files">
-            <h4>Файлы в заявке:</h4>
+            <h4>{txt.labels.filesInApp}</h4>
             <ul>
               {Object.entries(formData.documents).map(([code, fo]) => {
-                // Находим имя справки у EvidenceType, чтобы показывать label
                 const docType = evidenceTypes.find(et => et.code === code);
                 const docLabel = docType ? (docType.label || docType.name) : code;
-
                 return (
                   <li key={code}>
                     <strong>{docLabel}:</strong>{' '}
                     {fo.existing
-                      ? <a href={fo.url} target="_blank" rel="noopener noreferrer">{fo.name}</a>
+                      ? <a href={fo.url} target="_blank" rel="noreferrer">{fo.name}</a>
                       : <span>{fo.name}</span>
                     }{' '}
                     <button
                       className="remove-file-btn"
                       onClick={() => handleRemoveFile(code)}
-                    >
-                      ✖
-                    </button>
+                    >✖</button>
                   </li>
                 );
               })}
@@ -411,14 +387,14 @@ const EditApplication = () => {
             className="upload-btn"
             onClick={() => setModalOpen(true)}
           >
-            Изменить документы
+            {txt.labels.editDocs}
           </button>
           <button
             type="button"
             className="submit-btn"
             onClick={handleUpdate}
           >
-            Сохранить изменения
+            {txt.labels.save}
           </button>
         </div>
       </div>

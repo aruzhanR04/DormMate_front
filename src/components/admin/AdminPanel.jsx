@@ -1,173 +1,145 @@
+// src/components/AdminPanel.jsx
+
 import React, { useEffect, useState } from "react";
 import AdminSidebar from "./AdminSidebar";
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from "react-router-dom";
 import "../../styles/AdminPanel.css";
 import studentIcon from "../../assets/icons/adminStudent.svg";
 import dormIcon from "../../assets/icons/adminDormitories.svg";
 import appIcon from "../../assets/icons/adminApplications.svg";
-import newStudentIcon from "../../assets/icons/adminStudentPlus.svg";
-import newDormIcon from "../../assets/icons/adminDormAdd.svg";
-import approveIcon from "../../assets/icons/adminApprove.svg";
-import importIcon from "../../assets/icons/adminImport.svg";
-import moveoutIcon from "../../assets/icons/adminMoveOut.svg";
-import api from "../../api.js";
 import AuditLog from "./AuditLog.jsx";
-
-const mockStats = {
-  students: 1234,
-  dorms: 3,
-  applications: 22,
-};
-
-const mockActions = [
-  {
-    icon: newStudentIcon,
-    title: "Новый студент",
-    desc: "Имя фамилия добавлен в систему",
-  },
-  {
-    icon: newDormIcon,
-    title: "Новое общежитие",
-    desc: "Дом студентов 4 добавлено в систему",
-  },
-  {
-    icon: approveIcon,
-    title: "Заявка одобрена",
-    desc: "Заявка #1234 одобрена (фамилия И.)",
-  },
-  {
-    icon: importIcon,
-    title: "Импорт данных",
-    desc: "Загружен новый список студентов из Excel",
-  },
-  {
-    icon: moveoutIcon,
-    title: "Выселение",
-    desc: "Фамилия И. выселен из общежития №2",
-  },
-];
+import api from "../../api.js";
+import { useI18n } from "../../i18n/I18nContext";
 
 const AdminPanel = () => {
-  const navigate = useNavigate()
-  const [stats, setStats] = useState(mockStats);
-  const [actions, setActions] = useState(mockActions);
-  const [studentCount, setStudentCount] = useState()
-  const [dormsCount, setDormsCount] = useState()
-  const [appsCount, setAppsCount] = useState()
+  const { t } = useI18n();
+  const navigate = useNavigate();
+  const [studentCount, setStudentCount] = useState(null);
+  const [dormsCount, setDormsCount] = useState(null);
+  const [appsCount, setAppsCount] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [allowEdit, setAllowEdit] = useState(false);
-  const [loadingSettings, setLoadingSettings] = useState(true);
-  const [isEditWarningOpen, setIsEditWarningOpen] = useState(false);
-
 
   useEffect(() => {
-    const fetchStudentCount = async () => {
-        try {
-            const response = await api.get('/students/count');
-            setStudentCount(response.data);
-        } catch (err) {
-            setStudentCountError('Не удалось загрузить данные');
-        } finally {
-            setLoading(false);
-        }
-    };
-
-
-
-    const fetchDormCount = async () => {
+    const fetchCounts = async () => {
       try {
-          const response = await api.get('/dorms/count');
-          setDormsCount(response.data);
+        const [studRes, dormRes, appsRes] = await Promise.all([
+          api.get("/students/count"),
+          api.get("/dorms/count"),
+          api.get("/apps/count"),
+        ]);
+        setStudentCount(studRes.data);
+        setDormsCount(dormRes.data);
+        setAppsCount(appsRes.data);
       } catch (err) {
-          setDormsCountError('Не удалось загрузить данные');
+        console.error(err);
       } finally {
-          setLoading(false);
-      }
-  };
-
-
-
-  const fetchAppsCount = async () => {
-    try {
-        const response = await api.get('/apps/count');
-        setAppsCount(response.data);
-    } catch (err) {
-        setAppsCountError('Не удалось загрузить данные');
-    } finally {
         setLoading(false);
-    }
-};
+      }
+    };
+    fetchCounts();
+  }, []);
 
-    fetchAppsCount()
-    fetchStudentCount();
-    fetchDormCount()
-}, []);
-
-
-
-
-const handleNavigate = (to) => {
-      navigate(`/admin/${to}`);
-};
+  const handleNavigate = (to) => navigate(`/admin/${to}`);
 
   return (
     <div className="admin-layout">
       <AdminSidebar />
       <div className="admin-main">
-      <div className="admin-header-row">
-          <div style={{ flex: 1 }}></div>
+        {/* Header buttons */}
+        <div className="admin-header-row">
+          <div style={{ flex: 1 }} />
           <button
             className="admin-chat-btn"
             onClick={() => navigate("/admin/dorm-chats")}
-            style={{marginRight:"2vw"}}
+            style={{ marginRight: "2vw" }}
           >
-            Чаты общежитий
+            {t("adminPanel.header.dormChats")}
           </button>
           <button
             className="admin-chat-btn"
             onClick={() => navigate("/admin/chats")}
           >
-            Чаты
+            {t("adminPanel.header.chats")}
           </button>
         </div>
-        <h2 className="admin-title">Админ панель</h2>
+
+        <h2 className="admin-title">{t("adminPanel.title")}</h2>
+
         <div className="admin-dashboard-cards">
+          {/* Students card */}
           <div className="admin-card">
-            <img src={studentIcon} alt="" className="admin-card-icon" />
-            <div className="admin-card-title">Студенты</div>
-            <div className="admin-card-count">{studentCount ? studentCount.count : ""}</div>
-            <div className="admin-card-desc">Зарегистрировано студентов</div>
-            <button className="admin-card-btn" onClick={() => handleNavigate("students")}>Управление</button>
+            <img
+              src={studentIcon}
+              alt=""
+              className="admin-card-icon"
+            />
+            <div className="admin-card-title">
+              {t("adminPanel.cards.students.title")}
+            </div>
+            <div className="admin-card-count">
+              {!loading && studentCount?.count}
+            </div>
+            <div className="admin-card-desc">
+              {t("adminPanel.cards.students.desc")}
+            </div>
+            <button
+              className="admin-card-btn"
+              onClick={() => handleNavigate("students")}
+            >
+              {t("adminPanel.cards.students.btn")}
+            </button>
           </div>
+
+          {/* Dormitories card */}
           <div className="admin-card">
-            <img src={dormIcon} alt="" className="admin-card-icon" />
-            <div className="admin-card-title">Общежития</div>
-            <div className="admin-card-count">{dormsCount?.total_dorms ?? 0}</div>
-            <div className="admin-card-desc">Общежитий в системе</div>
-            <button className="admin-card-btn" onClick={() => handleNavigate("dormitories")}>Управление</button>
+            <img
+              src={dormIcon}
+              alt=""
+              className="admin-card-icon"
+            />
+            <div className="admin-card-title">
+              {t("adminPanel.cards.dormitories.title")}
+            </div>
+            <div className="admin-card-count">
+              {!loading && dormsCount?.total_dorms}
+            </div>
+            <div className="admin-card-desc">
+              {t("adminPanel.cards.dormitories.desc")}
+            </div>
+            <button
+              className="admin-card-btn"
+              onClick={() => handleNavigate("dormitories")}
+            >
+              {t("adminPanel.cards.dormitories.btn")}
+            </button>
           </div>
+
+          {/* Applications card */}
           <div className="admin-card">
-            <img src={appIcon} alt="" className="admin-card-icon" />
-            <div className="admin-card-title">Заявки</div>
-            <div className="admin-card-count">{appsCount ? appsCount.count : ""}</div>
-            <div className="admin-card-desc">Заявок на рассмотрении</div>
-            <button className="admin-card-btn" onClick={() => handleNavigate("applications")}>Управление</button>
+            <img
+              src={appIcon}
+              alt=""
+              className="admin-card-icon"
+            />
+            <div className="admin-card-title">
+              {t("adminPanel.cards.applications.title")}
+            </div>
+            <div className="admin-card-count">
+              {!loading && appsCount?.count}
+            </div>
+            <div className="admin-card-desc">
+              {t("adminPanel.cards.applications.desc")}
+            </div>
+            <button
+              className="admin-card-btn"
+              onClick={() => handleNavigate("applications")}
+            >
+              {t("adminPanel.cards.applications.btn")}
+            </button>
           </div>
         </div>
-        {/* <div className="admin-last-actions">
-          <div className="admin-last-title">Последние действия</div>
-          <div className="admin-last-list">
-            {actions.map((a, i) => (
-              <div className="admin-action" key={i}>
-                <img src={a.icon} alt="" className="admin-action-icon" />
-                <div>
-                  <div className="admin-action-title">{a.title}</div>
-                  <div className="admin-action-desc">{a.desc}</div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div> */}
+
+        {/* Audit log */}
         <AuditLog />
       </div>
     </div>

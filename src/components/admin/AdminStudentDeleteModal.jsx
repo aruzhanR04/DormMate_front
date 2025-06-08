@@ -1,21 +1,37 @@
+// src/components/AdminStudentDeleteModal.jsx
+
 import React from "react";
 import "../../styles/AdminFormShared.css";
+import { useI18n } from "../../i18n/I18nContext";
 
 const AdminStudentDeleteModal = ({ student, onClose, onConfirm }) => {
+  const { t } = useI18n();
   return (
     <div className="modal">
       <div className="modal-content" style={{ minWidth: 400 }}>
-        <button className="modal-close-btn" onClick={onClose}>✕</button>
-        <h2>Удаление студента</h2>
+        <button className="modal-close-btn" onClick={onClose}>
+          {t("adminStudentDeleteModal.close")}
+        </button>
+        <h2>{t("adminStudentDeleteModal.title")}</h2>
         <p style={{ margin: "20px 0" }}>
-          Вы действительно хотите удалить студента <strong>{student.last_name} {student.first_name}</strong> (s: <strong>{student.s}</strong>)?
+          {t("adminStudentDeleteModal.confirm", {
+            last: student.last_name,
+            first: student.first_name,
+            s: student.s,
+          })}
         </p>
-        <div className="form-actions" style={{ display: "flex", justifyContent: "flex-end", gap: "10px" }}>
+        <div
+          className="form-actions"
+          style={{ display: "flex", justifyContent: "flex-end", gap: "10px" }}
+        >
           <button className="cancel-button" onClick={onClose}>
-            Отмена
+            {t("adminStudentDeleteModal.buttons.cancel")}
           </button>
-          <button className="submit-button delete" onClick={() => onConfirm(student)}>
-            Удалить
+          <button
+            className="submit-button delete"
+            onClick={() => onConfirm(student)}
+          >
+            {t("adminStudentDeleteModal.buttons.delete")}
           </button>
         </div>
       </div>

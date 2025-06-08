@@ -1,3 +1,5 @@
+// src/pages/admin/EvidenceKeywordsPage.jsx
+
 import React, { useState, useEffect } from "react";
 import api from "../../api";
 import AdminSidebar from "../admin/AdminSidebar";
@@ -6,10 +8,14 @@ import viewIcon from "../../assets/icons/viewIcon.svg";
 import deleteIcon from "../../assets/icons/deleteIcon.svg";
 import "../../styles/AdminActions.css";
 import "../../styles/AdminFormShared.css";
+import { useI18n } from "../../i18n/I18nContext";
 
 const ITEMS_PER_PAGE = 4;
 
 const EvidenceKeywordsPage = () => {
+  const { t } = useI18n();
+  const cfg = t("evidenceKeywordsPage");
+
   const [keywords, setKeywords] = useState([]);
   const [totalCount, setTotalCount] = useState(0);
   const [page, setPage] = useState(1);
@@ -25,77 +31,51 @@ const EvidenceKeywordsPage = () => {
   const [viewKeywordObj, setViewKeywordObj] = useState({});
   const [keywordToDelete, setKeywordToDelete] = useState(null);
 
-  const fetchKeywords = async (requestedPage = page) => {
+  useEffect(() => {
+    fetchKeywords(page);
+  }, [page]);
+
+  const fetchKeywords = async (p = page) => {
     try {
-      const params = { page: requestedPage, page_size: ITEMS_PER_PAGE };
-      const res = await api.get("/keywords/", { params });
+      const res = await api.get("/keywords/", {
+        params: { page: p, page_size: ITEMS_PER_PAGE },
+      });
       const data = res.data;
       setKeywords(Array.isArray(data.results) ? data.results : []);
       setTotalCount(typeof data.count === "number" ? data.count : 0);
-    } catch (err) {
-      console.error("Ошибка при загрузке ключевых слов:", err);
+    } catch {
       setKeywords([]);
       setTotalCount(0);
     }
   };
 
-  useEffect(() => {
-    fetchKeywords(page);
-  }, [page]);
-
   const handleAddKeyword = async (e) => {
     e.preventDefault();
-    const trimmed = newKeyword.trim();
-    if (!trimmed) return;
-
-    try {
-      await api.post("/keywords/", { keyword: trimmed });
-      setNewKeyword("");
-      setIsAddModalOpen(false);
-
-      if (page !== 1) {
-        setPage(1);
-      } else {
-        fetchKeywords(1);
-      }
-    } catch (err) {
-      console.error("Ошибка при добавлении ключевого слова:", err);
-    }
+    const kw = newKeyword.trim();
+    if (!kw) return;
+    await api.post("/keywords/", { keyword: kw });
+    setNewKeyword("");
+    setIsAddModalOpen(false);
+    setPage(1);
   };
 
   const handleEditKeyword = async (e) => {
     e.preventDefault();
-    const trimmed = editKeyword.trim();
-    if (!trimmed) return;
-
-    try {
-      await api.patch(`/keywords/${editKeywordObj.id}/`, { keyword: trimmed });
-      setIsEditModalOpen(false);
-      fetchKeywords(page);
-    } catch (err) {
-      console.error("Ошибка при редактировании ключевого слова:", err);
-    }
+    const kw = editKeyword.trim();
+    if (!kw) return;
+    await api.patch(`/keywords/${editKeywordObj.id}/`, { keyword: kw });
+    setIsEditModalOpen(false);
+    fetchKeywords(page);
   };
 
   const confirmDelete = async () => {
     if (!keywordToDelete) return;
-
-    try {
-      await api.delete(`/keywords/${keywordToDelete.id}/`);
-      const newTotal = totalCount - 1;
-      const newTotalPages = Math.ceil(newTotal / ITEMS_PER_PAGE);
-
-      setIsDeleteModalOpen(false);
-      setKeywordToDelete(null);
-
-      if (page > newTotalPages && newTotalPages > 0) {
-        setPage(newTotalPages);
-      } else {
-        fetchKeywords(page);
-      }
-    } catch (err) {
-      console.error("Ошибка при удалении ключевого слова:", err);
-    }
+    await api.delete(`/keywords/${keywordToDelete.id}/`);
+    const newTotal = totalCount - 1;
+    const pages = Math.ceil(newTotal / ITEMS_PER_PAGE);
+    setIsDeleteModalOpen(false);
+    setKeywordToDelete(null);
+    setPage((p) => (p > pages && pages > 0 ? pages : p));
   };
 
   const totalPages = Math.ceil(totalCount / ITEMS_PER_PAGE);
@@ -105,10 +85,10 @@ const EvidenceKeywordsPage = () => {
       <AdminSidebar />
       <div className="content-area">
         <div className="header-row">
-          <h1>Ключевые слова</h1>
+          <h1>{cfg.title}</h1>
           <div className="actions-list">
             <button onClick={() => setIsAddModalOpen(true)}>
-              Добавить ключевое слово
+              {cfg.buttons.add}
             </button>
           </div>
         </div>
@@ -117,9 +97,9 @@ const EvidenceKeywordsPage = () => {
           <table className="students-table">
             <thead>
               <tr>
-                <th>ID</th>
-                <th>Ключевое слово</th>
-                <th>Операции</th>
+                {Object.values(cfg.table.headers).map((h) => (
+                  <th key={h}>{h}</th>
+                ))}
               </tr>
             </thead>
             <tbody>
@@ -131,17 +111,17 @@ const EvidenceKeywordsPage = () => {
                     <td>
                       <img
                         src={editIcon}
-                        alt="edit"
+                        alt={cfg.table.headers.actions}
                         className="operation-icon"
                         onClick={() => {
-                          setEditKeyword(kw.keyword);
                           setEditKeywordObj(kw);
+                          setEditKeyword(kw.keyword);
                           setIsEditModalOpen(true);
                         }}
                       />
                       <img
                         src={viewIcon}
-                        alt="view"
+                        alt={cfg.table.headers.actions}
                         className="operation-icon"
                         onClick={() => {
                           setViewKeywordObj(kw);
@@ -150,7 +130,7 @@ const EvidenceKeywordsPage = () => {
                       />
                       <img
                         src={deleteIcon}
-                        alt="del"
+                        alt={cfg.table.headers.actions}
                         className="operation-icon"
                         onClick={() => {
                           setKeywordToDelete(kw);
@@ -163,7 +143,7 @@ const EvidenceKeywordsPage = () => {
               ) : (
                 <tr>
                   <td colSpan={3} style={{ textAlign: "center", padding: 20 }}>
-                    Нет данных для отображения.
+                    {cfg.table.empty}
                   </td>
                 </tr>
               )}
@@ -177,7 +157,7 @@ const EvidenceKeywordsPage = () => {
                 disabled={page === 1}
                 onClick={() => setPage((p) => p - 1)}
               >
-                &lt;
+                {cfg.pagination.prev}
               </button>
               {Array.from({ length: totalPages }).map((_, idx) => (
                 <button
@@ -185,7 +165,7 @@ const EvidenceKeywordsPage = () => {
                   className={`pagination-btn${page === idx + 1 ? " active" : ""}`}
                   onClick={() => setPage(idx + 1)}
                 >
-                  {idx + 1}
+                  {cfg.pagination.page.replace("{page}", idx + 1)}
                 </button>
               ))}
               <button
@@ -193,7 +173,7 @@ const EvidenceKeywordsPage = () => {
                 disabled={page === totalPages}
                 onClick={() => setPage((p) => p + 1)}
               >
-                &gt;
+                {cfg.pagination.next}
               </button>
             </div>
           )}
@@ -210,13 +190,13 @@ const EvidenceKeywordsPage = () => {
             >
               ✕
             </button>
-            <h2>Добавить ключевое слово</h2>
+            <h2>{cfg.addModal.title}</h2>
             <form className="simple-modal-form" onSubmit={handleAddKeyword}>
               <input
                 className="simple-modal-input"
                 value={newKeyword}
                 onChange={(e) => setNewKeyword(e.target.value)}
-                placeholder="Введите ключевое слово..."
+                placeholder={cfg.addModal.placeholder}
                 required
               />
               <div className="simple-modal-actions">
@@ -225,10 +205,10 @@ const EvidenceKeywordsPage = () => {
                   className="simple-modal-btn cancel"
                   onClick={() => setIsAddModalOpen(false)}
                 >
-                  Отмена
+                  {cfg.addModal.buttons.cancel}
                 </button>
                 <button type="submit" className="simple-modal-btn save">
-                  Добавить
+                  {cfg.addModal.buttons.save}
                 </button>
               </div>
             </form>
@@ -246,16 +226,21 @@ const EvidenceKeywordsPage = () => {
             >
               ✕
             </button>
-            <h2 style={{textAlign:"left"}} >Просмотр ключевого слова</h2>
-            <p style={{textAlign:"left", margin:"0"}}><strong>ID:</strong> {viewKeywordObj.id}</p>
-            <p style={{textAlign:"left"}}><strong>Ключевое слово:</strong> {viewKeywordObj.keyword}</p>
+            <h2>{cfg.viewModal.title}</h2>
+            <p>
+              <strong>{cfg.viewModal.fields.id}</strong> {viewKeywordObj.id}
+            </p>
+            <p>
+              <strong>{cfg.viewModal.fields.keyword}</strong>{" "}
+              {viewKeywordObj.keyword}
+            </p>
             <div className="simple-modal-actions">
               <button
                 className="simple-modal-btn cancel"
                 onClick={() => setIsViewModalOpen(false)}
-                style={{backgroundColor:"#333"}}
+                style={{ backgroundColor: "#333", color: "#fff" }}
               >
-                Закрыть
+                {cfg.viewModal.buttons.close}
               </button>
             </div>
           </div>
@@ -272,7 +257,7 @@ const EvidenceKeywordsPage = () => {
             >
               ✕
             </button>
-            <h2>Редактировать ключевое слово</h2>
+            <h2>{cfg.editModal.title}</h2>
             <form className="simple-modal-form" onSubmit={handleEditKeyword}>
               <input
                 className="simple-modal-input"
@@ -286,10 +271,10 @@ const EvidenceKeywordsPage = () => {
                   className="simple-modal-btn cancel"
                   onClick={() => setIsEditModalOpen(false)}
                 >
-                  Отмена
+                  {cfg.editModal.buttons.cancel}
                 </button>
                 <button type="submit" className="simple-modal-btn save">
-                  Сохранить
+                  {cfg.editModal.buttons.save}
                 </button>
               </div>
             </form>
@@ -300,31 +285,36 @@ const EvidenceKeywordsPage = () => {
       {/* Delete Confirmation Modal */}
       {isDeleteModalOpen && keywordToDelete && (
         <div className="simple-modal-overlay">
-          <div className="simple-modal-content" style={{ border: "2px solid #D50032" }}>
+          <div
+            className="simple-modal-content"
+            style={{ border: "2px solid #D50032" }}
+          >
             <button
               className="simple-modal-close"
               onClick={() => setIsDeleteModalOpen(false)}
             >
               ✕
             </button>
-            <h2 style={{ color: "#D50032" }}>Подтвердите удаление</h2>
+            <h2 style={{ color: "#D50032" }}>{cfg.deleteModal.title}</h2>
             <p>
-              Вы уверены, что хотите удалить ключевое слово:
-              <strong>«{keywordToDelete.keyword}»?</strong>
+              {cfg.deleteModal.confirm.replace(
+                "{keyword}",
+                keywordToDelete.keyword
+              )}
             </p>
             <div className="simple-modal-actions">
               <button
                 className="simple-modal-btn cancel"
                 onClick={() => setIsDeleteModalOpen(false)}
               >
-                Отмена
+                {cfg.deleteModal.buttons.cancel}
               </button>
               <button
                 className="simple-modal-btn save"
                 style={{ backgroundColor: "#D50032", color: "#fff" }}
                 onClick={confirmDelete}
               >
-                Удалить
+                {cfg.deleteModal.buttons.delete}
               </button>
             </div>
           </div>

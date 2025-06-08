@@ -1,11 +1,13 @@
-// src/components/admin/AdminStudentEditModal.jsx
+// src/components/AdminStudentEditModal.jsx
 
 import React, { useEffect, useState } from "react";
 import api from "../../api";
 import "../../styles/AdminFormShared.css";
+import { useI18n } from "../../i18n/I18nContext";
 
 const AdminStudentEditModal = ({ student, onClose, onSaved }) => {
-  // 1) Инициализируем формдата, включая region как ID (число)
+  const { t } = useI18n();
+
   const [formData, setFormData] = useState({
     s: "",
     first_name: "",
@@ -16,24 +18,18 @@ const AdminStudentEditModal = ({ student, onClose, onSaved }) => {
     phone_number: "",
     gender: "",
     course: "",
-    region: "",    // здесь будет числовой ID региона
+    region: "",
   });
-
   const [regions, setRegions] = useState([]);
-  const [errors, setErrors] = useState({}); // { fieldName: [ "msg1", "msg2" ], ... }
+  const [errors, setErrors] = useState({});
   const [message, setMessage] = useState("");
 
-  // 2) При получении нового student сразу заполняем formData
   useEffect(() => {
     if (!student) return;
-
-    // Если student.region — объект { id, region_name }, возьмём .id, иначе сам числовой ID
-    let regionId = "";
-    if (student.region != null) {
-      regionId =
-        typeof student.region === "object" ? student.region.id : student.region;
-    }
-
+    const regionId =
+      student.region && typeof student.region === "object"
+        ? student.region.id
+        : student.region || "";
     setFormData({
       s: student.s || "",
       first_name: student.first_name || "",
@@ -44,17 +40,15 @@ const AdminStudentEditModal = ({ student, onClose, onSaved }) => {
       phone_number: student.phone_number || "",
       gender: student.gender || "",
       course: student.course || "",
-      region: regionId || "",
+      region: regionId,
     });
   }, [student]);
 
-  // 3) Загружаем список регионов для селекта
   useEffect(() => {
     const fetchRegions = async () => {
       try {
-        const response = await api.get("/regions/");
-        // Берём или response.data.results, или сразу response.data, в зависимости от того, как API рендерит
-        const data = response.data.results || response.data;
+        const resp = await api.get("/regions/");
+        const data = resp.data.results || resp.data;
         setRegions(data);
       } catch (err) {
         console.error("Не удалось загрузить регионы:", err);
@@ -63,166 +57,85 @@ const AdminStudentEditModal = ({ student, onClose, onSaved }) => {
     fetchRegions();
   }, []);
 
-  // 4) Обработчик изменения любого поля формы
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      // Если это селект region, конвертируем в число
+    setFormData((p) => ({
+      ...p,
       [name]: name === "region" ? parseInt(value, 10) : value,
     }));
   };
 
-  // 5) Когда нажали «Сохранить», отправляем PUT и ловим ошибки
   const handleSave = async (e) => {
     e.preventDefault();
     setErrors({});
     setMessage("");
-
     try {
-      // formData содержит field region как число (ID), остальные поля — строки
-      const response = await api.patch(`/students/${student.id}/`, formData);
-
-      // Если статус 200/201, считаем, что всё успешно
-      if (response.status === 200 || response.status === 201) {
-        setMessage("Данные успешно сохранены.");
-        onSaved(); // Передаём сигнал родителю, чтобы он обновил список и закрыл модалку
-      }
-    } catch (error) {
-      // Если сервер вернул валидационные ошибки (status=400), error.response.data будет содержать подробности
-      if (error.response && error.response.status === 400) {
-        console.error("Validation errors:", error.response.data);
-        setErrors(error.response.data);
+      const resp = await api.patch(`/students/${student.id}/`, formData);
+      setMessage(t("adminStudentEditModal.messages.saveSuccess"));
+      onSaved();
+    } catch (err) {
+      if (err.response?.status === 400) {
+        setErrors(err.response.data);
       } else {
-        console.error("Ошибка при PUT /students/:id:", error);
-        setMessage("Произошла ошибка при сохранении данных.");
+        setMessage(t("adminStudentEditModal.messages.saveError"));
       }
     }
   };
 
-  // Вспомогательная функция: если errors[field] — массив, выводим каждый <p>
-  const renderFieldErrors = (fieldName) => {
-    if (!errors[fieldName]) return null;
-    return errors[fieldName].map((msg, idx) => (
-      <p key={idx} className="error-message">
+  const renderFieldErrors = (field) =>
+    errors[field]?.map((msg, i) => (
+      <p key={i} className="error-message">
         {msg}
       </p>
     ));
-  };
 
   return (
     <div className="modal">
       <div className="modal-content" style={{ minWidth: 500 }}>
         <button className="modal-close-btn" onClick={onClose}>
-          ✕
+          {t("adminStudentEditModal.close")}
         </button>
-        <h2>Редактирование студента</h2>
-
+        <h2>{t("adminStudentEditModal.title")}</h2>
         <form className="form-container" onSubmit={handleSave}>
-          {/* S (идентификатор) – только для просмотра */}
+          {/* S */}
           <label>
-            S:
-            <input
-              type="text"
-              name="s"
-              value={formData.s}
-              disabled
-            />
+            {t("adminStudentEditModal.labels.s")}
+            <input type="text" name="s" value={formData.s} disabled />
           </label>
 
-          {/* Имя */}
-          <label>
-            Имя:
-            <input
-              type="text"
-              name="first_name"
-              value={formData.first_name}
-              onChange={handleChange}
-            />
-            {renderFieldErrors("first_name")}
-          </label>
+          {/* Text fields */}
+          {[
+            "first_name",
+            "last_name",
+            "middle_name",
+            "email",
+            "phone_number",
+            "birth_date",
+            "course",
+          ].map((field) => (
+            <label key={field}>
+              {t(`adminStudentEditModal.labels.${field}`)}
+              <input
+                type={field === "birth_date" ? "date" : "text"}
+                name={field}
+                value={formData[field]}
+                onChange={handleChange}
+              />
+              {renderFieldErrors(field)}
+            </label>
+          ))}
 
-          {/* Фамилия */}
+          {/* Region */}
           <label>
-            Фамилия:
-            <input
-              type="text"
-              name="last_name"
-              value={formData.last_name}
-              onChange={handleChange}
-            />
-            {renderFieldErrors("last_name")}
-          </label>
-
-          {/* Отчество */}
-          <label>
-            Отчество:
-            <input
-              type="text"
-              name="middle_name"
-              value={formData.middle_name}
-              onChange={handleChange}
-            />
-            {renderFieldErrors("middle_name")}
-          </label>
-
-          {/* Email */}
-          <label>
-            Email:
-            <input
-              type="email"
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
-            />
-            {renderFieldErrors("email")}
-          </label>
-
-          {/* Телефон */}
-          <label>
-            Телефон:
-            <input
-              type="text"
-              name="phone_number"
-              value={formData.phone_number}
-              onChange={handleChange}
-            />
-            {renderFieldErrors("phone_number")}
-          </label>
-
-          {/* Дата рождения */}
-          <label>
-            Дата рождения:
-            <input
-              type="date"
-              name="birth_date"
-              value={formData.birth_date}
-              onChange={handleChange}
-            />
-            {renderFieldErrors("birth_date")}
-          </label>
-
-          {/* Курс */}
-          <label>
-            Курс:
-            <input
-              type="text"
-              name="course"
-              value={formData.course}
-              onChange={handleChange}
-            />
-            {renderFieldErrors("course")}
-          </label>
-
-          {/* Область (селект) */}
-          <label>
-            Область:
+            {t("adminStudentEditModal.labels.region")}
             <select
               name="region"
               value={formData.region}
               onChange={handleChange}
             >
-              <option value="">Выберите регион</option>
+              <option value="">
+                {t("adminStudentEditModal.regionPlaceholder")}
+              </option>
               {regions.map((r) => (
                 <option key={r.id} value={r.id}>
                   {r.region_name}
@@ -232,17 +145,21 @@ const AdminStudentEditModal = ({ student, onClose, onSaved }) => {
             {renderFieldErrors("region")}
           </label>
 
-          {/* Пол */}
+          {/* Gender */}
           <label>
-            Пол:
+            {t("adminStudentEditModal.labels.gender")}
             <select
               name="gender"
               value={formData.gender}
               onChange={handleChange}
             >
-              <option value="">Выберите</option>
-              <option value="M">М</option>
-              <option value="F">Ж</option>
+              {Object.entries(t("adminStudentEditModal.genderOptions")).map(
+                ([val, lbl]) => (
+                  <option key={val} value={val}>
+                    {lbl}
+                  </option>
+                )
+              )}
             </select>
             {renderFieldErrors("gender")}
           </label>
@@ -253,15 +170,13 @@ const AdminStudentEditModal = ({ student, onClose, onSaved }) => {
               className="cancel-button"
               onClick={onClose}
             >
-              Отмена
+              {t("adminStudentEditModal.buttons.cancel")}
             </button>
             <button type="submit" className="save-button">
-              Сохранить
+              {t("adminStudentEditModal.buttons.save")}
             </button>
           </div>
         </form>
-
-        {/* Если есть общее сообщение об успехе/ошибке, показываем его здесь */}
         {message && <div className="error-message">{message}</div>}
       </div>
     </div>

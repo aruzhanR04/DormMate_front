@@ -1,3 +1,5 @@
+// src/components/Navbar.jsx
+
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import '../../styles/Navbar.css';
@@ -5,133 +7,97 @@ import logo from '../../assets/icons/logo.png';
 import bellIcon from '../../assets/icons/bell.png';
 import notificationSound from '../../assets/audio/notification.mp3';
 import api from '../../api';
+import { LanguageSwitcher } from '../../pages/elements/LanguageSwitcher';
+import { useI18n } from '../../i18n/I18nContext';
 
 const Navbar = ({ isAuthenticated, userRole, onLogout }) => {
+  const { t } = useI18n();
+  const txt = t('navbar');
+
   const [menuOpen, setMenuOpen] = useState(false);
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
 
-  // Профиль пользователя
   const [userName, setUserName] = useState('');
   const [avatarUrl, setAvatarUrl] = useState('');
 
-  // ---------------- STUDENT NOTIFICATIONS -----------------
   const [studentNotifications, setStudentNotifications] = useState([]);
   const [isStudentNotifOpen, setIsStudentNotifOpen] = useState(false);
   const [hasNewStudentNotification, setHasNewStudentNotification] = useState(false);
-  const audioRef = useRef(null);
-  const prevStudentCountRef = useRef(0);
 
-  // ---------------- ADMIN NOTIFICATIONS -----------------
   const [adminNotifications, setAdminNotifications] = useState([]);
   const [isAdminNotifOpen, setIsAdminNotifOpen] = useState(false);
   const [hasNewAdminNotification, setHasNewAdminNotification] = useState(false);
-  const prevAdminCountRef = useRef(0);
 
-  // Состояния заявки студента
   const [hasApplication, setHasApplication] = useState(false);
-  const [noApplication, setNoApplication] = useState(false);
-  const [isEditWarningOpen, setIsEditWarningOpen] = useState(false);
   const [loadingSettings, setLoadingSettings] = useState(true);
   const [allowEdit, setAllowEdit] = useState(false);
+  const [isEditWarningOpen, setIsEditWarningOpen] = useState(false);
+
+  const audioRef = useRef(null);
+  const prevStudentCountRef = useRef(0);
+  const prevAdminCountRef = useRef(0);
 
   const navigate = useNavigate();
 
-  // 1) Загрузка профиля
+  // 1) Load profile
   useEffect(() => {
-    if (!isAuthenticated) {
-      setUserName('');
-      setAvatarUrl('');
-      return;
-    }
+    if (!isAuthenticated) return;
+    const endpoint = userRole === 'student' ? '/studentdetail/' : '/admins/me/';
+    api.get(endpoint)
+      .then(res => {
+        const data = res.data;
+        setUserName(`${data.first_name} ${data.last_name}`);
+        setAvatarUrl(data.avatar || '');
+      })
+      .catch(() => {
+        setUserName('');
+        setAvatarUrl('');
+      });
+  }, [isAuthenticated, userRole]);
 
-    if (userRole === 'student') {
-      api.get('/studentdetail/')
-        .then(res => {
-          const data = res.data;
-          setUserName(`${data.first_name} ${data.last_name}`);
-          setAvatarUrl(data.avatar || '');
-        })
-        .catch(err => {
-          console.error('Ошибка при загрузке профиля студента в Navbar:', err);
-          setUserName('');
-          setAvatarUrl('');
-        });
-    } else if (userRole === 'admin') {
-      api.get('/admins/me/')
-        .then(res => {
-          const data = res.data;
-          setUserName(`${data.first_name} ${data.last_name}`);
-          setAvatarUrl(data.avatar || '');
-        })
-        .catch(err => {
-          console.error('Ошибка при загрузке профиля администратора в Navbar:', err);
-          setUserName('');
-          setAvatarUrl('');
-        });
-    } else {
-      setUserName('');
-      setAvatarUrl('');
+  // 2) Init notification sound
+  useEffect(() => {
+    if (isAuthenticated && userRole === 'student') {
+      const a = new Audio(notificationSound);
+      a.volume = 0.8;
+      audioRef.current = a;
     }
   }, [isAuthenticated, userRole]);
 
-  // 2) Инициализация звука уведомлений для студента
+  // 3) Global settings for edit permission
   useEffect(() => {
-    if (userRole === 'student' && isAuthenticated) {
-      const audio = new Audio(notificationSound);
-      audio.volume = 0.8;
-      audioRef.current = audio;
-    }
-  }, [userRole, isAuthenticated]);
-
-  // 3) Глобальные настройки (для разрешения редактирования заявки)
-  useEffect(() => {
-    const fetchGlobalSettings = async () => {
-      try {
-        const response = await api.get('/global-settings/');
-        setAllowEdit(!!response.data?.allow_application_edit);
-      } catch (error) {
-        console.error('Ошибка при загрузке настроек:', error);
-      } finally {
-        setLoadingSettings(false);
-      }
-    };
-    fetchGlobalSettings();
+    api.get('/global-settings/')
+      .then(res => setAllowEdit(!!res.data.allow_application_edit))
+      .catch(() => {})
+      .finally(() => setLoadingSettings(false));
   }, []);
 
-  // 4) Периодически загружаем уведомления студента
+  // 4) Fetch student notifications periodically
   useEffect(() => {
     if (isAuthenticated && userRole === 'student') {
       fetchStudentNotifications();
-      const interval = setInterval(fetchStudentNotifications, 10000);
-      return () => clearInterval(interval);
+      const iv = setInterval(fetchStudentNotifications, 10000);
+      return () => clearInterval(iv);
     }
   }, [isAuthenticated, userRole]);
 
-  // 5) Периодически загружаем уведомления администратора
+  // 5) Fetch admin notifications periodically
   useEffect(() => {
     if (isAuthenticated && userRole === 'admin') {
       fetchAdminNotifications();
-      const interval = setInterval(fetchAdminNotifications, 10000);
-      return () => clearInterval(interval);
+      const iv = setInterval(fetchAdminNotifications, 10000);
+      return () => clearInterval(iv);
     }
   }, [isAuthenticated, userRole]);
 
-  // 6) Проверяем, есть ли у студента заявка
+  // 6) Check if student has application
   useEffect(() => {
     if (isAuthenticated && userRole === 'student') {
       api.get('/application_status/')
-        .then(res => {
-          setHasApplication(true);
-          setNoApplication(false);
-        })
+        .then(() => setHasApplication(true))
         .catch(err => {
           if (err.response?.status === 404) {
             setHasApplication(false);
-            setNoApplication(true);
-          } else {
-            console.error('Ошибка при проверке статуса заявки в Navbar:', err);
-            setHasApplication(false);
-            setNoApplication(true);
           }
         });
     }
@@ -139,258 +105,194 @@ const Navbar = ({ isAuthenticated, userRole, onLogout }) => {
 
   const handleEditApplicationClick = () => {
     if (loadingSettings) return;
-    if (allowEdit) {
-      navigate('/edit-application');
-    } else {
-      setIsEditWarningOpen(true);
-    }
+    if (allowEdit) navigate('/edit-application');
+    else setIsEditWarningOpen(true);
   };
 
-  // Загрузка уведомлений студента
   const fetchStudentNotifications = async () => {
     try {
       const res = await api.get('/notifications/');
       const data = Array.isArray(res.data) ? res.data : [];
       setStudentNotifications(data);
-
       if (data.length > prevStudentCountRef.current && data.length > 0) {
         setHasNewStudentNotification(true);
         audioRef.current?.play();
       }
       prevStudentCountRef.current = data.length;
-    } catch (err) {
-      console.error('Ошибка загрузки уведомлений студента:', err);
-    }
+    } catch {}
   };
 
-  // Загрузка уведомлений администратора
   const fetchAdminNotifications = async () => {
     try {
       const res = await api.get('/notifications/admin/');
       const data = Array.isArray(res.data) ? res.data : [];
       setAdminNotifications(data);
-
-      // Если количество новых уведомлений больше предыдущего и есть хотя бы одно
       if (data.length > prevAdminCountRef.current && data.length > 0) {
         setHasNewAdminNotification(true);
       }
       prevAdminCountRef.current = data.length;
-    } catch (err) {
-      console.error('Ошибка загрузки уведомлений администратора:', err);
-    }
+    } catch {}
   };
 
-  // Отметить уведомление студента как прочитанное
   const markStudentNotificationRead = async (id) => {
     try {
       await api.post('/notifications/', { notification_ids: [id] });
-      setStudentNotifications((prev) => prev.filter((n) => n.id !== id));
-    } catch (err) {
-      console.error('Ошибка отметки уведомления (студент):', err);
-    }
+      setStudentNotifications(prev => prev.filter(n => n.id !== id));
+    } catch {}
   };
 
-  // Отметить уведомление администратора как прочитанное
   const markAdminNotificationRead = async (id) => {
     try {
       await api.post('/notifications/admin/', { notification_ids: [id] });
-      setAdminNotifications((prev) => prev.filter((n) => n.id !== id));
-    } catch (err) {
-      console.error('Ошибка отметки уведомления (админ):', err);
-    }
+      setAdminNotifications(prev => prev.filter(n => n.id !== id));
+    } catch {}
   };
 
   const toggleStudentNotifications = () => {
-    setIsStudentNotifOpen((prev) => !prev);
+    setIsStudentNotifOpen(o => !o);
     if (!isStudentNotifOpen) setHasNewStudentNotification(false);
   };
 
   const toggleAdminNotifications = () => {
-    setIsAdminNotifOpen((prev) => !prev);
+    setIsAdminNotifOpen(o => !o);
     if (!isAdminNotifOpen) setHasNewAdminNotification(false);
   };
 
-  const toggleMenu = () => setMenuOpen((prev) => !prev);
-  const toggleProfileDropdown = () => setProfileDropdownOpen((prev) => !prev);
-
   const getInitials = () => {
     if (!userName) return '';
-    const parts = userName.trim().split(' ');
-    if (parts.length === 1) return parts[0][0].toUpperCase();
-    return (parts[0][0] + parts[1][0]).toUpperCase();
+    const [first, last] = userName.split(' ');
+    return (first?.[0] + last?.[0] || '').toUpperCase();
   };
 
   return (
     <nav className="navbar">
       <div className="navbar-left">
         <Link to="/" className="logo-link">
-          <img src={logo} alt="Narxoz University" className="logo" />
+          <img src={logo} alt="Logo" className="logo" />
         </Link>
       </div>
 
       <div className="navbar-right">
         <ul className={`nav-list ${menuOpen ? 'open' : ''}`}>
-          <li>
-            <Link to="/" className="nav-btn-link">
-              Главная
-            </Link>
-          </li>
+        <li><LanguageSwitcher /></li>
+          <li><Link to="/" className="nav-btn-link">{txt.home}</Link></li>
+          
 
           {isAuthenticated && userRole === 'student' && (
             <li>
-              {hasApplication ? (
-                <div className="nav-btn-link" onClick={handleEditApplicationClick}>
-                  Редактировать заявку
-                </div>
-              ) : (
-                <Link to="/create-application" className="nav-btn-link">
-                  Подать заявку
-                </Link>
-              )}
+              {hasApplication
+                ? <div onClick={handleEditApplicationClick} className="nav-btn-link">
+                    {txt.editApplication}
+                  </div>
+                : <Link to="/create-application" className="nav-btn-link">
+                    {txt.apply}
+                  </Link>}
             </li>
           )}
 
           {userRole === 'admin' && (
-            <li>
-              <Link to="/admin" className="nav-btn-link">
-                Admin Panel
-              </Link>
-            </li>
+            <li><Link to="/admin" className="nav-btn-link">{txt.adminPanel}</Link></li>
           )}
         </ul>
 
-        {/* Уведомления студента */}
         {isAuthenticated && userRole === 'student' && (
           <div className="notification-wrapper">
             <button
               className="notification-bell"
               onClick={toggleStudentNotifications}
-              aria-label="Уведомления студента"
-              type="button"
             >
-              <img src={bellIcon} alt="Уведомления" />
+              <img src={bellIcon} alt="bell" />
               {hasNewStudentNotification && <span className="notification-dot" />}
             </button>
             {isStudentNotifOpen && (
               <div className="notifications-popup">
-                <h4>Уведомления</h4>
-                {studentNotifications.length === 0 ? (
-                  <p className="no-notifications">Нет уведомлений</p>
-                ) : (
-                  studentNotifications.map((n) => (
-                    <div key={n.id} className="notification-item">
-                      <p>{n.message}</p>
-                      <button
-                        onClick={() => markStudentNotificationRead(n.id)}
-                        className="notif-button"
-                      >
-                        Скрыть
-                      </button>
-                    </div>
-                  ))
-                )}
+                <h4>{txt.notifications.studentTitle}</h4>
+                {studentNotifications.length === 0
+                  ? <p className="no-notifications">{txt.notifications.noNotifications}</p>
+                  : studentNotifications.map(n => (
+                      <div key={n.id} className="notification-item">
+                        <p>{n.message}</p>
+                        <button onClick={() => markStudentNotificationRead(n.id)} className="notif-button">
+                          ×
+                        </button>
+                      </div>
+                    ))
+                }
               </div>
             )}
           </div>
         )}
 
-        {/* Уведомления администратора */}
         {isAuthenticated && userRole === 'admin' && (
           <div className="notification-wrapper">
             <button
               className="notification-bell"
               onClick={toggleAdminNotifications}
-              aria-label="Уведомления администратора"
-              type="button"
             >
-              <img src={bellIcon} alt="Уведомления" />
+              <img src={bellIcon} alt="bell" />
               {hasNewAdminNotification && <span className="notification-dot" />}
             </button>
             {isAdminNotifOpen && (
               <div className="notifications-popup">
-                <h4>Уведомления (Админ)</h4>
-                {adminNotifications.length === 0 ? (
-                  <p className="no-notifications">Нет уведомлений</p>
-                ) : (
-                  adminNotifications.map((n) => (
-                    <div key={n.id} className="notification-item">
-                      <p>{n.message}</p>
-                      <button
-                        onClick={() => markAdminNotificationRead(n.id)}
-                        className="notif-button"
-                      >
-                        Скрыть
-                      </button>
-                    </div>
-                  ))
-                )}
+                <h4>{txt.notifications.adminTitle}</h4>
+                {adminNotifications.length === 0
+                  ? <p className="no-notifications">{txt.notifications.noNotifications}</p>
+                  : adminNotifications.map(n => (
+                      <div key={n.id} className="notification-item">
+                        <p>{n.message}</p>
+                        <button onClick={() => markAdminNotificationRead(n.id)} className="notif-button">
+                          ×
+                        </button>
+                      </div>
+                    ))
+                }
               </div>
             )}
           </div>
         )}
 
-        {/* Блок профиля */}
         {isAuthenticated ? (
           <div className="profile-menu-wrapper">
-            <button
-              className="profile-avatar"
-              onClick={toggleProfileDropdown}
-              aria-label="Меню пользователя"
-              type="button"
-            >
-              {avatarUrl ? (
-                <img src={avatarUrl} alt="Аватар пользователя" className="avatar-image" />
-              ) : (
-                <span className="avatar-initials">{getInitials() || 'ИФ'}</span>
-              )}
+            <button className="profile-avatar" onClick={() => setProfileDropdownOpen(o => !o)}>
+              {avatarUrl
+                ? <img src={avatarUrl} alt="avatar" className="avatar-image" />
+                : <span className="avatar-initials">{getInitials()}</span>}
             </button>
-
-            <button className="profile-name-btn" onClick={toggleProfileDropdown} type="button">
-              {userName || 'Имя Фамилия'}
+            <button className="profile-name-btn" onClick={() => setProfileDropdownOpen(o => !o)}>
+              {userName || txt.profile.profile}
             </button>
-
             {profileDropdownOpen && (
               <div className="profile-dropdown">
-                <div className="profile-name">{userName || 'Имя Фамилия'}</div>
+                <div className="profile-name">{userName}</div>
                 <ul>
-                  {userRole === 'student' ? (
-                    <li>
-                      <Link to="/profile" onClick={() => setProfileDropdownOpen(false)}>
-                        Профиль
-                      </Link>
-                    </li>
-                  ) : (
-                    <li>
-                      <button type="button" onClick={onLogout} className="logout-btn">
-                        Выйти
-                      </button>
-                    </li>
+                  {userRole === 'student' && (
+                    <li><Link to="/profile" onClick={() => setProfileDropdownOpen(false)}>
+                      {txt.profile.profile}
+                    </Link></li>
                   )}
+                  <li>
+                    <button className="logout-btn" onClick={onLogout}>
+                      {txt.profile.logout}
+                    </button>
+                  </li>
                 </ul>
               </div>
             )}
           </div>
         ) : (
-          <Link to="/login" className="btn-login">
-            Войти
-          </Link>
+          <Link to="/login" className="btn-login">{txt.auth.login}</Link>
         )}
 
-        <button className="menu-toggle" onClick={toggleMenu} aria-label="Открыть меню">
-          ☰
-        </button>
+        <button className="menu-toggle" onClick={() => setMenuOpen(o => !o)}>☰</button>
       </div>
 
       {isEditWarningOpen && (
         <div className="modal-overlay" onClick={() => setIsEditWarningOpen(false)}>
-          <div className="profile-modal" onClick={(e) => e.stopPropagation()}>
-            <h3>Редактирование заявок отключено</h3>
-            <p>В данный момент редактирование заявок недоступно. Свяжитесь с администрацией.</p>
-            <button
-              className="profile-modal-btn grey"
-              onClick={() => setIsEditWarningOpen(false)}
-            >
-              Понятно
+          <div className="profile-modal" onClick={e => e.stopPropagation()}>
+            <h3>{txt.warning.title}</h3>
+            <p>{txt.warning.message}</p>
+            <button className="profile-modal-btn grey" onClick={() => setIsEditWarningOpen(false)}>
+              {txt.warning.ok}
             </button>
           </div>
         </div>

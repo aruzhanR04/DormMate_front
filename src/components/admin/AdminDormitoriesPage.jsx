@@ -1,4 +1,4 @@
-// src/components/admin/AdminDormitoriesPage.jsx
+// src/pages/admin/AdminDormitoriesPage.jsx
 import React, { useState, useEffect } from "react";
 import api from "../../api";
 import AdminSidebar from "./AdminSidebar";
@@ -13,102 +13,84 @@ import AdminDormitoryEditModal from "./AdminDormitoryEditModal";
 import AdminDormitoryViewModal from "./AdminDormitoryViewModal";
 import AdminDormitoryDeleteModal from "./AdminDormitoryDeleteModal";
 
-const ITEMS_PER_PAGE = 4; // Должно совпадать с page_size у вас на сервере (StudentPagination.page_size)
+import { useI18n } from "../../i18n/I18nContext";
+
+const ITEMS_PER_PAGE = 4;
 
 const AdminDormitoriesPage = () => {
-  // ------------------------------------------------------------------
-  // 1. Локальное состояние
-  // ------------------------------------------------------------------
-  const [dormitories, setDormitories] = useState([]);   // текущая “порция” dorm-объектов
-  const [totalCount, setTotalCount] = useState(0);       // общее число Dorm-объектов
-  const [currentPage, setCurrentPage] = useState(1);     // номер текущей страницы
-  const [roomsCount, setRoomsCount] = useState({});      // { [dormId]: { rooms_for_2, rooms_for_3, rooms_for_4, total_rooms } }
-  const [message, setMessage] = useState("");
+  const { lang, t } = useI18n();
+
+  const [dormitories, setDormitories] = useState([]);
+  const [totalCount, setTotalCount] = useState(0);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [roomsCount, setRoomsCount] = useState({});
+  const [message, setMessage] = useState(null);
 
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(null);
   const [showViewModal, setShowViewModal] = useState(null);
   const [deleteModalDorm, setDeleteModalDorm] = useState(null);
 
-  // ------------------------------------------------------------------
-  // 2. Функция fetchDormitories: запрашивает /dorms/?page=...&page_size=...
-  // ------------------------------------------------------------------
   const fetchDormitories = async () => {
     try {
-      const params = {
-        page: currentPage,
-        page_size: ITEMS_PER_PAGE,
-      };
-      const response = await api.get("/dorms/", { params });
-      const data = response.data;
-
-      // DRF paginated response: { count, next, previous, results }
-      setDormitories(Array.isArray(data.results) ? data.results : []);
-      setTotalCount(typeof data.count === "number" ? data.count : 0);
-    } catch (error) {
-      setMessage({ type: "error", text: "Ошибка при загрузке списка общежитий" });
+      const { data } = await api.get("/dorms/", {
+        params: { page: currentPage, page_size: ITEMS_PER_PAGE }
+      });
+      setDormitories(data.results || []);
+      setTotalCount(data.count || 0);
+    } catch {
+      setMessage({
+        type: "error",
+        text: t("adminDormitoriesPage.messages.loadError")
+      });
     }
   };
 
-  // ------------------------------------------------------------------
-  // 3. Функция fetchRoomsCount: запрашивает /dorms/count/
-  // ------------------------------------------------------------------
   const fetchRoomsCount = async () => {
     try {
-      const response = await api.get("/dorms/count/");
-      const roomArray = response.data.dorms; // массив вида [ {id, name, total_rooms, rooms_for_2, rooms_for_3, rooms_for_4}, ... ]
-
-      // Преобразуем в удобный объект { [dormId]: { total_rooms, rooms_for_2, rooms_for_3, rooms_for_4 } }
-      const roomDataByDorm = {};
-      roomArray.forEach((dorm) => {
-        roomDataByDorm[dorm.id] = {
-          total_rooms: dorm.total_rooms,
-          rooms_for_2: dorm.rooms_for_2,
-          rooms_for_3: dorm.rooms_for_3,
-          rooms_for_4: dorm.rooms_for_4,
+      const { data } = await api.get("/dorms/count/");
+      const byDorm = {};
+      data.dorms.forEach((d) => {
+        byDorm[d.id] = {
+          rooms_for_2: d.rooms_for_2,
+          rooms_for_3: d.rooms_for_3,
+          rooms_for_4: d.rooms_for_4,
+          total_rooms: d.total_rooms
         };
       });
-      setRoomsCount(roomDataByDorm);
+      setRoomsCount(byDorm);
     } catch {
-      setMessage({ type: "error", text: "Не удалось загрузить статистику комнат" });
+      setMessage({
+        type: "error",
+        text: t("adminDormitoriesPage.messages.statsError")
+      });
     }
   };
 
-  // ------------------------------------------------------------------
-  // 4. useEffect: при монтировании и при смене страницы вызываем оба запроса
-  // ------------------------------------------------------------------
   useEffect(() => {
     fetchDormitories();
     fetchRoomsCount();
   }, [currentPage]);
 
-  // ------------------------------------------------------------------
-  // 5. Удаление dorm
-  // ------------------------------------------------------------------
   const handleDeleteDorm = async (dorm) => {
     try {
       await api.delete(`/dorms/${dorm.id}/`);
-      setMessage({ type: "success", text: "Общежитие успешно удалено" });
-
-      // Если мы были на последней странице и после удаления записей станет меньше, 
-      // возможно нужно перейти на предыдущую страницу:
+      setMessage({
+        type: "success",
+        text: t("adminDormitoriesPage.messages.deleteSuccess")
+      });
       const newTotal = totalCount - 1;
-      const newTotalPages = Math.ceil(newTotal / ITEMS_PER_PAGE);
-      if (currentPage > newTotalPages) {
-        setCurrentPage(newTotalPages > 0 ? newTotalPages : 1);
-      } else {
-        fetchDormitories();
-      }
-
+      const pages = Math.ceil(newTotal / ITEMS_PER_PAGE);
+      setCurrentPage((p) => (p > pages ? pages || 1 : p));
       setDeleteModalDorm(null);
     } catch {
-      setMessage({ type: "error", text: "Ошибка при удалении общежития" });
+      setMessage({
+        type: "error",
+        text: t("adminDormitoriesPage.messages.deleteError")
+      });
     }
   };
 
-  // ------------------------------------------------------------------
-  // 6. После сохранения/редактирования — просто обновляем список
-  // ------------------------------------------------------------------
   const handleRefresh = () => {
     fetchDormitories();
     fetchRoomsCount();
@@ -118,141 +100,140 @@ const AdminDormitoriesPage = () => {
     setDeleteModalDorm(null);
   };
 
-  // ------------------------------------------------------------------
-  // 7. Подсчёт общего числа страниц
-  // ------------------------------------------------------------------
   const totalPages = Math.ceil(totalCount / ITEMS_PER_PAGE);
 
-  // ------------------------------------------------------------------
-  // 8. JSX-разметка
-  // ------------------------------------------------------------------
   return (
     <div className="admin-page-container">
       <AdminSidebar />
       <div className="content-area">
-        {/* ===== Заголовок и кнопка "Добавить" ===== */}
+        {/* Header */}
         <div className="header-row">
-          <h1>Управление общежитиями</h1>
+          <h1>{t("adminDormitoriesPage.title")}</h1>
           <div className="actions-list">
-            <button onClick={() => setShowAddModal(true)}>Добавить общежитие</button>
+            <button onClick={() => setShowAddModal(true)}>
+              {t("adminDormitoriesPage.buttons.add")}
+            </button>
           </div>
         </div>
 
-        {/* ===== Сообщение об ошибке/успехе ===== */}
-        {message && <div className={`message ${message.type}`}>{message.text}</div>}
+        {/* Flash message */}
+        {message && (
+          <div className={`message ${message.type}`}>{message.text}</div>
+        )}
 
-        {/* ===== Таблица общежитий ===== */}
+        {/* Dormitories table */}
         <div className="students-table-container">
           <table className="students-table">
             <thead>
               <tr>
-                <th>Название</th>
-                <th>Мест</th>
-                <th>Комнаты на 2</th>
-                <th>Комнаты на 3</th>
-                <th>Комнаты на 4</th>
-                <th>Стоимость</th>
-                <th>Операции</th>
+                <th>{t("adminDormitoriesPage.table.headers.name")}</th>
+                <th>{t("adminDormitoriesPage.table.headers.places")}</th>
+                <th>{t("adminDormitoriesPage.table.headers.roomsFor2")}</th>
+                <th>{t("adminDormitoriesPage.table.headers.roomsFor3")}</th>
+                <th>{t("adminDormitoriesPage.table.headers.roomsFor4")}</th>
+                <th>{t("adminDormitoriesPage.table.headers.cost")}</th>
+                <th>{t("adminDormitoriesPage.table.headers.actions")}</th>
               </tr>
             </thead>
             <tbody>
               {dormitories.length > 0 ? (
-                dormitories.map((dorm) => (
-                  <tr key={dorm.id}>
-                    <td>{dorm.name}</td>
-                    <td>{dorm.total_places}</td>
-                    <td>
-                      {roomsCount[dorm.id] ? roomsCount[dorm.id].rooms_for_2 : "-"}
-                    </td>
-                    <td>
-                      {roomsCount[dorm.id] ? roomsCount[dorm.id].rooms_for_3 : "-"}
-                    </td>
-                    <td>
-                      {roomsCount[dorm.id] ? roomsCount[dorm.id].rooms_for_4 : "-"}
-                    </td>
-                    <td>{dorm.cost}</td>
-                    <td>
-                      <img
-                        src={viewIcon}
-                        alt="Просмотр"
-                        className="operation-icon"
-                        onClick={() => setShowViewModal(dorm.id)}
-                      />
-                      <img
-                        src={editIcon}
-                        alt="Изменение"
-                        className="operation-icon"
-                        onClick={() => setShowEditModal(dorm.id)}
-                      />
-                      <img
-                        src={deleteIcon}
-                        alt="Удалить"
-                        className="operation-icon"
-                        onClick={() => setDeleteModalDorm(dorm)}
-                      />
-                    </td>
-                  </tr>
-                ))
+                dormitories.map((dorm) => {
+                  // Select name based on current language
+                  const title =
+                    dorm[`name_${lang}`] || dorm.name_ru;
+
+                  return (
+                    <tr key={dorm.id}>
+                      <td>{title} {dorm.id}</td>
+                      <td>{dorm.total_places}</td>
+                      <td>{roomsCount[dorm.id]?.rooms_for_2 ?? "-"}</td>
+                      <td>{roomsCount[dorm.id]?.rooms_for_3 ?? "-"}</td>
+                      <td>{roomsCount[dorm.id]?.rooms_for_4 ?? "-"}</td>
+                      <td>{dorm.cost}</td>
+                      <td>
+                        <img
+                          src={viewIcon}
+                          alt={t("adminDormitoriesPage.icons.alt.view")}
+                          className="operation-icon"
+                          onClick={() => setShowViewModal(dorm.id)}
+                        />
+                        <img
+                          src={editIcon}
+                          alt={t("adminDormitoriesPage.icons.alt.edit")}
+                          className="operation-icon"
+                          onClick={() => setShowEditModal(dorm.id)}
+                        />
+                        <img
+                          src={deleteIcon}
+                          alt={t("adminDormitoriesPage.icons.alt.delete")}
+                          className="operation-icon"
+                          onClick={() => setDeleteModalDorm(dorm)}
+                        />
+                      </td>
+                    </tr>
+                  );
+                })
               ) : (
                 <tr>
-                  <td colSpan="7">Нет данных для отображения.</td>
+                  <td colSpan="7">
+                    {t("adminDormitoriesPage.table.empty")}
+                  </td>
                 </tr>
               )}
             </tbody>
           </table>
         </div>
 
-        {/* ===== Пагинация ===== */}
+        {/* Pagination */}
         {totalPages > 1 && (
           <div className="pagination">
-            {/* Кнопка "Prev" */}
             <button
               className="pagination-btn"
               disabled={currentPage === 1}
               onClick={() => setCurrentPage((p) => p - 1)}
             >
-              &lt;
+              {t("adminDormitoriesPage.pagination.prev")}
             </button>
-
-            {/* Номера страниц */}
             {Array.from({ length: totalPages }).map((_, idx) => {
               const pageNum = idx + 1;
               return (
                 <button
                   key={pageNum}
-                  className={
-                    currentPage === pageNum
-                      ? "pagination-btn active"
-                      : "pagination-btn"
-                  }
+                  className={`pagination-btn${
+                    currentPage === pageNum ? " active" : ""
+                  }`}
                   onClick={() => setCurrentPage(pageNum)}
                 >
                   {pageNum}
                 </button>
               );
             })}
-
-            {/* Кнопка "Next" */}
             <button
               className="pagination-btn"
               disabled={currentPage === totalPages}
               onClick={() => setCurrentPage((p) => p + 1)}
             >
-              &gt;
+              {t("adminDormitoriesPage.pagination.next")}
             </button>
           </div>
         )}
 
-        {/* ===== Модалки ===== */}
+        {/* Modals */}
         {showAddModal && (
           <AdminDormitoryAddModal
-            onClose={() => { setShowAddModal(false); handleRefresh(); }}
+            onClose={() => {
+              setShowAddModal(false);
+              handleRefresh();
+            }}
           />
         )}
         {showEditModal && (
           <AdminDormitoryEditModal
             dormId={showEditModal}
-            onClose={() => { setShowEditModal(null); handleRefresh(); }}
+            onClose={() => {
+              setShowEditModal(null);
+              handleRefresh();
+            }}
           />
         )}
         {showViewModal && (
